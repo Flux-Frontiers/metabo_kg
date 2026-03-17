@@ -1,0 +1,30 @@
+{
+  "servers": {
+    "metakg": {
+      "type": "stdio",
+      "command": "poetry",
+      "args": [
+        "run",
+        "metakg-mcp",
+        "--db",
+        ".metakg/meta.sqlite",
+        "--lancedb",
+        ".metakg/lancedb"
+      ],
+      "env": {
+        "POETRY_VIRTUALENVS_IN_PROJECT": "false"
+      }
+    },
+    "codekg": {
+      "type": "stdio",
+      "command": "/Users/egs/repos/meta_kg/.venv/bin/python",
+      "args": [
+        "-m",
+        "code_kg",
+        "mcp",
+        "--repo",
+        "/Users/egs/repos/meta_kg"
+      ]
+    }
+  }
+}

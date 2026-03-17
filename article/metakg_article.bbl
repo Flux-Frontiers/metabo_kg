@@ -1,0 +1,134 @@
+\begin{thebibliography}{21}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[{Anthropic}(2024{\natexlab{a}})]{anthropic2024claude}
+{Anthropic}.
+\newblock {Claude: AI assistant}.
+\newblock \url{https://claude.ai}, 2024{\natexlab{a}}.
+\newblock Accessed February 2026.
+
+\bibitem[{Anthropic}(2024{\natexlab{b}})]{anthropic2024mcp}
+{Anthropic}.
+\newblock {Model Context Protocol (MCP): an open protocol that enables seamless integration between LLM applications and external data sources and tools}.
+\newblock \url{https://modelcontextprotocol.io}, 2024{\natexlab{b}}.
+\newblock Accessed February 2026.
+
+\bibitem[Bodenreider(2004)]{bodenreider2004umls}
+Olivier Bodenreider.
+\newblock {The Unified Medical Language System (UMLS): integrating biomedical terminology}.
+\newblock \emph{Nucleic Acids Research}, 32\penalty0 (suppl\_1):\penalty0 D267--D270, 2004.
+\newblock \doi{10.1093/nar/gkh061}.
+
+\bibitem[Courtot et~al.(2011)Courtot, Juty, Knüpfer, et~al.]{courtot2011sbo}
+Mélanie Courtot, Nick Juty, Christian Knüpfer, et~al.
+\newblock {Controlled vocabularies and semantics in systems biology}.
+\newblock \emph{Molecular Systems Biology}, 7:\penalty0 543, 2011.
+\newblock \doi{10.1038/msb.2011.77}.
+
+\bibitem[Demir et~al.(2010)Demir, Cary, Paley, et~al.]{demir2010biopax}
+Emek Demir, Michael~P. Cary, Suzanne Paley, et~al.
+\newblock {The BioPAX community standard for pathway data sharing}.
+\newblock \emph{Nature Biotechnology}, 28\penalty0 (9):\penalty0 935--942, 2010.
+\newblock \doi{10.1038/nbt.1666}.
+
+\bibitem[Ebrahim et~al.(2013)Ebrahim, Lerman, Palsson, and Hyduke]{ebrahim2013cobrapy}
+Ali Ebrahim, Joshua~A. Lerman, Bernhard~Ø. Palsson, and Daniel~R. Hyduke.
+\newblock {COBRApy: COnstraints-Based Reconstruction and Analysis for Python}.
+\newblock \emph{BMC Systems Biology}, 7:\penalty0 74, 2013.
+\newblock \doi{10.1186/1752-0509-7-74}.
+
+\bibitem[Feng et~al.(2023)Feng, Jin, Chen, Liu, and Salihoğlu]{feng2023kuzu}
+Xiyang Feng, Guodong Jin, Ziyi Chen, Chang Liu, and Semih Salihoğlu.
+\newblock {KÙZU Graph Database Management System}.
+\newblock In \emph{Proceedings of the VLDB Endowment}, volume~16, pages 3630--3637, 2023.
+\newblock \doi{10.14778/3611540.3611556}.
+
+\bibitem[{Flux Frontiers Contributors}(2025)]{fluxfrontiers2025codekg}
+{Flux Frontiers Contributors}.
+\newblock {CodeKG: A Structural and Semantic Knowledge Graph for Python Codebases}.
+\newblock \url{https://github.com/Flux-Frontiers/code_kg}, 2025.
+\newblock Accessed February 2026.
+
+\bibitem[Jassal et~al.(2020)Jassal, Matthews, Viteri, et~al.]{jassal2020reactome}
+Bijay Jassal, Lisa Matthews, Guilherme Viteri, et~al.
+\newblock {The reactome pathway knowledgebase}.
+\newblock \emph{Nucleic Acids Research}, 48\penalty0 (D1):\penalty0 D498--D503, 2020.
+\newblock \doi{10.1093/nar/gkz1031}.
+
+\bibitem[Kanehisa et~al.(2021)Kanehisa, Furumichi, Sato, Ishiguro-Watanabe, and Tanabe]{kanehisa2021kegg}
+Minoru Kanehisa, Miho Furumichi, Yoko Sato, Mari Ishiguro-Watanabe, and Masumi Tanabe.
+\newblock {KEGG: integrating viruses and cellular organisms}.
+\newblock \emph{Nucleic Acids Research}, 49\penalty0 (D1):\penalty0 D545--D551, 2021.
+\newblock \doi{10.1093/nar/gkaa970}.
+
+\bibitem[Keating et~al.(2020)Keating, Waltemath, König, et~al.]{keating2020sbml}
+Sarah~M. Keating, Dagmar Waltemath, Matthias König, et~al.
+\newblock {SBML Level 3: an extensible format for the exchange and reuse of biological models}.
+\newblock \emph{Molecular Systems Biology}, 16\penalty0 (8):\penalty0 e9110, 2020.
+\newblock \doi{10.15252/msb.20199110}.
+
+\bibitem[{LanceDB Contributors}(2023)]{lancedb2023}
+{LanceDB Contributors}.
+\newblock {LanceDB: Developer-friendly, serverless vector database}.
+\newblock \url{https://lancedb.github.io/lancedb/}, 2023.
+\newblock Accessed February 2026.
+
+\bibitem[Martens et~al.(2021)Martens, Ammar, Riutta, et~al.]{martens2021wikipathways}
+Marvin Martens, Ammar Ammar, Anders Riutta, et~al.
+\newblock {WikiPathways: connecting communities}.
+\newblock \emph{Nucleic Acids Research}, 49\penalty0 (D1):\penalty0 D613--D621, 2021.
+\newblock \doi{10.1093/nar/gkaa1024}.
+
+\bibitem[Moretti et~al.(2021)Moretti, Paskov, Hahnloser, et~al.]{moretti2021metanetx}
+Sébastien Moretti, Kristian Paskov, Richard H.~R. Hahnloser, et~al.
+\newblock {MetaNetX/MNXref: unified namespace for metabolites and biochemical reactions in the context of metabolic models}.
+\newblock \emph{Nucleic Acids Research}, 49\penalty0 (D1):\penalty0 D570--D574, 2021.
+\newblock \doi{10.1093/nar/gkaa992}.
+
+\bibitem[Reimers and Gurevych(2019)]{reimers2019sbert}
+Nils Reimers and Iryna Gurevych.
+\newblock {Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks}.
+\newblock In \emph{Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing}, pages 3982--3992. Association for Computational Linguistics, 2019.
+\newblock \doi{10.18653/v1/D19-1410}.
+
+\bibitem[Robinson et~al.(2015)Robinson, Webber, and Eifrem]{neo4j2020}
+Ian Robinson, Jim Webber, and Emil Eifrem.
+\newblock \emph{{Graph Databases: New Opportunities for Connected Data}}.
+\newblock O'Reilly Media, 2nd edition, 2015.
+\newblock ISBN 978-1-491-93089-2.
+
+\bibitem[Shannon et~al.(2003)Shannon, Markiel, Ozier, et~al.]{shannon2003cytoscape}
+Paul Shannon, Andrew Markiel, Owen Ozier, et~al.
+\newblock {Cytoscape: a software environment for integrated models of biomolecular interaction networks}.
+\newblock \emph{Genome Research}, 13\penalty0 (11):\penalty0 2498--2504, 2003.
+\newblock \doi{10.1101/gr.1239303}.
+
+\bibitem[{Streamlit Inc.}(2019)]{streamlit2019}
+{Streamlit Inc.}
+\newblock {Streamlit: The fastest way to build data apps}.
+\newblock \url{https://streamlit.io}, 2019.
+\newblock Accessed February 2026.
+
+\bibitem[Sullivan and Kaszynski(2019)]{sullivan2019pyvista}
+C.~Bane Sullivan and Alexander~A. Kaszynski.
+\newblock {PyVista: 3D plotting and mesh analysis through a streamlined interface for the Visualization Toolkit (VTK)}.
+\newblock \emph{Journal of Open Source Software}, 4\penalty0 (37):\penalty0 1450, 2019.
+\newblock \doi{10.21105/joss.01450}.
+
+\bibitem[Vogel(1979)]{vogel1979fibonacci}
+Helmut Vogel.
+\newblock {A better way to construct the sunflower head}.
+\newblock \emph{Mathematical Biosciences}, 44\penalty0 (3-4):\penalty0 179--189, 1979.
+\newblock \doi{10.1016/0025-5564(79)90080-4}.
+
+\bibitem[West(2021)]{pyvis2021}
+Jason West.
+\newblock {Pyvis: visualize and construct interactive network graphs in Python}.
+\newblock \url{https://pyvis.readthedocs.io}, 2021.
+\newblock Accessed February 2026.
+
+\end{thebibliography}

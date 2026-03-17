@@ -1,0 +1,35 @@
+[MAIN]
+# Use multiple processes for speed
+jobs=1
+
+[MESSAGES CONTROL]
+# Disable checks that are intentional design choices in this codebase:
+#   C0415 - lazy/optional dependency imports (lancedb, sentence_transformers, mcp, pyvista)
+#   R0801 - parsers share similar boilerplate structure by design
+#   E0401 - optional deps (matplotlib, pyvista) may not be installed in all envs
+disable=
+    C0415,
+    R0801,
+    E0401,
+    W0212
+
+[FORMAT]
+max-line-length=120
+
+[DESIGN]
+# Scientific/domain code has more locals, branches, and statements than typical apps.
+max-locals=30
+max-branches=20
+max-statements=75
+max-public-methods=30
+max-attributes=20
+max-returns=8
+max-args=8
+max-positional-arguments=8
+
+[SIMILARITIES]
+min-similarity-lines=10
+
+[MISCELLANEOUS]
+# Increase line limit for analysis modules with many functions
+max-module-lines=1100

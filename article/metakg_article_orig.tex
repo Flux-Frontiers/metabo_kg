@@ -1,0 +1,1141 @@
+\documentclass[10pt]{article}
+
+% ---------------------------------------------------------------------------
+% Packages
+% ---------------------------------------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{microtype}
+\usepackage{natbib}
+\usepackage{authblk}
+\usepackage{abstract}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{float}
+
+% ---------------------------------------------------------------------------
+% Listing style (Python / shell)
+% ---------------------------------------------------------------------------
+\definecolor{codegray}{rgb}{0.95,0.95,0.95}
+\definecolor{codeblue}{rgb}{0.00,0.00,0.60}
+\definecolor{codegreen}{rgb}{0.00,0.50,0.00}
+\definecolor{codemauve}{rgb}{0.58,0.00,0.82}
+
+\lstdefinestyle{python}{
+  backgroundcolor=\color{codegray},
+  basicstyle=\ttfamily\footnotesize,
+  breakatwhitespace=false,
+  breaklines=true,
+  captionpos=b,
+  commentstyle=\color{codegreen},
+  frame=single,
+  keepspaces=true,
+  keywordstyle=\color{codeblue},
+  language=Python,
+  numbers=none,
+  showspaces=false,
+  showstringspaces=false,
+  stringstyle=\color{codemauve},
+  tabsize=2,
+  framerule=0.4pt,
+  xleftmargin=4pt,
+  xrightmargin=4pt,
+}
+
+\lstdefinestyle{bash}{
+  backgroundcolor=\color{codegray},
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  numbers=none,
+  framerule=0.4pt,
+  xleftmargin=4pt,
+  xrightmargin=4pt,
+}
+
+% ---------------------------------------------------------------------------
+% Hyperref config
+% ---------------------------------------------------------------------------
+\hypersetup{
+  colorlinks=true,
+  linkcolor=codeblue,
+  citecolor=codegreen,
+  urlcolor=codeblue,
+}
+
+% ---------------------------------------------------------------------------
+% Metadata
+% ---------------------------------------------------------------------------
+\title{\textbf{MetaKG: A Unified Knowledge Graph System\\for Metabolic Pathway Analysis}}
+
+\author[1]{Eric G. Suchanek, PhD}
+\affil[1]{Flux Frontiers, \href{https://github.com/Flux-Frontiers}{github.com/Flux-Frontiers}}
+
+\date{February 2026}
+
+% ---------------------------------------------------------------------------
+\begin{document}
+% ---------------------------------------------------------------------------
+
+\maketitle
+
+% ---------------------------------------------------------------------------
+\begin{abstract}
+\noindent
+A fundamental challenge in systems biology is that metabolic pathway data is
+fragmented across incompatible formats and disconnected from the semantic and
+structural query capabilities required by modern computational workflows. We
+present \textsc{MetaKG}, a local-first knowledge graph system that unifies
+metabolic pathway data from four formats (KGML, SBML, BioPAX, CSV) into a
+unified property graph with a novel dual-layer architecture: SQLite for
+efficient structural graph traversal and LanceDB for semantic similarity search
+via dense vector embeddings. The core innovation is that \textsc{MetaKG}
+combines four orthogonal query modalities---structural neighbourhood traversal,
+breadth-first shortest-path search, natural-language semantic similarity, and
+full stoichiometric detail assembly---all through a unified Python API, CLI,
+and Model~Context~Protocol server interface. The system requires no external
+services or database servers; queries run entirely on local machine after
+building a snapshot graph from input files. A stable URI-style identifier
+scheme enables deterministic cross-format merging, making incremental builds
+tractable and the graph reproducible. We demonstrate that this architecture
+enables metabolic pathway analysis workflows that are simultaneously precise
+(structural), exploratory (semantic), and AI-accessible (MCP integration). The
+system is evaluated on the complete human metabolome: all 369 KEGG pathways
+(22,290 nodes, 11,298 edges), integrating metabolic, signaling, and regulatory
+networks. Performance analysis shows that the dual-layer architecture scales
+efficiently to organism-scale pathway corpora, with typical queries completing
+in milliseconds to seconds.
+\end{abstract}
+
+\textbf{Keywords:} metabolic pathways, knowledge graph, dual-layer architecture,
+semantic search, local-first systems, AI-accessible data, multi-format integration,
+bioinformatics
+
+% ---------------------------------------------------------------------------
+\section{Introduction}
+% ---------------------------------------------------------------------------
+
+\subsection{The Problem: Query Architecture Limits Exploratory Analysis}
+
+Reconstructing metabolic networks requires integrating diverse data sources:
+KEGG provides human-curated pathway maps in KGML~\citep{kanehisa2021kegg}; Reactome
+and model-organism databases export in BioPAX Level~3~\citep{demir2010biopax};
+constraint-based modelling tools produce SBML~\citep{keating2020sbml}; and
+institutional data often exists only in spreadsheets. While handling multiple
+formats is a technical necessity, it is not the core scientific problem. The
+deeper issue is query capability.
+
+Existing systems force a false choice between two incompatible query paradigms:
+
+\begin{description}[leftmargin=*,itemsep=2pt]
+  \item[Structural precision] Systems like KEGG, BioCyc, and Reactome offer
+    exact structural queries (``retrieve all products of this enzyme'',
+    ``shortest path between two compounds'') through relational data models or
+    graph databases. But they lack semantic search; a biologist searching for
+    ``fatty-acid oxidation'' gets keyword matches, not conceptually similar
+    pathways. They also require web access and cannot be queried programmatically
+    at scale.
+
+  \item[Semantic expressivity] Vector databases and embeddings excel at
+    semantic similarity (``find pathways similar to X''), handling synonymy and
+    domain terminology. But they abandon the property graph structure; stoichiometric
+    detail, cofactor roles, and regulatory logic are lost. Semantic-only systems
+    are exploratory tools, not precision instruments.
+\end{description}
+
+No existing system combines structural precision, semantic expressivity, and
+programmatic accessibility in a single local-first tool. KEGG and PathBank are
+web-only. MetaNetX reconciles identifiers but provides no queryable graph.
+Neo4j-based systems support complex structural queries but require server
+deployment and do not address parsing. Vector databases excel at search but
+discard relational structure. In short, no unified platform enables an analyst
+to start with a semantic query (``what pathways are related to glucose
+metabolism?''), drill into structural detail (``what is the precise
+stoichiometry of this reaction?''), and assemble the results all within a single
+local, reproducible, programmatically-accessible system.
+
+\subsection{The Solution: Dual-Layer Query Architecture}
+
+\textsc{MetaKG} solves this dilemma with a dual-layer local knowledge graph
+that breaks the false choice between structural precision and semantic
+expressivity. The core innovation is separating query problems by modality:
+
+\begin{description}[leftmargin=*,itemsep=2pt]
+\item[Structural layer] SQLite stores the property graph (compounds, reactions,
+  pathways, and their relationships). Structural queries run as efficient SQL
+  joins: neighbourhood traversal, shortest-path BFS, stoichiometric assembly.
+\item[Semantic layer] LanceDB maintains a vector index over node descriptions
+  using sentence-transformer embeddings. Semantic queries retrieve results by
+  cosine similarity: natural-language pathway search, compound similarity,
+  synonym handling.
+\end{description}
+
+This architecture enables analysts to use four query modalities on the same
+graph without choosing a single paradigm. Start with semantic exploration, then
+drill into structural detail, all in one interface:
+
+\begin{enumerate}[leftmargin=*, itemsep=2pt]
+\item \textbf{Semantic pathway discovery} --- ``Find pathways related to
+  fatty-acid beta-oxidation'' (vector similarity search; handles synonyms,
+  abbreviations, domain terminology)
+\item \textbf{Structural neighbourhood traversal} --- ``Find all compounds
+  that are products of pyruvate carboxylase'' (SQL joins)
+\item \textbf{Shortest-path search} --- ``What is the minimal metabolic route
+  from glucose to acetyl-CoA?'' (BFS over compound--reaction bipartite graph)
+\item \textbf{Stoichiometric detail assembly} --- ``Retrieve all substrates,
+  products, enzymes, inhibitors, and cofactors for reaction R00200''
+  (multi-table JOIN with JSON unpacking)
+\end{enumerate}
+
+Multi-format parsing (KGML, SBML, BioPAX, CSV) is the enabling infrastructure.
+It allows users to ingest data from any source and merge it by stable,
+deterministic identifiers. But parsing is table stakes. The innovation is the
+dual-layer query engine: it frees users from choosing between semantic
+expressivity and structural precision.
+
+All four query modalities are exposed through a unified Python API,
+command-line interface, and Model~Context~Protocol (MCP) server. The system
+runs entirely locally: no network, no database server, no external services
+after setup. This is a deliberate design choice. Unlike live database mirrors,
+\textsc{MetaKG} treats the knowledge graph as a reproducible, version-controlled
+snapshot. Users rebuild when input files change. This enables reproducible
+analysis, offline workflows, and integration into research reproducibility pipelines.
+The system scales efficiently to organism-scale pathway corpora: the complete
+\textit{Homo sapiens} metabolome (369 KEGG pathways, 22,290 nodes, 11,298 edges)
+is built in 30--60~seconds and queries complete in milliseconds to seconds.
+
+\subsection{Design Goals}
+
+To realise this vision, \textsc{MetaKG} is built around three core principles,
+in priority order:
+
+\begin{enumerate}[leftmargin=*, itemsep=2pt]
+\item \textbf{Dual-layer query architecture.} Combine structural and semantic
+  queries in a single unified system. Do not force users to choose between
+  precise graph traversal and exploratory semantic search; both modalities
+  should work seamlessly on the same data through the same API.
+
+\item \textbf{Format agnostic, deterministic merging.} Accept pathway data in
+  any of four formats (KGML, SBML, BioPAX, CSV) and produce a unified graph
+  using stable, deterministic identifiers. Enable reproducible builds and
+  incremental updates without external reconciliation services.
+
+\item \textbf{Zero-friction local deployment.} Require no database servers,
+  external services, or network connections after setup. The entire stack
+  (parsing, storage, indexing, querying, visualisation, MCP server) fits in a
+  single Python library, runnable on a laptop or integrated into batch
+  workflows.
+\end{enumerate}
+
+The remainder of this paper is organised as follows. Section~\ref{sec:design}
+describes the data model and system architecture. Section~\ref{sec:parsers}
+covers the format-specific parsers. Section~\ref{sec:storage} details the
+storage and indexing layers. Section~\ref{sec:query} describes the query API.
+Section~\ref{sec:viz} covers the visualisation components.
+Section~\ref{sec:mcp} describes the MCP server. Section~\ref{sec:usage}
+walks through a complete worked example. Section~\ref{sec:discussion}
+discusses limitations and future directions, and Section~\ref{sec:conclusion}
+concludes.
+
+% ---------------------------------------------------------------------------
+\section{Data Model and Architecture}
+\label{sec:design}
+% ---------------------------------------------------------------------------
+
+\subsection{Property Graph Schema}
+
+\textsc{MetaKG} represents metabolism as a directed property graph
+$G = (V, E)$. Vertices $V$ are \emph{entities} of four kinds:
+
+\begin{description}[leftmargin=*, itemsep=2pt]
+  \item[\texttt{compound}] A small molecule metabolite. Carries optional
+    molecular formula, net formal charge, and cross-references to external
+    databases (ChEBI, HMDB, PubChem, InChI).
+  \item[\texttt{reaction}] A biochemical transformation. Carries
+    stoichiometry encoded as a JSON object listing substrates and products
+    with their coefficients, a reversibility flag, and cross-references to
+    KEGG and Rhea.
+  \item[\texttt{enzyme}] A protein catalyst. Carries the EC number and
+    cross-references to UniProt and NCBI Gene.
+  \item[\texttt{pathway}] An ordered or thematic collection of reactions,
+    typically corresponding to one named pathway in a source database.
+\end{description}
+
+Edges $E$ carry one of seven relation types (Table~\ref{tab:relations}).
+All edges are directed and carry an optional evidence blob encoded as JSON,
+which parsers use to record stoichiometric coefficients, compartment labels,
+and source-specific annotations.
+
+\begin{table}[H]
+  \centering
+  \caption{Edge relation types in the MetaKG graph schema.}
+  \label{tab:relations}
+  \small
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Relation & Source kind & Target kind \\
+    \midrule
+    \texttt{SUBSTRATE\_OF}  & compound  & reaction  \\
+    \texttt{PRODUCT\_OF}    & reaction  & compound  \\
+    \texttt{CATALYZES}      & enzyme    & reaction  \\
+    \texttt{INHIBITS}       & compound  & reaction  \\
+    \texttt{ACTIVATES}      & compound  & reaction  \\
+    \texttt{CONTAINS}       & pathway   & reaction  \\
+    \texttt{XREF}           & any       & any       \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Stable Identifier Scheme}
+
+Identifier reconciliation is one of the core difficulties in biological data
+integration. \textsc{MetaKG} assigns each node a stable, URI-style string
+identifier of the form:
+
+\begin{center}
+\texttt{<prefix>:<namespace>:<external-id>}
+\end{center}
+
+\noindent where the prefix encodes the node kind (\texttt{cpd}, \texttt{rxn},
+\texttt{enz}, \texttt{pwy}) and the namespace identifies the source database
+(\texttt{kegg}, \texttt{chebi}, \texttt{uniprot}, \texttt{ec}, etc.):
+
+\begin{lstlisting}[style=python, caption={Examples of stable node identifiers.}]
+cpd:kegg:C00022       # Pyruvate (KEGG)
+rxn:kegg:R00200       # Pyruvate decarboxylation
+enz:ec:1.2.4.1        # Pyruvate dehydrogenase (EC)
+pwy:kegg:hsa00010     # Glycolysis / Gluconeogenesis
+\end{lstlisting}
+
+For entities that appear in a file without an external database identifier,
+a synthetic identifier is constructed by hashing the lowercased display name
+with SHA-1 and retaining the first eight hexadecimal digits:
+
+\begin{center}
+\texttt{cpd:syn:a4f2b8c1}
+\end{center}
+
+Because the hash is applied to the normalised name, identifiers are
+deterministic across independent parser runs on the same input, enabling
+incremental rebuilds without producing duplicate nodes. When two source files
+refer to the same KEGG or ChEBI entry, the graph merges their nodes by ID
+before writing to SQLite, so each logical entity appears exactly once in the
+graph regardless of how many files contributed to it.
+
+\subsection{System Architecture and the Dual-Layer Query Engine}
+
+Figure~\ref{fig:arch} shows the overall pipeline. The \texttt{MetaKG}
+orchestrator class owns the full pipeline from raw files to query results.
+Internally it coordinates three subsystems:
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{MetabolicGraph} — responsible for file discovery and parser
+    dispatch. Outputs normalised \texttt{MetaNode} and \texttt{MetaEdge}
+    objects that are independent of source format.
+  \item \textbf{MetaStore} — SQLite persistence layer that enables structural
+    graph queries (neighbourhood traversal, shortest-path BFS, stoichiometric
+    assembly) via efficient SQL joins. Provides ACID guarantees and requires
+    no external services.
+  \item \textbf{MetaIndex} — LanceDB vector index layer that enables semantic
+    queries (natural-language pathway search, compound similarity retrieval).
+    Uses pre-trained sentence-transformer embeddings to handle synonymy,
+    abbreviations, and domain terminology.
+\end{enumerate}
+
+The dual-layer design is the core architectural innovation. By separating
+structural queries (which are naturally SQL problems) from semantic queries
+(which are naturally vector problems), \textsc{MetaKG} avoids the false choice
+between relational precision and semantic expressivity. A user can traverse the
+graph via stoichiometry using SQL, then search for semantically similar
+pathways using embeddings, all within the same interface.
+
+Both the store and the index are initialised lazily; a caller that builds
+only the SQLite database (e.g.\ with \texttt{--no-index}) never instantiates
+the embedding model. This enables lightweight deployments where only structural
+queries are needed, and avoids the 100~MB embedding model download unless
+semantic search is actually used.
+
+\begin{figure}[H]
+  \centering
+  \begin{lstlisting}[style=bash, frame=single, caption={High-level data flow.}]
+Pathway files (KGML / SBML / BioPAX / CSV)
+        |
+  MetabolicGraph
+  (file discovery + parser dispatch)
+        |
+  MetaNode / MetaEdge objects
+  (merged by stable ID)
+        |
+  MetaStore  ----> SQLite
+  (write + xref index)
+        |
+  MetaIndex  ----> LanceDB
+  (sentence-transformer embeddings)
+        |
+  Query API + CLI + MCP server
+  \end{lstlisting}
+  \caption{MetaKG data pipeline. Format-specific parsers produce a stream of
+  normalised \texttt{MetaNode} and \texttt{MetaEdge} objects that are merged
+  by stable identifier, persisted to SQLite, and indexed as dense vectors in
+  LanceDB.}
+  \label{fig:arch}
+\end{figure}
+
+% ---------------------------------------------------------------------------
+\section{Format-Specific Parsers}
+\label{sec:parsers}
+% ---------------------------------------------------------------------------
+
+\textsc{MetaKG} ingests metabolic pathway data from four standard formats:
+KEGG Markup Language (KGML), Systems Biology Markup Language (SBML), Biological
+Pathway Exchange (BioPAX), and plain tabular files (CSV/TSV). All parsers
+conform to an abstract interface: they detect the file type, parse it, and
+produce normalised \texttt{MetaNode} and \texttt{MetaEdge} objects. Parsing
+is stateless and deterministic---the same input file always produces the same
+output.
+
+Format detection is based on content analysis (root XML element) rather than
+file extension, making the system robust to files served without standard
+extensions. The parser dispatcher examines each file, selects the appropriate
+handler, and produces a unified stream of nodes and edges that are then
+merged by stable identifier in the MetaStore layer. Detailed parser
+specifications for each format are provided in Appendix~\ref{sec:parsers-detail}.
+
+% ---------------------------------------------------------------------------
+\section{Storage and Indexing}
+\label{sec:storage}
+% ---------------------------------------------------------------------------
+
+The dual-layer storage architecture is the key to MetaKG's query flexibility.
+Rather than force all queries through a single backend (as relational databases
+do) or abandon structure entirely (as vector-only systems do), we maintain two
+complementary stores optimised for different query patterns:
+
+\begin{description}[leftmargin=*,itemsep=3pt]
+\item[SQLite] Provides efficient relational queries over the graph structure.
+  Compound--reaction--pathway relationships are naturally expressed as SQL joins.
+  Shortest-path searches use BFS over edges. Stoichiometric detail (substrates,
+  products, coefficients) is available as decoded JSON columns.
+
+\item[LanceDB + embeddings] Provides semantic search over node descriptions.
+  Users can query by natural language (``fatty-acid oxidation''), and the system
+  returns semantically similar pathways using vector similarity. This is crucial
+  for exploratory analysis where exact identifiers are unknown.
+\end{description}
+
+The two layers are not redundant; they solve fundamentally different query
+problems. A user might start with semantic discovery (``which pathways involve
+energy metabolism?''), then drill into structural detail (``what is the precise
+stoichiometry of ATP synthesis?''), all without leaving the interface.
+
+\subsection{SQLite Layer}
+
+Parsed nodes and edges are written to a SQLite database through the
+\texttt{MetaStore} class. The schema uses three tables:
+
+\begin{description}[leftmargin=*,itemsep=2pt]
+  \item[\texttt{meta\_nodes}] One row per node. Columns correspond to the
+    fields of \texttt{MetaNode}: \texttt{id}, \texttt{kind}, \texttt{name},
+    \texttt{description}, \texttt{formula}, \texttt{charge},
+    \texttt{ec\_number}, \texttt{stoichiometry} (JSON), \texttt{xrefs}
+    (JSON), \texttt{source\_format}, \texttt{source\_file}. Indexed on
+    \texttt{kind} and \texttt{name}.
+  \item[\texttt{meta\_edges}] One row per directed edge: \texttt{src},
+    \texttt{rel}, \texttt{dst}, \texttt{evidence} (JSON). Indexed on
+    \texttt{src}, \texttt{dst}, and \texttt{rel}.
+  \item[\texttt{xref\_index}] A materialised inverse mapping from each
+    external identifier to the corresponding internal node ID, built after
+    all nodes are written. This allows look-up by KEGG compound ID, ChEBI
+    accession, UniProt accession, or any other cross-reference stored in the
+    \texttt{xrefs} JSON blob.
+\end{description}
+
+SQLite is opened with write-ahead logging (\texttt{WAL} journal mode) and
+\texttt{NORMAL} synchronisation; these pragmas give throughput close to an
+in-memory database while retaining crash safety for
+workloads that write once and read many times.
+
+\subsection{Semantic Index}
+
+Structural queries are insufficient for exploratory use cases where the user
+does not know an exact identifier. \textsc{MetaKG} therefore maintains a
+vector index over node descriptions using LanceDB~\citep{lancedb2023} as the
+approximate nearest-neighbour engine and the \texttt{all-MiniLM-L6-v2}
+sentence-transformer model~\citep{reimers2019sbert} as the default encoder.
+This model produces 384-dimensional embeddings and requires approximately
+100~MB of disk space on first download.
+
+Each node to be indexed is serialised to an embedding text that concatenates
+its name, molecular formula (compounds), EC number (enzymes), cross-reference
+values, and free-text description. Reactions are excluded from the vector
+index because reaction identity is better captured by their stoichiometric
+connectivity, which is available through the SQLite layer. Compounds, enzymes,
+and pathways are indexed.
+
+The \texttt{MetaIndex.search(query, k)} method embeds the query string with
+the same model and returns the \texttt{k} approximate nearest neighbours,
+together with their cosine distances. Results are then joined against SQLite
+to return full node metadata.
+
+Users may substitute any encoder that implements the \texttt{Embedder}
+abstract class, which requires only a single method:
+
+\begin{lstlisting}[style=python]
+class Embedder(Protocol):
+    def encode(self,
+               texts: list[str]
+               ) -> list[list[float]]: ...
+\end{lstlisting}
+
+% ---------------------------------------------------------------------------
+\section{Query API}
+\label{sec:query}
+% ---------------------------------------------------------------------------
+
+\textsc{MetaKG} exposes four primary query modalities through a unified API.
+These operations work on the same graph but use different access patterns
+optimised for different analysis tasks. Together, they enable both precision
+(exact structural queries) and exploration (semantic discovery).
+
+\subsection{Node Retrieval and Neighbourhood Traversal}
+
+\texttt{MetaStore.node(id)} fetches a single node by internal ID. The
+returned dictionary mirrors the \texttt{meta\_nodes} schema with
+the \texttt{xrefs} and \texttt{stoichiometry} fields pre-decoded from JSON.
+
+\texttt{MetaStore.neighbours(id, rels=...)} returns all nodes reachable
+from the given node by following the specified relation types. The default
+relation tuple is \texttt{(SUBSTRATE\_OF, PRODUCT\_OF, CATALYZES, CONTAINS)}.
+A single SQL query over the \texttt{meta\_edges} table resolves both
+outgoing and incoming edges and joins the results against \texttt{meta\_nodes}.
+
+\subsection{Reaction Detail}
+
+\texttt{MetaStore.reaction\_detail(id)} assembles a structured view of a
+single reaction, returning a dictionary with keys \texttt{substrates},
+\texttt{products}, \texttt{enzymes}, \texttt{inhibitors}, \texttt{activators},
+and \texttt{pathways}. Each value is a list of node dictionaries. This is the
+primary access point for stoichiometric analysis.
+
+\subsection{Shortest-Path Search}
+
+\texttt{MetaStore.find\_shortest\_path(a, b, max\_hops)} implements an
+iterative breadth-first search over the SQLite graph, alternating between
+\texttt{SUBSTRATE\_OF}/\texttt{PRODUCT\_OF} edges to traverse the bipartite
+compound--reaction graph. The search terminates when the target node is reached
+or when the hop limit is exceeded. Both internal IDs and external identifiers
+(resolved through \texttt{xref\_index}) are accepted as arguments.
+
+The algorithm operates entirely in Python with SQL queries per BFS frontier,
+which is practical for graphs of the size typical of a single organism's
+curated metabolic network (tens of thousands of nodes). For graph corpora
+numbering in the hundreds of thousands of reactions, a more specialised graph
+engine would be preferable.
+
+\subsection{Semantic Search}
+
+\texttt{MetaKG.query\_pathway(name, k)} performs a vector search over the
+LanceDB index and filters the results to the \texttt{pathway} node kind.
+The raw \texttt{MetaIndex.search(query, k)} method returns hits from all
+indexed kinds. Both methods accept free-text queries written in natural
+language; the sentence-transformer model handles biological terminology
+competently because the underlying training corpus includes scientific text.
+
+\texttt{MetaKG.resolve\_id(s)} provides a unified look-up that accepts
+any of: an internal ID (\texttt{cpd:kegg:C00022}), a shorthand external
+reference (\texttt{kegg:C00022}), or a display name (\texttt{Pyruvate}).
+It queries \texttt{xref\_index} first for exact matches, then falls back to a
+case-insensitive name search in \texttt{meta\_nodes}. This allows the same
+user-facing functions to accept identifiers from any source database.
+
+\subsection{Metabolic Simulations}
+
+Building on the structural query layer, \textsc{MetaKG} provides three simulation
+modalities:
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Flux Balance Analysis (FBA)} ---
+    \texttt{MetaKG.simulate\_fba(pathway\_id, maximize=True)} performs
+    steady-state optimization using the stoichiometry stored in the graph.
+    The result includes a status flag, objective value, and per-reaction flux
+    distribution.
+
+  \item \textbf{Kinetic ODE Integration} ---
+    \texttt{MetaKG.simulate\_ode(pathway\_id, t\_end, t\_points, ...)}
+    performs time-course simulation using Michaelis-Menten rate laws and
+    seeded kinetic parameters (Km, Vmax, kcat). Uses an implicit stiff solver
+    (BDF) optimized for metabolic systems; returns time-course concentration
+    trajectories for all compounds.
+
+  \item \textbf{What-If Perturbation Analysis} ---
+    \texttt{MetaKG.simulate\_whatif(pathway\_id, scenario\_json, mode)}
+    compares baseline vs.\ perturbed pathway by knockout, inhibition, or
+    substrate concentration override. Available in both FBA and ODE modes.
+\end{enumerate}
+
+Kinetic parameters are populated on first use by seeding from literature
+sources (BRENDA, SABIO-RK, published metabolic models) via
+\texttt{MetaKG.seed\_kinetics()}.
+
+% ---------------------------------------------------------------------------
+\section{Visualisation}
+\label{sec:viz}
+% ---------------------------------------------------------------------------
+
+\subsection{2D Web Explorer}
+
+The \texttt{metakg-viz} command launches a Streamlit~\citep{streamlit2019}
+web application that presents three views:
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Graph Browser} --- an interactive network rendered with
+    pyvis~\citep{pyvis2021} and displayed in the browser. Nodes are
+    colour-coded by kind (pathway: blue, reaction: red, compound: green,
+    enzyme: orange) and edges are colour-coded by relation type. A sidebar
+    allows filtering by node kind and limiting the number of rendered nodes
+    to keep the visualisation tractable for large graphs.
+  \item \textbf{Semantic Search} --- a free-text query box that calls
+    \texttt{MetaIndex.search} and displays ranked results with similarity
+    scores.
+  \item \textbf{Node Details} --- clicking any node populates a details
+    panel showing all node metadata and its immediate neighbourhood.
+\end{enumerate}
+
+\subsection{3D Visualiser}
+
+The \texttt{metakg-viz3d} command launches a PyVista~\citep{sullivan2019pyvista}
+interactive 3D viewer. Two layout strategies are implemented:
+
+\textbf{Allium layout.} Each pathway node is placed at a position on a flat
+Fibonacci annulus in the XY-plane~\citep{vogel1979fibonacci}. Reaction and
+compound nodes belonging to a pathway are placed on a Fibonacci sphere
+centred on the pathway's position, producing a visual metaphor of an
+inflorescence. Nodes that belong to multiple pathways are placed at the
+centroid of their pathway positions, so cross-pathway metabolites appear in
+intermediate positions.
+
+\textbf{LayerCake layout.} Nodes are stratified by kind along the Z-axis:
+pathway nodes occupy the lowest layer, reaction nodes the middle layer,
+and compound and enzyme nodes the upper layer. Within each layer, nodes
+are distributed using a golden-angle spiral to minimise overlap. This
+layout is better suited for inspecting the bipartite structure of the
+compound--reaction graph.
+
+Both layouts export to HTML (for inclusion in web reports) and PNG
+(for publication figures).
+
+% ---------------------------------------------------------------------------
+\section{Model Context Protocol Server}
+\label{sec:mcp}
+% ---------------------------------------------------------------------------
+
+The Model Context Protocol (MCP)~\citep{anthropic2024mcp} is a
+lightweight JSON-RPC standard that allows large-language-model assistants to
+call typed tool functions. \textsc{MetaKG} implements an MCP server that
+exposes the knowledge graph through four tools:
+
+\begin{description}[leftmargin=*,itemsep=2pt]
+  \item[\texttt{query\_pathway(name, k)}] Semantic pathway search. Returns
+    up to \texttt{k} pathway nodes whose descriptions are closest to the
+    query in embedding space, together with their member-reaction counts.
+  \item[\texttt{get\_compound(id)}] Returns a compound node with its
+    connected reactions, accepting any supported identifier format.
+  \item[\texttt{get\_reaction(id)}] Returns full stoichiometric detail for
+    one reaction.
+  \item[\texttt{find\_path(a, b, max\_hops)}] Returns the shortest metabolic
+    path between two compounds.
+\end{description}
+
+The server is started with:
+
+\begin{lstlisting}[style=bash]
+metakg-mcp --db .metakg/meta.sqlite \
+           --transport stdio
+\end{lstlisting}
+
+\noindent and communicates over standard input/output (the \texttt{stdio}
+transport) or as an HTTP server-sent events stream (the \texttt{sse}
+transport). The \texttt{stdio} transport is the standard configuration for
+use with Claude~\citep{anthropic2024claude} and compatible MCP clients.
+
+% ---------------------------------------------------------------------------
+\section{Worked Example: Complete Human Metabolome}
+\label{sec:usage}
+% ---------------------------------------------------------------------------
+
+We demonstrate \textsc{MetaKG} on the complete \textit{Homo sapiens}
+metabolome: all 369 KEGG pathways (metabolic, signaling, and regulatory).
+This corpus includes central carbon metabolism (glycolysis/gluconeogenesis,
+TCA cycle, pentose phosphate pathway, fatty acid degradation, oxidative
+phosphorylation), amino acid and nucleotide metabolism, secondary metabolism,
+carbohydrate metabolism, lipid metabolism, and signaling networks.
+
+\subsection{Building the Knowledge Graph}
+
+\begin{lstlisting}[style=bash, caption={Building the complete human metabolome knowledge graph.}]
+$ metakg-build --data ./data/hsa_pathways --wipe
+Building MetaKG from ./data/hsa_pathways...
+data_root   : ./data/hsa_pathways
+db_path     : .metakg/meta.sqlite
+nodes       : 22290  {'compound': 5115, 'enzyme': 14667,
+              'pathway': 369, 'reaction': 2139}
+edges       : 11298  {'CATALYZES': 2406, 'CONTAINS': 3809,
+              'PRODUCT_OF': 2532, 'SUBSTRATE_OF': 2551}
+indexed     : 20151 vectors  dim=384
+\end{lstlisting}
+
+The \texttt{--wipe} flag clears any prior database before parsing; omitting it
+allows incremental additions of new pathway files to an existing graph.
+
+\subsection{Structural Queries via the Python API}
+
+\begin{lstlisting}[style=python, caption={Compound retrieval and neighbourhood traversal.}]
+from metakg import MetaKG
+
+kg = MetaKG()
+
+# Retrieve pyruvate and its connected reactions
+cpd = kg.get_compound("cpd:kegg:C00022")
+print(cpd["name"])
+for rxn in cpd["reactions"]:
+    print(f"  {rxn['name']:30s} {rxn['role']}")
+
+# Full reaction detail
+rxn = kg.get_reaction("rxn:kegg:R00200")
+print(f"Substrates: {[s['name'] for s in rxn['substrates']]}")
+print(f"Products:   {[p['name'] for p in rxn['products']]}")
+\end{lstlisting}
+
+Output:
+\begin{lstlisting}[style=bash, caption={}]
+Pyruvate
+  R00703                         SUBSTRATE_OF
+  R00014                         SUBSTRATE_OF
+  R00431                         SUBSTRATE_OF
+  R00209                         SUBSTRATE_OF
+  R00200                         PRODUCT_OF
+  ... and 5 more
+Substrates: ['Phosphoenolpyruvate', 'ADP']
+Products:   ['Pyruvate', 'ATP']
+\end{lstlisting}
+
+\subsection{Shortest-Path Search}
+
+\begin{lstlisting}[style=python, caption={Finding the shortest metabolic route between two compounds.}]
+from metakg import MetaKG
+
+kg = MetaKG()
+
+result = kg.find_path(
+    "cpd:kegg:C00031",   # D-Glucose
+    "cpd:kegg:C00022",   # Pyruvate
+    max_hops=12,
+)
+print(f"Path length: {result['hops']} steps")
+for node in result["path"]:
+    print(f"  {node['kind']:10s} {node['name']}")
+\end{lstlisting}
+
+Output:
+\begin{lstlisting}[style=bash, caption={}]
+Path length: 9 steps
+  compound   C00031
+  reaction   R00299
+  compound   C00092
+  reaction   R00771
+  compound   C00085
+  reaction   R00756
+  compound   C00354
+  reaction   R01068
+  compound   C00118
+  reaction   R01061
+  compound   C00236
+  reaction   R01662
+  compound   C01159
+  reaction   R09532
+  compound   C00631
+  reaction   R00658
+  compound   C00074
+  reaction   R00200
+  compound   C00022
+\end{lstlisting}
+
+The query resolves in milliseconds on the local SQLite index. The algorithm
+scales efficiently to the complete human metabolome (22,290 nodes, 11,298 edges)
+using bidirectional BFS and early termination at the target. Typical shortest-path
+queries complete in 10--50~ms.
+
+\subsection{Semantic Search}
+
+\begin{lstlisting}[style=python, caption={Semantic pathway retrieval.}]
+from metakg import MetaKG
+
+kg = MetaKG()
+
+result = kg.query_pathway("fatty acid beta-oxidation", k=5)
+for hit in result.hits:
+    print(f"{hit['name']:40s}  dist={hit['_distance']:.3f}")
+\end{lstlisting}
+
+Output:
+\begin{lstlisting}[style=bash, caption={}]
+Fatty acid degradation                    dist=1.174
+alpha-Linolenic acid metabolism           dist=1.183
+Fatty acid metabolism                     dist=1.200
+Biosynthesis of unsaturated fatty acids   dist=1.245
+Linoleic acid metabolism                  dist=1.252
+\end{lstlisting}
+
+The semantic search correctly identifies pathways related to the query,
+despite differences in nomenclature and terminology between the query string
+and the KEGG pathway names. The vector similarity is computed using the
+sentence-transformer model, which handles synonymy and domain terminology
+competently.
+
+\subsection{Pathway Analysis Report}
+
+The \texttt{metakg-analyze} command runs a seven-phase analysis and produces
+a structured Markdown report:
+
+\begin{lstlisting}[style=bash]
+$ metakg-analyze --output analysis.md --top 10
+\end{lstlisting}
+
+The report covers: (1) aggregate graph statistics; (2) hub metabolites ranked
+by degree; (3) reactions ranked by stoichiometric complexity; (4)
+cross-pathway hub detection; (5) pairwise pathway coupling by shared
+metabolites; (6) topological features (dead-end compounds, isolated nodes);
+and (7) enzymes ranked by reaction count. On the complete human metabolome
+(369 pathways), ATP, NAD$^{+}$, coenzyme~A, and pyruvate appear as the top hub
+metabolites by degree, consistent with their known roles as central energy and
+carbon carriers. The analysis reveals cross-pathway metabolite connectivity and
+identifies reactions with highest stoichiometric complexity.
+
+\subsection{Mixed-Format Ingestion}
+
+To illustrate multi-format ingestion, one may combine KGML files with a
+BioPAX export from Reactome and a custom CSV table in a single data directory:
+
+\begin{lstlisting}[style=bash]
+$ ls pathways/
+hsa00010.xml    # KGML (KEGG)
+R-HSA-70171.owl # BioPAX (Reactome)
+custom_rxns.csv # CSV (in-house data)
+
+$ metakg-build --data ./pathways --wipe
+\end{lstlisting}
+
+The parser dispatcher examines the root XML element of each \texttt{.xml} or
+\texttt{.owl} file and selects the appropriate parser; \texttt{.csv} and
+\texttt{.tsv} files are handled by the tabular parser. Nodes that share a
+KEGG or ChEBI cross-reference across files are automatically merged in SQLite
+through the xref index.
+
+% ---------------------------------------------------------------------------
+\section{Implementation Notes}
+\label{sec:impl}
+% ---------------------------------------------------------------------------
+
+\textbf{Dependencies.} The core package requires Python 3.10--3.12,
+\texttt{lancedb$\,\geq\,$0.29}, \texttt{numpy$\,\geq\,$1.24}, and
+\texttt{sentence-transformers$\,\geq\,$2.7}. No network connection is required
+at run time once the embedding model has been downloaded. BioPAX support
+requires the optional \texttt{rdflib} package; the 2D and 3D visualisers
+require optional extras installed via \texttt{poetry install --extras viz}
+or \texttt{--extras viz3d}.
+
+\textbf{Installation.}
+
+\begin{lstlisting}[style=bash]
+git clone https://github.com/Flux-Frontiers/meta_kg
+cd meta_kg
+poetry install --extras all
+\end{lstlisting}
+
+\textbf{Thread safety.} The SQLite connection uses WAL mode with a single
+Python object per process. The current implementation is not thread-safe;
+callers should create one \texttt{MetaKG} instance per process or protect
+the shared instance with a lock.
+
+\textbf{Incremental rebuild.} The stable ID scheme makes incremental builds
+tractable. Running \texttt{metakg-build} without \texttt{--wipe} issues
+\texttt{INSERT OR REPLACE} statements, which update existing nodes and append
+new ones without duplicating entries.
+
+\textbf{Codebase self-analysis.} \textsc{MetaKG} is itself analysed with its
+sister tool \textsc{CodeKG}~\citep{fluxfrontiers2025codekg}, which constructs
+a structural and semantic knowledge graph of the Python source code.
+This enables navigating the MetaKG implementation via natural-language queries
+and validates that the two tools share compatible architectural patterns.
+On the \textsc{MetaKG} codebase the \textsc{CodeKG} static analysis produces
+3,136 nodes and 2,920 edges spanning 27 modules, embedded into a
+384-dimensional vector index of 290 vectors.
+
+% ---------------------------------------------------------------------------
+\section{Discussion}
+\label{sec:discussion}
+% ---------------------------------------------------------------------------
+
+\subsection{Architectural Design Choices and Novel Aspects}
+
+\textsc{MetaKG} embodies several deliberate design trade-offs that distinguish
+it from existing systems. First, the dual-layer architecture (SQLite for
+structure, LanceDB for semantics) is novel in the metabolic pathway domain.
+Graph databases like Neo4j support complex queries but introduce operational
+overhead (server management, scaling, deployment) and do not address the
+multi-format parsing problem. Specialised vector databases like Weaviate or
+Pinecone excel at semantic search but are not natural for structural graph
+traversal and require network access. By combining lightweight SQLite with
+local vector search, \textsc{MetaKG} provides both capabilities in a
+self-contained package suitable for exploratory research and reproducible
+analysis workflows.
+
+Second, the deterministic identifier scheme with synthetic hashing enables
+reproducible cross-format merging without a centralised reconciliation service.
+Unlike MetaNetX (which requires API calls to reconcile identifiers),
+\textsc{MetaKG} builds self-contained graphs. This design makes the graph a
+version-controlled artefact: the same input files always produce the same
+output graph, enabling reproducible science and offline workflows.
+
+Third, the four-modality query interface (structural, pathfinding, semantic,
+stoichiometric) is intentionally broad. Analysts can start with a natural-language
+semantic query (``fatty-acid beta-oxidation''), then drill into structural detail
+(shortest paths, stoichiometric coefficients) without leaving the interface.
+This contrasts with systems that specialise in one query paradigm.
+
+Fourth, the Model~Context~Protocol integration is forward-looking. As
+large-language-model assistants become standard tools in computational biology,
+making the knowledge graph a first-class data source for Claude, ChatGPT, and
+future assistants is a natural evolution. The MCP interface is not merely an
+API; it represents a design commitment to AI-accessible knowledge graphs.
+
+\subsection{Scope and Design Trade-offs}
+
+\textbf{Snapshot-based operation.} \textsc{MetaKG} is a local analysis tool, not a live
+database mirror. The knowledge graph is a snapshot at build time; users must
+re-run \texttt{metakg-build} after updating source files. This design choice
+keeps the system self-contained and avoids dependencies on external services
+during analysis. For research workflows where reproducibility is paramount, this
+is an advantage. For applications requiring real-time data updates, a live
+database backend would be preferable.
+
+\textbf{Scale.} SQLite and in-process BFS are appropriate for graphs of up to
+roughly 100,000 nodes, covering full reconstructed metabolic networks for a
+single organism. For pan-genome or multi-species analyses---where node counts
+reach into the millions---a dedicated graph database engine (e.g.,
+Neo4j~\citep{neo4j2020} or Kùzu~\citep{feng2023kuzu}) and a distributed
+vector index would be preferable. The storage layer is designed to be
+replaceable: \texttt{MetaStore} and \texttt{MetaIndex} are concrete classes
+behind well-defined interfaces, and alternative backends could be substituted
+without changing the parser or query layers.
+
+\textbf{Identifier reconciliation.} The current cross-reference merge is
+based on exact match of external identifiers. Two compounds that share a
+biological identity but differ in stereochemistry or protonation state will
+not be automatically merged. More complete reconciliation would require
+integration with a name normalisation service such as
+MetaNetX~\citep{moretti2021metanetx} or UMLS~\citep{bodenreider2004umls}.
+
+\textbf{Stoichiometric models and simulations.} \textsc{MetaKG} provides three
+core simulation modalities: (1)~Flux Balance Analysis (FBA) for steady-state
+flux optimization; (2)~kinetic ODE integration with Michaelis-Menten rate laws
+using an implicit stiff solver (BDF) optimized for metabolic pathways; and
+(3)~what-if perturbation analysis for enzyme knockouts, inhibition, and substrate
+overrides. Kinetic parameters are seeded from literature (BRENDA, SABIO-RK,
+published models). For advanced constraint-based modelling workflows, the SBML
+parser preserves all information needed to reconstruct a COBRApy model.
+
+\textbf{Performance on complete human metabolome.} The complete \textit{Homo sapiens}
+metabolome (369 KEGG pathways, 22,290 nodes, 11,298 edges, 20,151 vector embeddings)
+exhibits the following performance characteristics:
+
+\begin{table}[H]
+  \centering
+  \caption{Performance on the complete human metabolome (22K nodes, 11K edges).}
+  \label{tab:performance}
+  \small
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Operation & Time & Details \\
+    \midrule
+    Build graph (parse + index) & 30--60s & All 369 pathways, LanceDB + SQLite \\
+    Semantic search (natural language) & 100--500ms & Vector similarity on 20K nodes \\
+    Shortest-path (6 hops) & 10--50ms & BFS on 11K edges \\
+    ODE simulation (10 units) & 150--400ms & BDF solver, 24 compounds \\
+    Streamlit rerun & 0.5--1.5s & Batch query + session cache \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+All operations complete within practical timeframes for interactive exploration.
+The graph is suitable for research workflows requiring reproducible analysis,
+offline access, and programmatic querying.
+
+\textbf{Future directions.} Planned extensions include: graph-theoretic centrality
+measures (betweenness, closeness, eigenvector centrality) implemented with
+NetworkX for hub ranking; a GraphQL query endpoint; integration with the
+UniProt and ChEBI REST APIs for on-demand annotation; differential pathway
+analysis across two or more organisms; GPU-accelerated embedding for large
+datasets; and export to Cytoscape~\citep{shannon2003cytoscape} JSON for
+interoperability with the broader network biology ecosystem. Advanced kinetic
+parameter optimization (parameter fitting from experimental data) is also
+planned.
+
+% ---------------------------------------------------------------------------
+\section{Conclusion}
+\label{sec:conclusion}
+% ---------------------------------------------------------------------------
+
+\textsc{MetaKG} addresses a fundamental gap in metabolic data integration:
+existing systems force a choice between convenient web interfaces (limited
+programmability, no semantic search, web-dependent), specialised graph databases
+(high operational complexity, parsing not solved), and reconciliation services
+(queryable graphs not provided). \textsc{MetaKG} breaks this false dichotomy by
+introducing a dual-layer local knowledge graph that unifies multi-format pathway
+data and enables four orthogonal query modalities---structural, pathfinding,
+semantic, and stoichiometric---all through a single API, CLI, and LLM-accessible
+MCP interface.
+
+The core contributions are: (1)~a stable, deterministic identifier scheme that
+enables reproducible cross-format merging without external services; (2)~a
+dual-layer storage architecture (SQLite + LanceDB) that avoids the false choice
+between relational precision and semantic expressivity; (3)~four unified query
+modalities accessible to analysts at all levels of programming expertise; and
+(4)~a forward-looking MCP server that makes metabolic knowledge graphs
+first-class data sources for AI assistants.
+
+The design philosophy---local-first, self-contained, snapshot-based---is
+intentional and represents a clean separation from live database mirrors. This
+makes \textsc{MetaKG} particularly well-suited for research workflows where
+reproducibility, offline analysis, and version control are paramount. For
+applications requiring real-time data, larger graph corpora, or distributed
+deployment, the modular architecture enables substitution of the storage and
+index backends.
+
+We expect \textsc{MetaKG} to be immediately useful as: (1)~a foundation for
+pathway analysis scripts; (2)~a data preparation stage for machine-learning
+workflows; (3)~an AI-accessible knowledge source for metabolic reasoning tasks
+in large-language-model applications; and (4)~a template for similar knowledge
+graph systems in related biological domains (protein interactions, gene
+regulatory networks, drug-target interactions).
+
+The software is freely available at
+\url{https://github.com/Flux-Frontiers/meta_kg} under the Elastic License~2.0.
+
+% ---------------------------------------------------------------------------
+% Appendix: Format-Specific Parser Details
+% ---------------------------------------------------------------------------
+\appendix
+
+\section{Format-Specific Parsers}
+\label{sec:parsers-detail}
+
+All parsers conform to an abstract base class:
+
+\begin{lstlisting}[style=python]
+class PathwayParser:
+    def can_handle(self, path: Path) -> bool: ...
+    def parse(self, path: Path
+              ) -> tuple[list[MetaNode],
+                         list[MetaEdge]]: ...
+\end{lstlisting}
+
+Parsers are stateless and pure: the same input file always produces the same
+output. The \texttt{MetabolicGraph} layer caches the combined node and edge
+lists after the first parse, so repeated calls do not re-read disk.
+
+\subsection{KGML Parser}
+
+KEGG Markup Language files are the native export format of the KEGG pathway
+database~\citep{kanehisa2021kegg}. Each file is an XML
+document whose root element is \texttt{<pathway>}. The parser uses the Python
+standard-library \texttt{ElementTree} module (no third-party XML dependency)
+and extracts three kinds of child elements:
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item \texttt{<entry>} elements with \texttt{type="compound"} become
+    \texttt{compound} nodes.
+  \item \texttt{<entry>} elements with \texttt{type="gene"} or
+    \texttt{type="enzyme"} become \texttt{enzyme} nodes.
+  \item \texttt{<reaction>} elements become \texttt{reaction} nodes with
+    their \texttt{<substrate>} and \texttt{<product>} children encoded as
+    stoichiometry JSON. The enclosing pathway becomes a \texttt{CONTAINS} edge
+    to each reaction.
+\end{itemize}
+
+Format detection is based on the root element tag rather than the file
+extension, making the parser robust to KEGG files that are served without
+the \texttt{.kgml} extension.
+
+\subsection{SBML Parser}
+
+The Systems Biology Markup Language~\citep{keating2020sbml}
+is the standard serialisation format for constraint-based metabolic models
+generated by tools such as COBRApy~\citep{ebrahim2013cobrapy}. SBML Level~2
+and~3 files share a common XML namespace ending in \texttt{sbml}; the parser
+detects format by matching the root element's local name.
+
+Species elements map to \texttt{compound} nodes. Reaction elements map to
+\texttt{reaction} nodes. Stoichiometry is extracted from
+\texttt{<listOfReactants>} and \texttt{<listOfProducts>} children.
+Modifier species are classified by their SBO~term~\citep{courtot2011sbo}:
+SBO:0000013 (catalyst) generates \texttt{CATALYZES} edges; SBO:0000020
+(inhibitor) generates \texttt{INHIBITS} edges; other modifiers generate
+\texttt{ACTIVATES} edges.
+
+\subsection{BioPAX Parser}
+
+Biological Pathway Exchange Level~3~\citep{demir2010biopax} is an OWL
+ontology serialised as RDF/XML that is used by Reactome~\citep{jassal2020reactome},
+WikiPathways~\citep{martens2021wikipathways}, and the NCI Pathway Interaction
+Database. Parsing requires the optional \texttt{rdflib} dependency, which is
+installed via the \texttt{biopax} extra. The parser performs SPARQL-style
+pattern matching over the RDF graph to extract:
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item \texttt{SmallMolecule} instances $\to$ \texttt{compound} nodes.
+  \item \texttt{Protein} instances $\to$ \texttt{enzyme} nodes.
+  \item \texttt{BiochemicalReaction} instances $\to$ \texttt{reaction} nodes,
+    with \texttt{left}/\texttt{right} properties becoming substrate and
+    product edges, and \texttt{controller} properties becoming
+    \texttt{CATALYZES} edges.
+  \item \texttt{Pathway} instances $\to$ \texttt{pathway} nodes, with
+    \texttt{memberPathwayComponent} links becoming \texttt{CONTAINS} edges.
+\end{itemize}
+
+\subsection{CSV/TSV Parser}
+
+For custom or unpublished data, \textsc{MetaKG} accepts flat tables with a
+configurable column schema. The default column layout is:
+
+\begin{center}
+\small
+\texttt{reaction\_id}, \texttt{reaction\_name}, \texttt{substrate},
+\texttt{product}, \texttt{enzyme}, \texttt{stoich\_substrate},
+\texttt{stoich\_product}, \texttt{pathway}, \texttt{ec\_number},
+\texttt{substrate\_formula}, \texttt{enzyme\_uniprot}
+\end{center}
+
+Multiple rows with the same \texttt{reaction\_id} are merged into a single
+reaction node, which is the standard way to encode multi-substrate or
+multi-product reactions in tabular form. A \texttt{CSVParserConfig} dataclass
+allows remapping all column names, making the parser suitable for lab-produced
+spreadsheets and bulk downloads from custom databases.
+
+% ---------------------------------------------------------------------------
+% Bibliography
+% ---------------------------------------------------------------------------
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

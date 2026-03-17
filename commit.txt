@@ -1,0 +1,20 @@
+feat(graph): pathway categories, zero isolated nodes, agent slash commands
+
+Add pathway category provenance, eliminate isolated nodes, and add
+MetaKG/CodeKG slash command files for Claude Code and GitHub Copilot.
+
+Changes:
+- primitives.py: MetaNode.category field + 8 PATHWAY_CATEGORY_* constants
+  + _kegg_pathway_category() mapping KEGG 5-digit suffix → category
+- store.py: category TEXT column, _migrate() for backward compat,
+  all_nodes(category=) filter
+- parsers/kgml.py: Strategy C enzyme wiring (reaction= attr fallback)
+  + CONTAINS fallback for all unwired gene/compound entries
+  → isolated nodes: 12,245 → 0
+- cli/cmd_build.py + orchestrator.py: --enrich → --no-enrich (default on)
+- CLAUDE.md: codekg-* command style restored, poetry run removed
+- .claude/commands/: metakg-build.md, metakg-simulate.md, metakg-viz.md
+- .vscode/: full set of *.prompt.md slash commands for GitHub Copilot
+- tests: 97 → 123 tests covering category, migration, KGML wiring
+
+Co-Authored-By: GitHub Copilot <noreply@github.com>

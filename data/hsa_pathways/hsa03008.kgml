@@ -1,0 +1,343 @@
+<?xml version="1.0"?>
+<!DOCTYPE pathway SYSTEM "https://www.kegg.jp/kegg/xml/KGML_v0.7.2_.dtd">
+<!-- Creation date: Apr 25, 2023 09:34:38 +0900 (GMT+9) -->
+<pathway name="path:hsa03008" org="hsa" number="03008"
+         title="Ribosome biogenesis in eukaryotes"
+         image="https://www.kegg.jp/kegg/pathway/hsa/hsa03008.png"
+         link="https://www.kegg.jp/kegg-bin/show_pathway?hsa03008">
+    <entry id="39" name="path:hsa03008" type="map"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa03008">
+        <graphics name="TITLE:Ribosome biogenesis in eukaryotes" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="roundrectangle" x="195" y="58" width="310" height="25"/>
+    </entry>
+    <entry id="56" name="hsa:100008588 hsa:106631781 hsa:109864273 hsa:109864280 hsa:109910380 hsa:124907161 hsa:124907162 hsa:124907163 hsa:124907164 hsa:124907165 hsa:124907166 hsa:124907167 hsa:124907168 hsa:124907169 hsa:124907170 hsa:124907171 hsa:124907173 hsa:124907174 hsa:124907175 hsa:124907176 hsa:124907177 hsa:124907178 hsa:124907179 hsa:124907180 hsa:124907181 hsa:124907182 hsa:124907184 hsa:124907185 hsa:124907186 hsa:124907187 hsa:124907188 hsa:124907189 hsa:124907190 hsa:124907191 hsa:124907192 hsa:124907193 hsa:124907195 hsa:124907196 hsa:124907197 hsa:124907198 hsa:124907199 hsa:124907200 hsa:124907201 hsa:124907202 hsa:124907203 hsa:124907204 hsa:124907206 hsa:124907207 hsa:124907208 hsa:124907209 hsa:124907210 hsa:124907211 hsa:124907212 hsa:124907213 hsa:124907214 hsa:124907215 hsa:124907217 hsa:124907218 hsa:124907219 hsa:124907220 hsa:124907221 hsa:124907222 hsa:124907223 hsa:124907224 hsa:124907225 hsa:124907226 hsa:124907228 hsa:124907229 hsa:124907230 hsa:124907231 hsa:124907232 hsa:124907233 hsa:124907234 hsa:124907235 hsa:124907236 hsa:124907237 hsa:124907239 hsa:124907240 hsa:124907241 hsa:124907242 hsa:124907243 hsa:124907441 hsa:124907442 hsa:124907443 hsa:124907444 hsa:124907445 hsa:124907446 hsa:124907447 hsa:124907448 hsa:124907449 hsa:124907451 hsa:124907452 hsa:124907453 hsa:124907454 hsa:124907455 hsa:124907456 hsa:124907457 hsa:124907601 hsa:124907602 hsa:124907603 hsa:124907604 hsa:124907605 hsa:124907606 hsa:124907607 hsa:124907608 hsa:124907609 hsa:124907610 hsa:124907612 hsa:124907613 hsa:124907614 hsa:124907615 hsa:124907616 hsa:124907617 hsa:124907618 hsa:124907619 hsa:124907620 hsa:124907621 hsa:124907623 hsa:124907624 hsa:124907625 hsa:124907626 hsa:124907627 hsa:124907628 hsa:124907629 hsa:124907630 hsa:124907631 hsa:124907632 hsa:124907634 hsa:124907635 hsa:124907636 hsa:124907637 hsa:124907638 hsa:124907639 hsa:124907640 hsa:124907641 hsa:124907642 hsa:124907643 hsa:124907645 hsa:124907646 hsa:124907647 hsa:124907648 hsa:124907649 hsa:124907650 hsa:124907651 hsa:124907652 hsa:124907653 hsa:124907654 hsa:124908255 hsa:124908256 hsa:124908258 hsa:124908259 hsa:124908260 hsa:124908261 hsa:124908262 hsa:124908263 hsa:124908264 hsa:124908265 hsa:124908266 hsa:124908267 hsa:124908269 hsa:124908270 hsa:124908271 hsa:124908272 hsa:124908273 hsa:124908274 hsa:124908275 hsa:124908276 hsa:124908277 hsa:124908279 hsa:124908280 hsa:124908281 hsa:124908282 hsa:124908283 hsa:124908284 hsa:124908285 hsa:124908286 hsa:124908287 hsa:124908288 hsa:124908290 hsa:124908291 hsa:124908292 hsa:124908293 hsa:124908294 hsa:124908295 hsa:124908296 hsa:124908297 hsa:124908298 hsa:124908299 hsa:124908301 hsa:124908302 hsa:124908303 hsa:124908304 hsa:124908305 hsa:124908306 hsa:124908307 hsa:124908308 hsa:124908309 hsa:124908311 hsa:124908469 hsa:124908470 hsa:124908471 hsa:124908472 hsa:124908473 hsa:124908475 hsa:124908476 hsa:124908477 hsa:124908478 hsa:124908479 hsa:124908480 hsa:124908481 hsa:124908482 hsa:124908483 hsa:124908484 hsa:124908485 hsa:124908488 hsa:124908489" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:100008588+hsa:106631781+hsa:109864273+hsa:109864280+hsa:109910380+hsa:124907161+hsa:124907162+hsa:124907163+hsa:124907164+hsa:124907165+hsa:124907166+hsa:124907167+hsa:124907168+hsa:124907169+hsa:124907170+hsa:124907171+hsa:124907173+hsa:124907174+hsa:124907175+hsa:124907176+hsa:124907177+hsa:124907178+hsa:124907179+hsa:124907180+hsa:124907181+hsa:124907182+hsa:124907184+hsa:124907185+hsa:124907186+hsa:124907187+hsa:124907188+hsa:124907189+hsa:124907190+hsa:124907191+hsa:124907192+hsa:124907193+hsa:124907195+hsa:124907196+hsa:124907197+hsa:124907198+hsa:124907199+hsa:124907200+hsa:124907201+hsa:124907202+hsa:124907203+hsa:124907204+hsa:124907206+hsa:124907207+hsa:124907208+hsa:124907209+hsa:124907210+hsa:124907211+hsa:124907212+hsa:124907213+hsa:124907214+hsa:124907215+hsa:124907217+hsa:124907218+hsa:124907219+hsa:124907220+hsa:124907221+hsa:124907222+hsa:124907223+hsa:124907224+hsa:124907225+hsa:124907226+hsa:124907228+hsa:124907229+hsa:124907230+hsa:124907231+hsa:124907232+hsa:124907233+hsa:124907234+hsa:124907235+hsa:124907236+hsa:124907237+hsa:124907239+hsa:124907240+hsa:124907241+hsa:124907242+hsa:124907243+hsa:124907441+hsa:124907442+hsa:124907443+hsa:124907444+hsa:124907445+hsa:124907446+hsa:124907447+hsa:124907448+hsa:124907449+hsa:124907451+hsa:124907452+hsa:124907453+hsa:124907454+hsa:124907455+hsa:124907456+hsa:124907457+hsa:124907601+hsa:124907602+hsa:124907603+hsa:124907604+hsa:124907605+hsa:124907606+hsa:124907607+hsa:124907608+hsa:124907609+hsa:124907610+hsa:124907612+hsa:124907613+hsa:124907614+hsa:124907615+hsa:124907616+hsa:124907617+hsa:124907618+hsa:124907619+hsa:124907620+hsa:124907621+hsa:124907623+hsa:124907624+hsa:124907625+hsa:124907626+hsa:124907627+hsa:124907628+hsa:124907629+hsa:124907630+hsa:124907631+hsa:124907632+hsa:124907634+hsa:124907635+hsa:124907636+hsa:124907637+hsa:124907638+hsa:124907639+hsa:124907640+hsa:124907641+hsa:124907642+hsa:124907643+hsa:124907645+hsa:124907646+hsa:124907647+hsa:124907648+hsa:124907649+hsa:124907650+hsa:124907651+hsa:124907652+hsa:124907653+hsa:124907654+hsa:124908255+hsa:124908256+hsa:124908258+hsa:124908259+hsa:124908260+hsa:124908261+hsa:124908262+hsa:124908263+hsa:124908264+hsa:124908265+hsa:124908266+hsa:124908267+hsa:124908269+hsa:124908270+hsa:124908271+hsa:124908272+hsa:124908273+hsa:124908274+hsa:124908275+hsa:124908276+hsa:124908277+hsa:124908279+hsa:124908280+hsa:124908281+hsa:124908282+hsa:124908283+hsa:124908284+hsa:124908285+hsa:124908286+hsa:124908287+hsa:124908288+hsa:124908290+hsa:124908291+hsa:124908292+hsa:124908293+hsa:124908294+hsa:124908295+hsa:124908296+hsa:124908297+hsa:124908298+hsa:124908299+hsa:124908301+hsa:124908302+hsa:124908303+hsa:124908304+hsa:124908305+hsa:124908306+hsa:124908307+hsa:124908308+hsa:124908309+hsa:124908311+hsa:124908469+hsa:124908470+hsa:124908471+hsa:124908472+hsa:124908473+hsa:124908475+hsa:124908476+hsa:124908477+hsa:124908478+hsa:124908479+hsa:124908480+hsa:124908481+hsa:124908482+hsa:124908483+hsa:124908484+hsa:124908485+hsa:124908488+hsa:124908489">
+        <graphics name="RNA18SN5, RN18S1, RNA18S5..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="66" y="156" width="46" height="17"/>
+    </entry>
+    <entry id="57" name="hsa:100008587 hsa:106632260 hsa:109864274 hsa:109864281 hsa:109910381 hsa:124907114 hsa:124907115 hsa:124907116 hsa:124907117 hsa:124907118 hsa:124907119 hsa:124907120 hsa:124907121 hsa:124907122 hsa:124907123 hsa:124907124 hsa:124907125 hsa:124907126 hsa:124907127 hsa:124907128 hsa:124907129 hsa:124907130 hsa:124907131 hsa:124907132 hsa:124907133 hsa:124907134 hsa:124907135 hsa:124907136 hsa:124907137 hsa:124907138 hsa:124907139 hsa:124907140 hsa:124907141 hsa:124907142 hsa:124907143 hsa:124907144 hsa:124907145 hsa:124907146 hsa:124907147 hsa:124907148 hsa:124907149 hsa:124907150 hsa:124907151 hsa:124907152 hsa:124907153 hsa:124907154 hsa:124907155 hsa:124907156 hsa:124907160 hsa:124907172 hsa:124907183 hsa:124907194 hsa:124907205 hsa:124907216 hsa:124907227 hsa:124907238 hsa:124907248 hsa:124907258 hsa:124907269 hsa:124907280 hsa:124907291 hsa:124907302 hsa:124907313 hsa:124907324 hsa:124907327 hsa:124907328 hsa:124907329 hsa:124907330 hsa:124907331 hsa:124907332 hsa:124907333 hsa:124907334 hsa:124907335 hsa:124907336 hsa:124907337 hsa:124907338 hsa:124907339 hsa:124907340 hsa:124907341 hsa:124907342 hsa:124907343 hsa:124907439 hsa:124907440 hsa:124907450 hsa:124907458 hsa:124907467 hsa:124907475 hsa:124907476 hsa:124907477 hsa:124907478 hsa:124907479 hsa:124907480 hsa:124907481 hsa:124907482 hsa:124907483 hsa:124907484 hsa:124907485 hsa:124907486 hsa:124907572 hsa:124907573 hsa:124907574 hsa:124907575 hsa:124907576 hsa:124907577 hsa:124907578 hsa:124907579 hsa:124907580 hsa:124907581 hsa:124907582 hsa:124907584 hsa:124907585 hsa:124907586 hsa:124907587 hsa:124907588 hsa:124907589 hsa:124907590 hsa:124907591 hsa:124907592 hsa:124907593 hsa:124907594 hsa:124907595 hsa:124907596 hsa:124907597 hsa:124907598 hsa:124907600 hsa:124907611 hsa:124907622 hsa:124907633 hsa:124907644 hsa:124907655 hsa:124907662 hsa:124907673 hsa:124907684 hsa:124907694 hsa:124907705 hsa:124907709 hsa:124907710 hsa:124907711 hsa:124907712 hsa:124907713 hsa:124907714 hsa:124907715 hsa:124907716 hsa:124907717 hsa:124907718 hsa:124907719 hsa:124907720 hsa:124907721 hsa:124908237 hsa:124908238 hsa:124908239 hsa:124908240 hsa:124908241 hsa:124908242 hsa:124908243 hsa:124908244 hsa:124908245 hsa:124908246 hsa:124908247 hsa:124908248 hsa:124908249 hsa:124908250 hsa:124908257 hsa:124908268 hsa:124908278 hsa:124908289 hsa:124908300 hsa:124908310 hsa:124908316 hsa:124908327 hsa:124908336 hsa:124908347 hsa:124908358 hsa:124908368 hsa:124908369 hsa:124908370 hsa:124908371 hsa:124908372 hsa:124908373 hsa:124908374 hsa:124908375 hsa:124908376 hsa:124908377 hsa:124908378 hsa:124908379 hsa:124908380 hsa:124908381 hsa:124908382 hsa:124908383 hsa:124908384 hsa:124908385 hsa:124908386 hsa:124908387 hsa:124908388 hsa:124908389 hsa:124908390 hsa:124908391 hsa:124908392 hsa:124908393 hsa:124908474 hsa:124908494 hsa:124908504 hsa:124908512 hsa:124908513 hsa:124908514 hsa:124908515 hsa:124908516 hsa:124908517 hsa:124908518 hsa:124908519 hsa:124908520 hsa:124908521 hsa:124908522 hsa:124908523 hsa:124908524 hsa:124908525 hsa:124908527 hsa:124908528" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:100008587+hsa:106632260+hsa:109864274+hsa:109864281+hsa:109910381+hsa:124907114+hsa:124907115+hsa:124907116+hsa:124907117+hsa:124907118+hsa:124907119+hsa:124907120+hsa:124907121+hsa:124907122+hsa:124907123+hsa:124907124+hsa:124907125+hsa:124907126+hsa:124907127+hsa:124907128+hsa:124907129+hsa:124907130+hsa:124907131+hsa:124907132+hsa:124907133+hsa:124907134+hsa:124907135+hsa:124907136+hsa:124907137+hsa:124907138+hsa:124907139+hsa:124907140+hsa:124907141+hsa:124907142+hsa:124907143+hsa:124907144+hsa:124907145+hsa:124907146+hsa:124907147+hsa:124907148+hsa:124907149+hsa:124907150+hsa:124907151+hsa:124907152+hsa:124907153+hsa:124907154+hsa:124907155+hsa:124907156+hsa:124907160+hsa:124907172+hsa:124907183+hsa:124907194+hsa:124907205+hsa:124907216+hsa:124907227+hsa:124907238+hsa:124907248+hsa:124907258+hsa:124907269+hsa:124907280+hsa:124907291+hsa:124907302+hsa:124907313+hsa:124907324+hsa:124907327+hsa:124907328+hsa:124907329+hsa:124907330+hsa:124907331+hsa:124907332+hsa:124907333+hsa:124907334+hsa:124907335+hsa:124907336+hsa:124907337+hsa:124907338+hsa:124907339+hsa:124907340+hsa:124907341+hsa:124907342+hsa:124907343+hsa:124907439+hsa:124907440+hsa:124907450+hsa:124907458+hsa:124907467+hsa:124907475+hsa:124907476+hsa:124907477+hsa:124907478+hsa:124907479+hsa:124907480+hsa:124907481+hsa:124907482+hsa:124907483+hsa:124907484+hsa:124907485+hsa:124907486+hsa:124907572+hsa:124907573+hsa:124907574+hsa:124907575+hsa:124907576+hsa:124907577+hsa:124907578+hsa:124907579+hsa:124907580+hsa:124907581+hsa:124907582+hsa:124907584+hsa:124907585+hsa:124907586+hsa:124907587+hsa:124907588+hsa:124907589+hsa:124907590+hsa:124907591+hsa:124907592+hsa:124907593+hsa:124907594+hsa:124907595+hsa:124907596+hsa:124907597+hsa:124907598+hsa:124907600+hsa:124907611+hsa:124907622+hsa:124907633+hsa:124907644+hsa:124907655+hsa:124907662+hsa:124907673+hsa:124907684+hsa:124907694+hsa:124907705+hsa:124907709+hsa:124907710+hsa:124907711+hsa:124907712+hsa:124907713+hsa:124907714+hsa:124907715+hsa:124907716+hsa:124907717+hsa:124907718+hsa:124907719+hsa:124907720+hsa:124907721+hsa:124908237+hsa:124908238+hsa:124908239+hsa:124908240+hsa:124908241+hsa:124908242+hsa:124908243+hsa:124908244+hsa:124908245+hsa:124908246+hsa:124908247+hsa:124908248+hsa:124908249+hsa:124908250+hsa:124908257+hsa:124908268+hsa:124908278+hsa:124908289+hsa:124908300+hsa:124908310+hsa:124908316+hsa:124908327+hsa:124908336+hsa:124908347+hsa:124908358+hsa:124908368+hsa:124908369+hsa:124908370+hsa:124908371+hsa:124908372+hsa:124908373+hsa:124908374+hsa:124908375+hsa:124908376+hsa:124908377+hsa:124908378+hsa:124908379+hsa:124908380+hsa:124908381+hsa:124908382+hsa:124908383+hsa:124908384+hsa:124908385+hsa:124908386+hsa:124908387+hsa:124908388+hsa:124908389+hsa:124908390+hsa:124908391+hsa:124908392+hsa:124908393+hsa:124908474+hsa:124908494+hsa:124908504+hsa:124908512+hsa:124908513+hsa:124908514+hsa:124908515+hsa:124908516+hsa:124908517+hsa:124908518+hsa:124908519+hsa:124908520+hsa:124908521+hsa:124908522+hsa:124908523+hsa:124908524+hsa:124908525+hsa:124908527+hsa:124908528">
+        <graphics name="RNA5-8SN5, RN5-8S1, RNA5-8S5..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="121" y="156" width="46" height="17"/>
+    </entry>
+    <entry id="58" name="hsa:100008589 hsa:106632264 hsa:109864272 hsa:109864282 hsa:109910382 hsa:124907244 hsa:124907245 hsa:124907246 hsa:124907247 hsa:124907249 hsa:124907250 hsa:124907251 hsa:124907252 hsa:124907253 hsa:124907254 hsa:124907255 hsa:124907256 hsa:124907257 hsa:124907259 hsa:124907260 hsa:124907261 hsa:124907262 hsa:124907263 hsa:124907264 hsa:124907265 hsa:124907266 hsa:124907267 hsa:124907268 hsa:124907270 hsa:124907271 hsa:124907272 hsa:124907273 hsa:124907274 hsa:124907275 hsa:124907276 hsa:124907277 hsa:124907278 hsa:124907279 hsa:124907281 hsa:124907282 hsa:124907283 hsa:124907284 hsa:124907285 hsa:124907286 hsa:124907287 hsa:124907288 hsa:124907289 hsa:124907290 hsa:124907292 hsa:124907293 hsa:124907294 hsa:124907295 hsa:124907296 hsa:124907297 hsa:124907298 hsa:124907299 hsa:124907300 hsa:124907301 hsa:124907303 hsa:124907304 hsa:124907305 hsa:124907306 hsa:124907307 hsa:124907308 hsa:124907309 hsa:124907310 hsa:124907311 hsa:124907312 hsa:124907314 hsa:124907315 hsa:124907316 hsa:124907317 hsa:124907318 hsa:124907319 hsa:124907320 hsa:124907321 hsa:124907322 hsa:124907323 hsa:124907325 hsa:124907326 hsa:124907459 hsa:124907460 hsa:124907461 hsa:124907462 hsa:124907463 hsa:124907464 hsa:124907465 hsa:124907466 hsa:124907468 hsa:124907469 hsa:124907470 hsa:124907471 hsa:124907472 hsa:124907473 hsa:124907474 hsa:124907656 hsa:124907657 hsa:124907658 hsa:124907659 hsa:124907660 hsa:124907661 hsa:124907663 hsa:124907664 hsa:124907665 hsa:124907666 hsa:124907667 hsa:124907668 hsa:124907669 hsa:124907670 hsa:124907671 hsa:124907672 hsa:124907674 hsa:124907675 hsa:124907676 hsa:124907677 hsa:124907678 hsa:124907679 hsa:124907680 hsa:124907681 hsa:124907682 hsa:124907683 hsa:124907685 hsa:124907686 hsa:124907687 hsa:124907688 hsa:124907689 hsa:124907690 hsa:124907691 hsa:124907692 hsa:124907693 hsa:124907695 hsa:124907696 hsa:124907697 hsa:124907698 hsa:124907699 hsa:124907700 hsa:124907701 hsa:124907702 hsa:124907703 hsa:124907704 hsa:124907706 hsa:124907707 hsa:124908312 hsa:124908313 hsa:124908314 hsa:124908315 hsa:124908317 hsa:124908318 hsa:124908319 hsa:124908320 hsa:124908321 hsa:124908322 hsa:124908323 hsa:124908324 hsa:124908325 hsa:124908326 hsa:124908328 hsa:124908329 hsa:124908330 hsa:124908331 hsa:124908332 hsa:124908333 hsa:124908334 hsa:124908335 hsa:124908337 hsa:124908338 hsa:124908339 hsa:124908340 hsa:124908341 hsa:124908342 hsa:124908343 hsa:124908344 hsa:124908345 hsa:124908346 hsa:124908348 hsa:124908349 hsa:124908350 hsa:124908351 hsa:124908352 hsa:124908353 hsa:124908354 hsa:124908355 hsa:124908356 hsa:124908357 hsa:124908359 hsa:124908360 hsa:124908361 hsa:124908362 hsa:124908363 hsa:124908364 hsa:124908365 hsa:124908366 hsa:124908367 hsa:124908490 hsa:124908491 hsa:124908492 hsa:124908493 hsa:124908495 hsa:124908496 hsa:124908497 hsa:124908498 hsa:124908499 hsa:124908500 hsa:124908501 hsa:124908502 hsa:124908503 hsa:124908505 hsa:124908506 hsa:124908507 hsa:124908508 hsa:124908509 hsa:124908510 hsa:124908511" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:100008589+hsa:106632264+hsa:109864272+hsa:109864282+hsa:109910382+hsa:124907244+hsa:124907245+hsa:124907246+hsa:124907247+hsa:124907249+hsa:124907250+hsa:124907251+hsa:124907252+hsa:124907253+hsa:124907254+hsa:124907255+hsa:124907256+hsa:124907257+hsa:124907259+hsa:124907260+hsa:124907261+hsa:124907262+hsa:124907263+hsa:124907264+hsa:124907265+hsa:124907266+hsa:124907267+hsa:124907268+hsa:124907270+hsa:124907271+hsa:124907272+hsa:124907273+hsa:124907274+hsa:124907275+hsa:124907276+hsa:124907277+hsa:124907278+hsa:124907279+hsa:124907281+hsa:124907282+hsa:124907283+hsa:124907284+hsa:124907285+hsa:124907286+hsa:124907287+hsa:124907288+hsa:124907289+hsa:124907290+hsa:124907292+hsa:124907293+hsa:124907294+hsa:124907295+hsa:124907296+hsa:124907297+hsa:124907298+hsa:124907299+hsa:124907300+hsa:124907301+hsa:124907303+hsa:124907304+hsa:124907305+hsa:124907306+hsa:124907307+hsa:124907308+hsa:124907309+hsa:124907310+hsa:124907311+hsa:124907312+hsa:124907314+hsa:124907315+hsa:124907316+hsa:124907317+hsa:124907318+hsa:124907319+hsa:124907320+hsa:124907321+hsa:124907322+hsa:124907323+hsa:124907325+hsa:124907326+hsa:124907459+hsa:124907460+hsa:124907461+hsa:124907462+hsa:124907463+hsa:124907464+hsa:124907465+hsa:124907466+hsa:124907468+hsa:124907469+hsa:124907470+hsa:124907471+hsa:124907472+hsa:124907473+hsa:124907474+hsa:124907656+hsa:124907657+hsa:124907658+hsa:124907659+hsa:124907660+hsa:124907661+hsa:124907663+hsa:124907664+hsa:124907665+hsa:124907666+hsa:124907667+hsa:124907668+hsa:124907669+hsa:124907670+hsa:124907671+hsa:124907672+hsa:124907674+hsa:124907675+hsa:124907676+hsa:124907677+hsa:124907678+hsa:124907679+hsa:124907680+hsa:124907681+hsa:124907682+hsa:124907683+hsa:124907685+hsa:124907686+hsa:124907687+hsa:124907688+hsa:124907689+hsa:124907690+hsa:124907691+hsa:124907692+hsa:124907693+hsa:124907695+hsa:124907696+hsa:124907697+hsa:124907698+hsa:124907699+hsa:124907700+hsa:124907701+hsa:124907702+hsa:124907703+hsa:124907704+hsa:124907706+hsa:124907707+hsa:124908312+hsa:124908313+hsa:124908314+hsa:124908315+hsa:124908317+hsa:124908318+hsa:124908319+hsa:124908320+hsa:124908321+hsa:124908322+hsa:124908323+hsa:124908324+hsa:124908325+hsa:124908326+hsa:124908328+hsa:124908329+hsa:124908330+hsa:124908331+hsa:124908332+hsa:124908333+hsa:124908334+hsa:124908335+hsa:124908337+hsa:124908338+hsa:124908339+hsa:124908340+hsa:124908341+hsa:124908342+hsa:124908343+hsa:124908344+hsa:124908345+hsa:124908346+hsa:124908348+hsa:124908349+hsa:124908350+hsa:124908351+hsa:124908352+hsa:124908353+hsa:124908354+hsa:124908355+hsa:124908356+hsa:124908357+hsa:124908359+hsa:124908360+hsa:124908361+hsa:124908362+hsa:124908363+hsa:124908364+hsa:124908365+hsa:124908366+hsa:124908367+hsa:124908490+hsa:124908491+hsa:124908492+hsa:124908493+hsa:124908495+hsa:124908496+hsa:124908497+hsa:124908498+hsa:124908499+hsa:124908500+hsa:124908501+hsa:124908502+hsa:124908503+hsa:124908505+hsa:124908506+hsa:124908507+hsa:124908508+hsa:124908509+hsa:124908510+hsa:124908511">
+        <graphics name="RNA28SN5, RN28S1, RNA28S5..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="176" y="156" width="46" height="17"/>
+    </entry>
+    <entry id="59" name="hsa:100169751 hsa:100169753 hsa:100169754 hsa:100169755 hsa:100169756 hsa:100169757 hsa:100169758 hsa:100169759 hsa:100169760 hsa:100169761 hsa:100169762 hsa:100169763 hsa:100169764 hsa:100169765 hsa:100169766 hsa:100169767 hsa:100169768 hsa:124905422 hsa:124905424 hsa:124905425 hsa:124905426 hsa:124905427 hsa:124905428 hsa:124905429 hsa:124905430 hsa:124905431 hsa:124905432 hsa:124905433 hsa:124905434 hsa:124905435 hsa:124905436 hsa:124905437 hsa:124905438 hsa:124905754 hsa:124905755 hsa:124905756 hsa:124905757 hsa:124905758 hsa:124905759 hsa:124905760 hsa:124905761 hsa:124905762 hsa:124905763 hsa:124905764 hsa:124905765 hsa:124905768 hsa:124905769 hsa:124905770 hsa:124905771 hsa:124905772 hsa:124905773 hsa:124905774 hsa:124905775 hsa:124905776 hsa:124905777 hsa:124905778 hsa:124905779 hsa:124905780 hsa:124905781 hsa:124905782 hsa:124905783 hsa:124905784 hsa:124905785 hsa:124905786 hsa:124905787 hsa:124905788 hsa:124905791 hsa:124905792 hsa:124905793 hsa:124905794 hsa:124905795 hsa:124905796 hsa:124905797 hsa:124905798 hsa:124905800 hsa:124905801 hsa:124905802 hsa:124905803 hsa:124905804 hsa:124905805 hsa:124905807 hsa:124905819 hsa:124905822 hsa:124905823 hsa:124905824 hsa:124905825 hsa:124905826 hsa:124905827 hsa:124905828 hsa:124905829 hsa:124905830 hsa:124905831 hsa:124905832 hsa:124905833 hsa:124905834 hsa:124905835 hsa:124905836 hsa:124905837 hsa:124905838 hsa:124905839 hsa:124905840 hsa:124905841 hsa:124905842 hsa:124905843 hsa:124905844 hsa:124905845 hsa:124905846" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:100169751+hsa:100169753+hsa:100169754+hsa:100169755+hsa:100169756+hsa:100169757+hsa:100169758+hsa:100169759+hsa:100169760+hsa:100169761+hsa:100169762+hsa:100169763+hsa:100169764+hsa:100169765+hsa:100169766+hsa:100169767+hsa:100169768+hsa:124905422+hsa:124905424+hsa:124905425+hsa:124905426+hsa:124905427+hsa:124905428+hsa:124905429+hsa:124905430+hsa:124905431+hsa:124905432+hsa:124905433+hsa:124905434+hsa:124905435+hsa:124905436+hsa:124905437+hsa:124905438+hsa:124905754+hsa:124905755+hsa:124905756+hsa:124905757+hsa:124905758+hsa:124905759+hsa:124905760+hsa:124905761+hsa:124905762+hsa:124905763+hsa:124905764+hsa:124905765+hsa:124905768+hsa:124905769+hsa:124905770+hsa:124905771+hsa:124905772+hsa:124905773+hsa:124905774+hsa:124905775+hsa:124905776+hsa:124905777+hsa:124905778+hsa:124905779+hsa:124905780+hsa:124905781+hsa:124905782+hsa:124905783+hsa:124905784+hsa:124905785+hsa:124905786+hsa:124905787+hsa:124905788+hsa:124905791+hsa:124905792+hsa:124905793+hsa:124905794+hsa:124905795+hsa:124905796+hsa:124905797+hsa:124905798+hsa:124905800+hsa:124905801+hsa:124905802+hsa:124905803+hsa:124905804+hsa:124905805+hsa:124905807+hsa:124905819+hsa:124905822+hsa:124905823+hsa:124905824+hsa:124905825+hsa:124905826+hsa:124905827+hsa:124905828+hsa:124905829+hsa:124905830+hsa:124905831+hsa:124905832+hsa:124905833+hsa:124905834+hsa:124905835+hsa:124905836+hsa:124905837+hsa:124905838+hsa:124905839+hsa:124905840+hsa:124905841+hsa:124905842+hsa:124905843+hsa:124905844+hsa:124905845+hsa:124905846">
+        <graphics name="RNA5S1, RN5S1..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="231" y="156" width="46" height="17"/>
+    </entry>
+    <entry id="183" name="hsa:10199" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:10199">
+        <graphics name="MPHOSPH10, CT90, MPP10, MPP10P, PPP1R106" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="92" y="504" width="46" height="17"/>
+    </entry>
+    <entry id="184" name="hsa:92856" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:92856">
+        <graphics name="IMP4, BXDC4" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="113" y="521" width="46" height="17"/>
+    </entry>
+    <entry id="185" name="hsa:55272" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:55272">
+        <graphics name="IMP3, BRMS2, C15orf12, MRPS4" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="67" y="521" width="46" height="17"/>
+    </entry>
+    <entry id="186" name="ko:K14551" type="ortholog"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K14551">
+        <graphics name="K14551" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="rectangle" x="205" y="379" width="46" height="17"/>
+    </entry>
+    <entry id="187" name="hsa:84128" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:84128">
+        <graphics name="WDR75, NET16, UTP17" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="205" y="396" width="46" height="17"/>
+    </entry>
+    <entry id="188" name="hsa:84135" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:84135">
+        <graphics name="UTP15, NET21" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="159" y="379" width="46" height="17"/>
+    </entry>
+    <entry id="189" name="hsa:84916" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:84916">
+        <graphics name="UTP4, CIRH1A, CIRHIN, NAIC, TEX292" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="113" y="396" width="46" height="17"/>
+    </entry>
+    <entry id="190" name="hsa:55127" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:55127">
+        <graphics name="HEATR1, BAP28, UTP10" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="159" y="396" width="46" height="17"/>
+    </entry>
+    <entry id="191" name="ko:K14547" type="ortholog"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K14547">
+        <graphics name="K14547" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="rectangle" x="113" y="379" width="46" height="17"/>
+    </entry>
+    <entry id="192" name="hsa:23160" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:23160">
+        <graphics name="WDR43, NET12, UTP5" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="67" y="387" width="46" height="17"/>
+    </entry>
+    <entry id="193" name="hsa:51096" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:51096">
+        <graphics name="UTP18, CGI-48, WDR50" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="67" y="440" width="46" height="17"/>
+    </entry>
+    <entry id="194" name="hsa:10607" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:10607">
+        <graphics name="TBL3, SAZD, UTP13" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="113" y="440" width="46" height="17"/>
+    </entry>
+    <entry id="195" name="hsa:55813" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:55813">
+        <graphics name="UTP6, C17orf40, HCA66" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="159" y="449" width="46" height="17"/>
+    </entry>
+    <entry id="196" name="hsa:102724159 hsa:5822" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:102724159+hsa:5822">
+        <graphics name="102724159..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="205" y="449" width="46" height="17"/>
+    </entry>
+    <entry id="197" name="hsa:134430" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:134430">
+        <graphics name="WDR36, GLC1G, TA-WDRP, TAWDRP, UTP21" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="67" y="457" width="46" height="17"/>
+    </entry>
+    <entry id="198" name="hsa:10885" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:10885">
+        <graphics name="WDR3, DIP2, UTP12" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="113" y="457" width="46" height="17"/>
+    </entry>
+    <entry id="199" name="hsa:1457 hsa:1459 hsa:283106" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:1457+hsa:1459+hsa:283106">
+        <graphics name="CSNK2A1, CK2A1, CKII, Cka1, Cka2, OCNDS..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="92" y="319" width="46" height="17"/>
+    </entry>
+    <entry id="200" name="hsa:1460" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:1460">
+        <graphics name="CSNK2B, CK2B, CK2N, CSK2B, Ckb1, Ckb2, G5A, POBINDS" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="92" y="302" width="46" height="17"/>
+    </entry>
+    <entry id="201" name="hsa:65083" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:65083">
+        <graphics name="NOL6, NRAP, UTP22, bA311H10.1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="67" y="336" width="46" height="17"/>
+    </entry>
+    <entry id="204" name="hsa:27341" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:27341">
+        <graphics name="RRP7A, BK126B4.3, CGI-96, MCPH28, Rrp7" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="113" y="336" width="46" height="17"/>
+    </entry>
+    <entry id="254" name="path:hsa03010" type="map"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa03010">
+        <graphics name="Ribosome" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="roundrectangle" x="422" y="946" width="92" height="25"/>
+    </entry>
+    <entry id="255" name="hsa:5901" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:5901">
+        <graphics name="RAN, ARA24, Gsp1, TC4" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="404" y="759" width="46" height="17"/>
+    </entry>
+    <entry id="256" name="hsa:7514" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:7514">
+        <graphics name="XPO1, CRM-1, CRM1, emb, exp1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="404" y="776" width="46" height="17"/>
+    </entry>
+    <entry id="257" name="hsa:51068" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:51068">
+        <graphics name="NMD3, CGI-07" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="404" y="793" width="46" height="17"/>
+    </entry>
+    <entry id="258" name="hsa:109616983 hsa:109616984 hsa:109616985 hsa:109616996 hsa:109617015 hsa:109617016 hsa:109617017 hsa:124900922 hsa:124901220 hsa:124901221 hsa:124901505 hsa:124901506 hsa:124901507 hsa:124901508 hsa:124901509 hsa:124901858 hsa:124901859 hsa:124901860 hsa:124902100 hsa:124902101 hsa:124902595 hsa:124902596 hsa:124902847 hsa:124903435 hsa:124903436 hsa:124903594 hsa:124903595 hsa:124904151 hsa:124904381 hsa:124904666 hsa:124904668 hsa:124904669 hsa:124904802 hsa:124904804 hsa:124904983 hsa:124905065 hsa:124905290 hsa:124905291 hsa:124905292 hsa:124905415 hsa:124906193 hsa:124906194 hsa:124906195 hsa:124906377 hsa:124906378 hsa:124906379 hsa:124906380 hsa:124906381 hsa:124906382 hsa:26851 hsa:780851 hsa:780852 hsa:780853 hsa:780854" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:109616983+hsa:109616984+hsa:109616985+hsa:109616996+hsa:109617015+hsa:109617016+hsa:109617017+hsa:124900922+hsa:124901220+hsa:124901221+hsa:124901505+hsa:124901506+hsa:124901507+hsa:124901508+hsa:124901509+hsa:124901858+hsa:124901859+hsa:124901860+hsa:124902100+hsa:124902101+hsa:124902595+hsa:124902596+hsa:124902847+hsa:124903435+hsa:124903436+hsa:124903594+hsa:124903595+hsa:124904151+hsa:124904381+hsa:124904666+hsa:124904668+hsa:124904669+hsa:124904802+hsa:124904804+hsa:124904983+hsa:124905065+hsa:124905290+hsa:124905291+hsa:124905292+hsa:124905415+hsa:124906193+hsa:124906194+hsa:124906195+hsa:124906377+hsa:124906378+hsa:124906379+hsa:124906380+hsa:124906381+hsa:124906382+hsa:26851+hsa:780851+hsa:780852+hsa:780853+hsa:780854">
+        <graphics name="SNORD3F, RNU3P2, SNORD3P2, U3, U3.2..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="426" y="176" width="46" height="17"/>
+    </entry>
+    <entry id="259" name="hsa:6949" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:6949">
+        <graphics name="TCOF1, MFD1, TCS, TCS1, treacle" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="326" y="169" width="46" height="17"/>
+    </entry>
+    <entry id="260" name="hsa:4809" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:4809">
+        <graphics name="SNU13, 15.5K, FA-1, FA1, NHP2L1, NHPX, OTK27, SNRNP15-5, SPAG12, SSFA1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="407" y="247" width="46" height="17"/>
+    </entry>
+    <entry id="261" name="hsa:51602" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:51602">
+        <graphics name="NOP58, HSPC120, NOP5, NOP5/NOP58" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="362" y="247" width="46" height="17"/>
+    </entry>
+    <entry id="262" name="hsa:10528" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:10528">
+        <graphics name="NOP56, NOL5A, SCA36" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="408" y="230" width="46" height="17"/>
+    </entry>
+    <entry id="263" name="hsa:2091 hsa:345630" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:2091+hsa:345630">
+        <graphics name="FBL, FIB, FLRN, Nop1, RNU3IP1..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="362" y="230" width="46" height="17"/>
+    </entry>
+    <entry id="264" name="hsa:55505" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:55505">
+        <graphics name="NOP10, CHINE2, DKCB1, NOLA3, NOP10P, PFBMFT9" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="552" y="247" width="46" height="17"/>
+    </entry>
+    <entry id="265" name="hsa:55651" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:55651">
+        <graphics name="NHP2, DKCB2, NHP2P, NOLA2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="552" y="230" width="46" height="17"/>
+    </entry>
+    <entry id="266" name="hsa:54433" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:54433">
+        <graphics name="GAR1, NOLA1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="506" y="247" width="46" height="17"/>
+    </entry>
+    <entry id="267" name="hsa:1736" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:1736">
+        <graphics name="DKC1, CBF5, CHINE1, DKC, DKCX, NAP57, NOLA4, XAP101" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="506" y="230" width="46" height="17"/>
+    </entry>
+    <entry id="270" name="hsa:51077" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:51077">
+        <graphics name="FCF1, Bka, C14orf111, CGI-35, UTP24" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="346" y="306" width="46" height="17"/>
+    </entry>
+    <entry id="271" name="hsa:29102" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:29102">
+        <graphics name="DROSHA, ETOHI2, HSA242976, RANSE3L, RN3, RNASE3L, RNASEN" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="620" y="318" width="46" height="17"/>
+    </entry>
+    <entry id="272" name="hsa:55226" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:55226">
+        <graphics name="NAT10, ALP, Kre33, NET43" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="510" y="393" width="46" height="17"/>
+    </entry>
+    <entry id="273" name="hsa:10813 hsa:9724" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:10813+hsa:9724">
+        <graphics name="UTP14A, NYCO16, SDCCAG16, Utp14, dJ537K23.3..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="506" y="311" width="46" height="17"/>
+    </entry>
+    <entry id="274" name="hsa:9790" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:9790">
+        <graphics name="BMS1, ACC, BMS1L" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="423" y="391" width="46" height="17"/>
+    </entry>
+    <entry id="278" name="hsa:10171" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:10171">
+        <graphics name="RCL1, RNAC, RPCL1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="410" y="418" width="46" height="17"/>
+    </entry>
+    <entry id="279" name="ko:K14758" type="ortholog"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K14758">
+        <graphics name="K14758" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="rectangle" x="431" y="699" width="46" height="17"/>
+    </entry>
+    <entry id="280" name="hsa:10248 hsa:10556 hsa:10557 hsa:10775 hsa:10799 hsa:10940 hsa:138716 hsa:51367 hsa:54913" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:10248+hsa:10556+hsa:10557+hsa:10775+hsa:10799+hsa:10940+hsa:138716+hsa:51367+hsa:54913">
+        <graphics name="POP7, 0610037N12Rik, RPP2, RPP20..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="450" y="492" width="46" height="17"/>
+    </entry>
+    <entry id="281" name="hsa:22803 hsa:54464" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:22803+hsa:54464">
+        <graphics name="XRN2..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="598" y="625" width="46" height="17"/>
+    </entry>
+    <entry id="282" name="hsa:23560" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:23560">
+        <graphics name="GTPBP4, CRFG, NGB, NOG1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="683" y="569" width="46" height="17"/>
+    </entry>
+    <entry id="283" name="hsa:26354 hsa:29889 hsa:54552" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:26354+hsa:29889+hsa:54552">
+        <graphics name="GNL3, C77032, E2IG3, NNP47, NS, Nug1..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="683" y="601" width="46" height="17"/>
+    </entry>
+    <entry id="284" name="hsa:23195" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:23195">
+        <graphics name="MDN1, Rea1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="683" y="643" width="46" height="17"/>
+    </entry>
+    <entry id="285" name="hsa:4931" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:4931">
+        <graphics name="NVL, NVL2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="683" y="622" width="46" height="17"/>
+    </entry>
+    <entry id="286" name="hsa:101929601 hsa:101929627 hsa:25996 hsa:57455 hsa:81691" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:101929601+hsa:101929627+hsa:25996+hsa:57455+hsa:81691">
+        <graphics name="101929601..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="509" y="625" width="46" height="17"/>
+    </entry>
+    <entry id="287" name="hsa:10482 hsa:56000 hsa:56001 hsa:728343" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:10482+hsa:56000+hsa:56001+hsa:728343">
+        <graphics name="NXF1, MEX67, TAP..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="458" y="760" width="46" height="17"/>
+    </entry>
+    <entry id="288" name="hsa:29107 hsa:55916" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:29107+hsa:55916">
+        <graphics name="NXT1, MTR2, P15..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="458" y="777" width="46" height="17"/>
+    </entry>
+    <entry id="289" name="hsa:55341" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:55341">
+        <graphics name="LSG1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="605" y="865" width="46" height="17"/>
+    </entry>
+    <entry id="290" name="hsa:79631" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:79631">
+        <graphics name="EFL1, EFTUD1, FAM42A, HsT19294, RIA1, SDS2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="514" y="877" width="46" height="17"/>
+    </entry>
+    <entry id="292" name="hsa:83732" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:83732">
+        <graphics name="RIOK1, AD034, RIO1, RRP10, bA288G3.1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="344" y="854" width="46" height="17"/>
+    </entry>
+    <entry id="293" name="hsa:166378" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:166378">
+        <graphics name="AFG2A, AFG2, EHLMRS, NEDHSB, SPAF, SPATA5" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="659" y="865" width="46" height="17"/>
+    </entry>
+    <entry id="294" name="hsa:55781" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:55781">
+        <graphics name="RIOK2, RIO2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="344" y="877" width="46" height="17"/>
+    </entry>
+    <entry id="295" name="hsa:102157402" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:102157402">
+        <graphics name="AK6, AD-004, CGI-137, CINAP, CIP, hCINAP" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="262" y="876" width="46" height="17"/>
+    </entry>
+    <entry id="297" name="hsa:6023" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:6023">
+        <graphics name="RMRP, CHH, NME1, RMRPR, RRP2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="450" y="509" width="46" height="17"/>
+    </entry>
+    <entry id="298" name="hsa:3692" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:3692">
+        <graphics name="EIF6, CAB, EIF3A, ITGB4BP, b(2)gcn, eIF-6, p27(BBP), p27BBP" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="514" y="802" width="46" height="17"/>
+    </entry>
+    <entry id="299" name="hsa:10436" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:10436">
+        <graphics name="EMG1, C2F, Grcc2f, NEP1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="423" y="369" width="46" height="17"/>
+    </entry>
+    <entry id="301" name="hsa:51119" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:51119">
+        <graphics name="SBDS, CGI-97, SDO1, SDS, SWDS" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="514" y="860" width="46" height="17"/>
+    </entry>
+    <entry id="303" name="hsa:55131" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:55131">
+        <graphics name="RBM28, ANES, NOP4" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="598" y="685" width="46" height="17"/>
+    </entry>
+    <entry id="304" name="hsa:28987" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?hsa:28987">
+        <graphics name="NOB1, ART-4, MST158, MSTP158, NOB1P, PSMD8BP1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="347" y="720" width="46" height="17"/>
+    </entry>
+</pathway>
