@@ -3,8 +3,8 @@
 download_kegg_names.py — Bulk-download KEGG compound and reaction name lists.
 
 Downloads two flat TSV files from the KEGG REST API and saves them to the
-``data/`` directory.  These are used by ``metakg-enrich`` (and
-``metakg-build --enrich``) to replace bare KEGG accessions with human-readable
+``data/`` directory.  These are used by ``metabokg-enrich`` (and
+``metabokg-build --enrich``) to replace bare KEGG accessions with human-readable
 names in the knowledge graph.
 
 Files written
@@ -61,7 +61,7 @@ def _fetch(url: str, quiet: bool = False) -> str:
     """
     if not quiet:
         print(f"  GET {url}", file=sys.stderr)
-    req = urllib.request.Request(url, headers={"User-Agent": "metakg/0.1 (research)"})
+    req = urllib.request.Request(url, headers={"User-Agent": "metabokg/0.1 (research)"})
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
             return resp.read().decode("utf-8")

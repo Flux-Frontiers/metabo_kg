@@ -1,7 +1,7 @@
 # MetaKG CodeKG Repository Analysis Report
 **Generated:** 2026-03-03
 **Tool:** CodeKG Thorough Analysis Skill
-**Repository:** `/Users/egs/repos/meta_kg`
+**Repository:** `/Users/egs/repos/metabo_kg`
 
 ---
 
@@ -36,7 +36,7 @@ MetaKG is organized into **5 clean layers**:
 ┌─────────────────────────────────────────────────────────────┐
 │  Layer 5: Interfaces                                         │
 │  cli.py (605L) · mcp_tools.py (462L) · app.py (833L+)       │
-│  metakg_viz.py · metakg_viz3d.py                             │
+│  metabokg_viz.py · metabokg_viz3d.py                             │
 ├─────────────────────────────────────────────────────────────┤
 │  Layer 4: Orchestration                                      │
 │  orchestrator.py — MetaKG (L159–677)                         │
@@ -96,7 +96,7 @@ Functions calling the most other functions — **coordination hubs and potential
 
 ### Core Modules (Most Depended-Upon)
 
-**1. `src/metakg/store.py` — MetaStore** (lines 117–803, 686 lines)
+**1. `src/metabokg/store.py` — MetaStore** (lines 117–803, 686 lines)
 The gravitational center of the codebase. Handles:
 - Schema creation (DDL for all 7+ tables)
 - Node/edge CRUD with deduplication
@@ -106,13 +106,13 @@ The gravitational center of the codebase. Handles:
 - Kinetic parameter queries
 - `GraphStore` visualization wrapper (lines 811–888)
 
-**2. `src/metakg/orchestrator.py` — MetaKG** (lines 159–677)
+**2. `src/metabokg/orchestrator.py` — MetaKG** (lines 159–677)
 The public API. Lazy-loads store, index, and simulator. Every CLI entry point and MCP tool delegates to it. Exposes:
 - `build()`, `query_pathway()`, `get_compound()`, `get_reaction()`, `find_path()`
 - `seed_kinetics()`, `simulate_fba()`, `simulate_ode()`, `simulate_whatif()`
 - `get_stats()`, `close()`, context manager
 
-**3. `src/metakg/simulate.py`** (~909 lines total)
+**3. `src/metabokg/simulate.py`** (~909 lines total)
 Simulation engine + result types + render functions. Self-contained domain module.
 
 ### Integration Points (Subsystem Bridges)
@@ -185,12 +185,12 @@ MetaStore
 
 | File | Lines | Risk |
 |------|-------|------|
-| `src/metakg/store.py` | ~888 | MetaStore god class (686L), many responsibilities |
-| `src/metakg/simulate.py` | ~909 | Simulator + 3 render functions bundled |
-| `src/metakg/orchestrator.py` | 677 | Large but focused (thin delegation) |
-| `src/metakg/mcp_tools.py` | 462 | `register_tools` = 383-line closure factory |
-| `src/metakg/cli.py` | 605 | 8 entry points, `_simulate_args` = 158L |
-| `src/metakg/app.py` | 833+ | Streamlit app (expected large for UI) |
+| `src/metabokg/store.py` | ~888 | MetaStore god class (686L), many responsibilities |
+| `src/metabokg/simulate.py` | ~909 | Simulator + 3 render functions bundled |
+| `src/metabokg/orchestrator.py` | 677 | Large but focused (thin delegation) |
+| `src/metabokg/mcp_tools.py` | 462 | `register_tools` = 383-line closure factory |
+| `src/metabokg/cli.py` | 605 | 8 entry points, `_simulate_args` = 158L |
+| `src/metabokg/app.py` | 833+ | Streamlit app (expected large for UI) |
 
 ### Orphaned / Redundant Code
 
@@ -201,9 +201,9 @@ MetaStore
 
 ### `register_tools` Complexity (mcp_tools.py:49–432)
 
-A single 383-line function that registers 8 MCP tools as nested closures, all capturing the `metakg` instance:
+A single 383-line function that registers 8 MCP tools as nested closures, all capturing the `metabokg` instance:
 ```python
-def register_tools(mcp, metakg):
+def register_tools(mcp, metabokg):
     @mcp.tool()
     async def query_pathway(name, k=8): ...  # nested closure
     @mcp.tool()
@@ -221,7 +221,7 @@ def register_tools(mcp, metakg):
 ```
 scripts/download_human_kegg.py
     → scripts/wire_kegg_enzymes.py (patch enzyme links)
-    → metakg-build (cli.py:build_main → MetaKG.build)
+    → metabokg-build (cli.py:build_main → MetaKG.build)
         → MetabolicGraph.extract()
             → [KGMLParser | SBMLParser | BioPAXParser].parse()
         → MetaStore.write_nodes() + write_edges()
@@ -248,25 +248,25 @@ MCP client → create_server() → register_tools() → 8 async tool closures �
 ## Risks
 
 ### 1. MetaStore God Class
-**File:** [src/metakg/store.py](src/metakg/store.py) L117–803 (686 lines)
+**File:** [src/metabokg/store.py](src/metabokg/store.py) L117–803 (686 lines)
 **Risk:** HIGH — Single class responsible for DDL, CRUD, indexing, BFS shortest-path, stoichiometry assembly, kinetic queries
 **Impact:** Difficult to test specific behaviors in isolation; any schema change risks cascading effects
 **Suggestion:** Consider splitting into `StoreSchema`, `NodeStore`, `PathFinder` sub-components (or just well-documented sections)
 
 ### 2. `register_tools` Mega-Function
-**File:** [src/metakg/mcp_tools.py](src/metakg/mcp_tools.py) L49–432
+**File:** [src/metabokg/mcp_tools.py](src/metabokg/mcp_tools.py) L49–432
 **Risk:** MEDIUM — 383-line function with 8 closure-based tool implementations
 **Impact:** All 8 MCP tools are untestable without a live MCP server + MetaKG instance
-**Suggestion:** Extract each tool handler to a module-level function taking `metakg` as explicit parameter, then register the wrapper closure
+**Suggestion:** Extract each tool handler to a module-level function taking `metabokg` as explicit parameter, then register the wrapper closure
 
 ### 3. `simulate_main` Layer Violation
-**File:** [src/metakg/cli.py](src/metakg/cli.py) L491–597
+**File:** [src/metabokg/cli.py](src/metabokg/cli.py) L491–597
 **Risk:** MEDIUM — Bypasses MetaKG orchestrator, directly instantiates MetaStore
 **Impact:** Different initialization path than all other CLI commands; MetaKG's lazy prop logic is skipped
 **Suggestion:** Route through `MetaKG(db_path=args.db)` like `build_main` and `mcp_main` do
 
 ### 4. `GraphStore.query_semantic` Stub
-**File:** [src/metakg/store.py](src/metakg/store.py) L861–888
+**File:** [src/metabokg/store.py](src/metabokg/store.py) L861–888
 **Risk:** LOW — Misleading name ("semantic") for a text-filter function
 **Impact:** The Streamlit app uses this for its "Semantic Search" tab; results are name/description substring matches, not actual vector search
 **Suggestion:** Either wire to `MetaIndex.search()` or rename to `query_text` / add deprecation note
@@ -292,15 +292,15 @@ render.py    → move render_fba_result, render_ode_result, render_whatif_result
 ### 2. Split `register_tools` into Testable Units
 ```python
 # Before: all 8 tools as nested closures in one 383-line function
-def register_tools(mcp, metakg): ...
+def register_tools(mcp, metabokg): ...
 
 # After: standalone handlers, thin registration
-def _query_pathway_handler(metakg, name, k=8): ...
-def _get_compound_handler(metakg, compound_id): ...
+def _query_pathway_handler(metabokg, name, k=8): ...
+def _get_compound_handler(metabokg, compound_id): ...
 # ...
 
-def register_tools(mcp, metakg):
-    mcp.tool()(_query_pathway_handler(metakg))
+def register_tools(mcp, metabokg):
+    mcp.tool()(_query_pathway_handler(metabokg))
 ```
 
 ### 3. Wire `GraphStore.query_semantic` to Real LanceDB Search
@@ -324,19 +324,19 @@ This uses the same path as `mcp_tools.py` and `api/` consumers.
 
 ### Well-Designed Patterns
 
-1. **`PathwayParser` ABC** ([src/metakg/parsers/base.py](src/metakg/parsers/base.py)) — Clean contract: stateless, pure, deterministic. Adding new format support requires just one new file + class.
+1. **`PathwayParser` ABC** ([src/metabokg/parsers/base.py](src/metabokg/parsers/base.py)) — Clean contract: stateless, pure, deterministic. Adding new format support requires just one new file + class.
 
-2. **Lazy initialization in `MetaKG`** ([src/metakg/orchestrator.py](src/metakg/orchestrator.py) L220–238) — Store, index, and simulator are only created on first use. Cheap to construct, efficient in practice.
+2. **Lazy initialization in `MetaKG`** ([src/metabokg/orchestrator.py](src/metabokg/orchestrator.py) L220–238) — Store, index, and simulator are only created on first use. Cheap to construct, efficient in practice.
 
 3. **`MetaKG` as context manager** — `with MetaKG() as kg:` ensures SQLite connections are always closed. Prevents resource leaks.
 
-4. **Deterministic node IDs in primitives** ([src/metakg/primitives.py](src/metakg/primitives.py)) — IDs like `cpd:kegg:C00022` are stable across builds. Foundation of reproducibility.
+4. **Deterministic node IDs in primitives** ([src/metabokg/primitives.py](src/metabokg/primitives.py)) — IDs like `cpd:kegg:C00022` are stable across builds. Foundation of reproducibility.
 
-5. **BDF solver default for ODE** ([src/metakg/simulate.py](src/metakg/simulate.py)) — Correct choice for stiff metabolic systems; previous RK45 default caused hangs. Well-documented in CLAUDE.md.
+5. **BDF solver default for ODE** ([src/metabokg/simulate.py](src/metabokg/simulate.py)) — Correct choice for stiff metabolic systems; previous RK45 default caused hangs. Well-documented in CLAUDE.md.
 
 6. **`SimulationConfig` dataclass** — Rich configuration with clear defaults for ODE tolerance, solver method, flux bounds, Vmax overrides. Cleanly separates "what to simulate" from "how to simulate it."
 
-7. **`KineticParam` dataclass** ([src/metakg/primitives.py](src/metakg/primitives.py) L214–273) — Rich provenance tracking (source_database, literature_reference, organism, tissue, confidence_score). Above average for a research tool.
+7. **`KineticParam` dataclass** ([src/metabokg/primitives.py](src/metabokg/primitives.py) L214–273) — Rich provenance tracking (source_database, literature_reference, organism, tissue, confidence_score). Above average for a research tool.
 
 8. **Test suite completeness** — Tests cover parsers, store, orchestrator, simulation (FBA/ODE/whatif), and include regression guards (BDF hang prevention, max_step regression).
 
@@ -366,25 +366,25 @@ This uses the same path as `mcp_tools.py` and `api/` consumers.
 
 | Module | Lines | Role |
 |--------|-------|------|
-| `src/metakg/primitives.py` | — | Domain objects: MetaNode, MetaEdge, KineticParam |
-| `src/metakg/parsers/base.py` | ~59 | PathwayParser ABC |
-| `src/metakg/parsers/kgml.py` | 299 | KEGG KGML parser |
-| `src/metakg/parsers/sbml.py` | 288 | SBML L2/L3 parser |
-| `src/metakg/parsers/biopax.py` | ~291 | BioPAX RDF/OWL parser |
-| `src/metakg/graph.py` | 155 | File discovery + parser dispatch |
-| `src/metakg/store.py` | ~888 | SQLite persistence + GraphStore viz wrapper |
-| `src/metakg/embed.py` | 158 | Embedder ABC + SentenceTransformer impl |
-| `src/metakg/index.py` | ~252 | MetaIndex LanceDB vector index |
-| `src/metakg/kinetics_fetch.py` | ~693 | Curated kinetic parameters seeding |
-| `src/metakg/simulate.py` | ~909 | MetabolicSimulator + result types + renderers |
-| `src/metakg/orchestrator.py` | 677 | MetaKG top-level API |
-| `src/metakg/mcp_tools.py` | ~462 | MCP server tools (register_tools + create_server) |
-| `src/metakg/cli.py` | 605 | 8 CLI entry points |
-| `src/metakg/app.py` | ~833+ | Streamlit 2D visualization |
-| `src/metakg/viz3d.py` | 144 | PyVista 3D visualization |
-| `src/metakg/layout3d.py` | — | 3D layout algorithms (Allium, LayerCake) |
-| `src/metakg/metakg_viz.py` | 93 | Streamlit launcher |
-| `src/metakg/metakg_viz3d.py` | 114 | PyVista launcher |
+| `src/metabokg/primitives.py` | — | Domain objects: MetaNode, MetaEdge, KineticParam |
+| `src/metabokg/parsers/base.py` | ~59 | PathwayParser ABC |
+| `src/metabokg/parsers/kgml.py` | 299 | KEGG KGML parser |
+| `src/metabokg/parsers/sbml.py` | 288 | SBML L2/L3 parser |
+| `src/metabokg/parsers/biopax.py` | ~291 | BioPAX RDF/OWL parser |
+| `src/metabokg/graph.py` | 155 | File discovery + parser dispatch |
+| `src/metabokg/store.py` | ~888 | SQLite persistence + GraphStore viz wrapper |
+| `src/metabokg/embed.py` | 158 | Embedder ABC + SentenceTransformer impl |
+| `src/metabokg/index.py` | ~252 | MetaIndex LanceDB vector index |
+| `src/metabokg/kinetics_fetch.py` | ~693 | Curated kinetic parameters seeding |
+| `src/metabokg/simulate.py` | ~909 | MetabolicSimulator + result types + renderers |
+| `src/metabokg/orchestrator.py` | 677 | MetaKG top-level API |
+| `src/metabokg/mcp_tools.py` | ~462 | MCP server tools (register_tools + create_server) |
+| `src/metabokg/cli.py` | 605 | 8 CLI entry points |
+| `src/metabokg/app.py` | ~833+ | Streamlit 2D visualization |
+| `src/metabokg/viz3d.py` | 144 | PyVista 3D visualization |
+| `src/metabokg/layout3d.py` | — | 3D layout algorithms (Allium, LayerCake) |
+| `src/metabokg/metabokg_viz.py` | 93 | Streamlit launcher |
+| `src/metabokg/metabokg_viz3d.py` | 114 | PyVista launcher |
 
 ---
 

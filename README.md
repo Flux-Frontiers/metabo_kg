@@ -8,7 +8,7 @@ A comprehensive, extendable knowledge graph system for metabolic pathways with s
 
 [![Python 3.10 | 3.11 | 3.12](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/downloads/)
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic%202.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
-[![Version](https://img.shields.io/badge/Version-0.3.0-blue.svg)](https://github.com/flux-frontiers/meta_kg/releases)
+[![Version](https://img.shields.io/badge/Version-0.3.0-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
 [![Poetry](https://img.shields.io/badge/Poetry-1.8+-blue.svg)](https://python-poetry.org/)
 
 ## Features
@@ -28,8 +28,8 @@ A comprehensive, extendable knowledge graph system for metabolic pathways with s
 
 ```bash
 # Clone and navigate to the repository
-git clone https://github.com/flux-frontiers/meta_kg.git
-cd meta_kg
+git clone https://github.com/flux-frontiers/metabo_kg.git
+cd metabo_kg
 
 # Create a Python 3.12 virtual environment
 python3.12 -m venv .venv
@@ -53,12 +53,12 @@ poetry run python scripts/download_human_kegg.py --output data/hsa_pathways --dr
 
 ```bash
 # Parse pathway files and build the KG (enrichment enabled by default)
-metakg-build --data ./data/hsa_pathways --db .metakg/meta.sqlite --lancedb .metakg/lancedb
+metabokg-build --data ./data/hsa_pathways --db .metabokg/meta.sqlite --lancedb .metabokg/lancedb
 
 # Output:
 # Building MetaKG from ./data/hsa_pathways...
 # data_root   : ./data/hsa_pathways
-# db_path     : .metakg/meta.sqlite
+# db_path     : .metabokg/meta.sqlite
 # nodes       : 17050  {'compound': 5115, 'reaction': 2139, 'enzyme': 9427, 'pathway': 369}
 # edges       : 40166  {'SUBSTRATE_OF': 2551, 'PRODUCT_OF': 2532, 'CATALYZES': 2394, 'CONTAINS': 32689}
 # isolated    : 0
@@ -70,7 +70,7 @@ metakg-build --data ./data/hsa_pathways --db .metakg/meta.sqlite --lancedb .meta
 ### Launch Web Explorer
 
 ```bash
-metakg-viz --port 8500
+metabokg-viz --port 8500
 
 # Opens interactive browser at http://localhost:8500
 ```
@@ -80,7 +80,7 @@ metakg-viz --port 8500
 ![MetaKG Architecture Diagram](docs/metaKG_arch.png)
 
 ```
-metakg/
+metabokg/
 ├── parsers/              # Format-specific parsers
 │   ├── kgml.py          # KEGG KGML parser
 │   ├── sbml.py          # SBML format parser
@@ -98,12 +98,12 @@ metakg/
 │
 ├── visualization/
 │   ├── app.py           # Streamlit web explorer
-│   ├── metakg_viz.py    # Streamlit launcher
+│   ├── metabokg_viz.py    # Streamlit launcher
 │   ├── layout3d.py      # 3D layout algorithms (Allium, LayerCake)
 │   ├── viz3d.py         # PyVista 3D viewer
-│   └── metakg_viz3d.py  # 3D visualizer launcher
+│   └── metabokg_viz3d.py  # 3D visualizer launcher
 │
-└── metakg.py            # MetaKG: orchestrator
+└── metabokg.py            # MetaKG: orchestrator
 ```
 
 ### Data Model
@@ -125,40 +125,40 @@ metakg/
 
 ## Commands
 
-### `metakg-build`
+### `metabokg-build`
 
 Parse pathway files and build the knowledge graph.
 
 ```bash
-metakg-build --data ./pathways \
-             --db .metakg/meta.sqlite \
-             --lancedb .metakg/lancedb \
+metabokg-build --data ./pathways \
+             --db .metabokg/meta.sqlite \
+             --lancedb .metabokg/lancedb \
              --model all-MiniLM-L6-v2
 
 Options:
   --data PATH              Directory containing pathway files (required)
-  --db PATH                SQLite database path (default: .metakg/meta.sqlite)
-  --lancedb PATH           LanceDB directory (default: .metakg/lancedb)
+  --db PATH                SQLite database path (default: .metabokg/meta.sqlite)
+  --lancedb PATH           LanceDB directory (default: .metabokg/lancedb)
   --model NAME             Sentence-transformer model (default: all-MiniLM-L6-v2)
   --no-index               Skip building LanceDB vector index
   --no-wipe                Skip wiping existing data (default: wipe before build)
 ```
 
-### `metakg-update`
+### `metabokg-update`
 
 Incrementally merge new pathway files into an existing database without wiping.
 
 ```bash
-metakg-update --data ./new_pathways
+metabokg-update --data ./new_pathways
 ```
 
-### `metakg-viz`
+### `metabokg-viz`
 
 Launch interactive Streamlit web explorer.
 
 ```bash
-metakg-viz --db .metakg/meta.sqlite \
-           --lancedb .metakg/lancedb \
+metabokg-viz --db .metabokg/meta.sqlite \
+           --lancedb .metabokg/lancedb \
            --port 8500
 
 Options:
@@ -173,12 +173,12 @@ Options:
 - **Semantic Search** — Query by description or keywords
 - **Node Details** — View comprehensive node information with cross-references
 
-### `metakg-viz3d`
+### `metabokg-viz3d`
 
 Launch interactive 3D PyVista metabolic pathway visualizer.
 
 ```bash
-metakg-viz3d --db .metakg/meta.sqlite \
+metabokg-viz3d --db .metabokg/meta.sqlite \
              --layout allium \
              --width 1400 \
              --height 900
@@ -197,13 +197,13 @@ Options:
 - **Allium** — Each pathway rendered as a "Giant Allium flower" with reactions/compounds forming a sphere around it
 - **LayerCake** — Vertical stratification by node kind (pathways at bottom, reactions middle, compounds/enzymes at top)
 
-### `metakg-mcp`
+### `metabokg-mcp`
 
 Start MCP server to expose the knowledge graph to Claude and other AI assistants.
 
 ```bash
-metakg-mcp --db .metakg/meta.sqlite \
-           --lancedb .metakg/lancedb \
+metabokg-mcp --db .metabokg/meta.sqlite \
+           --lancedb .metabokg/lancedb \
            --transport stdio
 
 Options:
@@ -217,10 +217,10 @@ Options:
 ### Basic Usage
 
 ```python
-from metakg import MetaKG
+from metabokg import MetaKG
 
 # Build the knowledge graph
-kg = MetaKG(db_path=".metakg/meta.sqlite", lancedb_dir=".metakg/lancedb")
+kg = MetaKG(db_path=".metabokg/meta.sqlite", lancedb_dir=".metabokg/lancedb")
 stats = kg.build(data_dir="./pathways", wipe=True, build_index=True)
 print(stats)
 
@@ -253,9 +253,9 @@ kg.close()
 ### Semantic Search
 
 ```python
-from metakg import MetaKG
+from metabokg import MetaKG
 
-kg = MetaKG(db_path=".metakg/meta.sqlite", lancedb_dir=".metakg/lancedb")
+kg = MetaKG(db_path=".metabokg/meta.sqlite", lancedb_dir=".metabokg/lancedb")
 
 # Semantic similarity search
 results = kg.query_pathway("glucose metabolism", k=10)
@@ -269,9 +269,9 @@ kg.close()
 
 **Flux Balance Analysis (FBA):**
 ```python
-from metakg import MetaKG
+from metabokg import MetaKG
 
-kg = MetaKG(db_path=".metakg/meta.sqlite", lancedb_dir=".metakg/lancedb")
+kg = MetaKG(db_path=".metabokg/meta.sqlite", lancedb_dir=".metabokg/lancedb")
 
 # Run steady-state optimization
 result = kg.simulate_fba(
@@ -330,11 +330,11 @@ print(f"Change: {100 * (perturbed - baseline) / baseline:+.1f}%")
 ### Visualization in Code
 
 ```python
-from metakg.store import GraphStore
-from metakg.layout3d import AlliumLayout, LayoutNode, LayoutEdge
+from metabokg.store import GraphStore
+from metabokg.layout3d import AlliumLayout, LayoutNode, LayoutEdge
 
 # Load graph
-store = GraphStore(".metakg/meta.sqlite")
+store = GraphStore(".metabokg/meta.sqlite")
 nodes_data = store.query_nodes()
 edges_data = store.query_edges()
 
@@ -404,8 +404,8 @@ poetry install --extras all
 
 ```bash
 # Visualization
-export METAKG_DB=".metakg/meta.sqlite"
-export METAKG_LANCEDB=".metakg/lancedb"
+export METAKG_DB=".metabokg/meta.sqlite"
+export METAKG_LANCEDB=".metabokg/lancedb"
 
 # Embedding model
 export METAKG_MODEL="all-MiniLM-L6-v2"
@@ -417,8 +417,8 @@ export METAKG_LANCEDB="/data/lancedb"
 
 ### Database Defaults
 
-- **SQLite** — `.metakg/meta.sqlite`
-- **LanceDB** — `.metakg/lancedb`
+- **SQLite** — `.metabokg/meta.sqlite`
+- **LanceDB** — `.metabokg/lancedb`
 - **Embedding Model** — `all-MiniLM-L6-v2` (384-dimensional vectors)
 
 ## Performance Characteristics
@@ -438,7 +438,7 @@ export METAKG_LANCEDB="/data/lancedb"
 poetry run pytest
 
 # Run with coverage
-poetry run pytest --cov=metakg --cov-report=html
+poetry run pytest --cov=metabokg --cov-report=html
 
 # Run specific test
 poetry run pytest tests/test_parsers.py::test_kgml_parser
@@ -469,7 +469,7 @@ Contributions are welcome! Please follow these guidelines:
 poetry run ruff check --fix src/
 
 # Type checking
-poetry run mypy src/metakg/
+poetry run mypy src/metabokg/
 
 # Format with ruff
 poetry run ruff format src/
@@ -490,11 +490,11 @@ poetry run ruff format src/
 If you use MetaKG in research, please cite:
 
 ```bibtex
-@software{flux_frontiers2024metakg,
+@software{flux_frontiers2024metabokg,
   title={MetaKG: Metabolic Pathway Knowledge Graph},
   author={Flux Frontiers Contributors},
   year={2024},
-  url={https://github.com/flux-frontiers/meta_kg}
+  url={https://github.com/flux-frontiers/metabo_kg}
 }
 ```
 
@@ -513,8 +513,8 @@ For commercial licensing inquiries, please contact the author.
 ## Support
 
 - **Documentation** — See docstrings and examples above
-- **Issues** — Report bugs on [GitHub Issues](https://github.com/flux-frontiers/meta_kg/issues)
-- **Discussions** — Ask questions on [GitHub Discussions](https://github.com/flux-frontiers/meta_kg/discussions)
+- **Issues** — Report bugs on [GitHub Issues](https://github.com/flux-frontiers/metabo_kg/issues)
+- **Discussions** — Ask questions on [GitHub Discussions](https://github.com/flux-frontiers/metabo_kg/discussions)
 
 ## Acknowledgments
 

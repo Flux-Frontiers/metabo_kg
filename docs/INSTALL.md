@@ -58,8 +58,8 @@ pyenv install 3.12.8
 pyenv local 3.12.8
 
 # With conda
-conda create -n metakg python=3.12
-conda activate metakg
+conda create -n metabokg python=3.12
+conda activate metabokg
 ```
 
 ### Install Poetry (if not already installed)
@@ -80,8 +80,8 @@ poetry --version
 ## 2. Getting the Code
 
 ```bash
-git clone https://github.com/Flux-Frontiers/meta_kg.git
-cd meta_kg
+git clone https://github.com/Flux-Frontiers/metabo_kg.git
+cd metabo_kg
 ```
 
 The repository includes sample KEGG pathway data in `data/hsa_pathways/` (a subset of human pathways). The full human metabolome can be downloaded separately — see [Section 5](#5-downloading-pathway-data).
@@ -101,10 +101,10 @@ poetry install
 ```
 
 **What you get:**
-- `metakg-build` — parse pathway files and build the knowledge graph
-- `metakg-enrich` — enrich node names with human-readable labels
-- `metakg-analyze` / `metakg-analyze-basic` — pathway analysis reports
-- `metakg-mcp` — MCP server for Claude and other AI assistants
+- `metabokg-build` — parse pathway files and build the knowledge graph
+- `metabokg-enrich` — enrich node names with human-readable labels
+- `metabokg-analyze` / `metabokg-analyze-basic` — pathway analysis reports
+- `metabokg-mcp` — MCP server for Claude and other AI assistants
 - Full Python API (`MetaKG`, `MetaStore`, `MetaIndex`)
 
 **Included packages:** `lancedb`, `numpy`, `sentence-transformers`, `click`, `mcp`, `code-kg`
@@ -122,7 +122,7 @@ poetry install --extras simulate
 ```
 
 **What you get (in addition to core):**
-- `metakg-simulate` — FBA, ODE, and what-if perturbation analysis from the CLI
+- `metabokg-simulate` — FBA, ODE, and what-if perturbation analysis from the CLI
 - `MetabolicSimulator` Python class
 - `scipy.optimize.linprog` (HiGHS backend) for FBA
 - `scipy.integrate.solve_ivp` (BDF solver) for stiff ODE integration
@@ -140,7 +140,7 @@ poetry install --extras viz
 ```
 
 **What you get (in addition to core):**
-- `metakg-viz` — launches a Streamlit web app at `http://localhost:8500`
+- `metabokg-viz` — launches a Streamlit web app at `http://localhost:8500`
 - Interactive graph browser with semantic search
 - Node detail panels with cross-references
 - Network visualization via PyVis
@@ -158,7 +158,7 @@ poetry install --extras viz3d
 ```
 
 **What you get (in addition to core):**
-- `metakg-viz3d` — launches a PyVista 3D viewer
+- `metabokg-viz3d` — launches a PyVista 3D viewer
 - Two layout strategies: **Allium** (pathway-as-flower) and **LayerCake** (vertical stratification)
 - Export to HTML or PNG
 
@@ -224,28 +224,28 @@ After installation, confirm the CLI entry points are available:
 
 ```bash
 # Check core commands
-poetry run metakg --help
-poetry run metakg-build --help
-poetry run metakg-mcp --help
+poetry run metabokg --help
+poetry run metabokg-build --help
+poetry run metabokg-mcp --help
 
 # Check simulation (if installed with --extras simulate)
-poetry run metakg-simulate --help
+poetry run metabokg-simulate --help
 
 # Check visualization (if installed with --extras viz)
-poetry run metakg-viz --help
+poetry run metabokg-viz --help
 
 # Check 3D visualization (if installed with --extras viz3d)
-poetry run metakg-viz3d --help
+poetry run metabokg-viz3d --help
 ```
 
 Verify the Python package imports correctly:
 
 ```bash
 poetry run python -c "
-import metakg
-from metakg import MetaKG
-from metakg.store import MetaStore
-print('metakg OK')
+import metabokg
+from metabokg import MetaKG
+from metabokg.store import MetaStore
+print('metabokg OK')
 
 # Check MCP (always available)
 from mcp.server.fastmcp import FastMCP
@@ -305,19 +305,19 @@ The build step parses all pathway files and writes the graph to SQLite + LanceDB
 ### Basic build
 
 ```bash
-metakg-build --data ./data/hsa_pathways
+metabokg-build --data ./data/hsa_pathways
 ```
 
 This wipes any existing database and rebuilds from scratch using default paths:
-`.metakg/meta.sqlite` for SQLite and `.metakg/lancedb` for the vector index. Enrichment (human-readable names) is enabled by default.
+`.metabokg/meta.sqlite` for SQLite and `.metabokg/lancedb` for the vector index. Enrichment (human-readable names) is enabled by default.
 
 ### Full build with all options
 
 ```bash
-metakg-build \
+metabokg-build \
   --data     ./data/hsa_pathways \
-  --db       .metakg/meta.sqlite \
-  --lancedb  .metakg/lancedb \
+  --db       .metabokg/meta.sqlite \
+  --lancedb  .metabokg/lancedb \
   --model    all-MiniLM-L6-v2
 ```
 
@@ -326,8 +326,8 @@ metakg-build \
 | Flag | Default | Description |
 |---|---|---|
 | `--data PATH` | *(required)* | Directory containing pathway files |
-| `--db PATH` | `.metakg/meta.sqlite` | SQLite output path |
-| `--lancedb PATH` | `.metakg/lancedb` | LanceDB vector index directory |
+| `--db PATH` | `.metabokg/meta.sqlite` | SQLite output path |
+| `--lancedb PATH` | `.metabokg/lancedb` | LanceDB vector index directory |
 | `--model NAME` | `all-MiniLM-L6-v2` | Sentence-transformer model for embeddings |
 | `--no-index` | off | Skip building the LanceDB vector index |
 | `--no-wipe` | off | Keep existing data instead of wiping before build |
@@ -339,7 +339,7 @@ metakg-build \
 ```
 Building MetaKG from ./data/hsa_pathways...
 data_root   : ./data/hsa_pathways
-db_path     : .metakg/meta.sqlite
+db_path     : .metabokg/meta.sqlite
 nodes       : 17050  {'compound': 5115, 'reaction': 2139, 'enzyme': 9427, 'pathway': 369}
 edges       : 40166  {'SUBSTRATE_OF': 2551, 'PRODUCT_OF': 2532, 'CATALYZES': 2394, 'CONTAINS': 32689}
 isolated    : 0
@@ -351,26 +351,26 @@ indexed     : 14911 vectors  dim=384
 ### Rebuilding
 
 The build wipes and rebuilds by default. To **add** new pathway files to an
-existing database without wiping, use `metakg-update` or pass `--no-wipe`:
+existing database without wiping, use `metabokg-update` or pass `--no-wipe`:
 
 ```bash
 # Merge new files into the existing graph
-metakg-update --data ./new_pathways
+metabokg-update --data ./new_pathways
 
 # Equivalent explicit flag on build
-metakg-build --data ./new_pathways --no-wipe
+metabokg-build --data ./new_pathways --no-wipe
 ```
 
 ---
 
 ## 7. Name Enrichment
 
-KGML files store compound and reaction names as bare KEGG accessions (e.g., `C00031`, `R00710`). The enrichment step replaces these with human-readable names and runs **by default** during `metakg-build`.
+KGML files store compound and reaction names as bare KEGG accessions (e.g., `C00031`, `R00710`). The enrichment step replaces these with human-readable names and runs **by default** during `metabokg-build`.
 
 ### Default behavior
 
 ```bash
-metakg-build --data ./data/hsa_pathways
+metabokg-build --data ./data/hsa_pathways
 ```
 
 The build automatically runs enrichment in two phases:
@@ -383,7 +383,7 @@ The build automatically runs enrichment in two phases:
 To build without enrichment:
 
 ```bash
-metakg-build --data ./data/hsa_pathways --no-enrich
+metabokg-build --data ./data/hsa_pathways --no-enrich
 ```
 
 ### Manual enrichment (optional)
@@ -391,14 +391,14 @@ metakg-build --data ./data/hsa_pathways --no-enrich
 If you want to enrich an existing database separately (e.g., after downloading new KEGG name files):
 
 ```bash
-metakg-enrich --db .metakg/meta.sqlite --data data/
+metabokg-enrich --db .metabokg/meta.sqlite --data data/
 ```
 
 **Options:**
 
 | Flag | Default | Description |
 |---|---|---|
-| `--db PATH` | `.metakg/meta.sqlite` | Database to update |
+| `--db PATH` | `.metabokg/meta.sqlite` | Database to update |
 | `--data DIR` | `data/` | Directory containing KEGG TSV files |
 
 ### Download KEGG name lists (optional)
@@ -439,8 +439,8 @@ Each pathway node is automatically tagged with a **category** based on its KEGG 
 **Python API:**
 
 ```python
-from metakg import MetaKG
-from metakg.primitives import PATHWAY_CATEGORY_METABOLIC
+from metabokg import MetaKG
+from metabokg.primitives import PATHWAY_CATEGORY_METABOLIC
 
 kg = MetaKG()
 
@@ -486,13 +486,13 @@ The simulation engine uses Michaelis-Menten kinetics. A curated library of liter
 Seed the database once after building:
 
 ```bash
-metakg-simulate seed --db .metakg/meta.sqlite
+metabokg-simulate seed --db .metabokg/meta.sqlite
 ```
 
 Or with `--force` to overwrite existing values:
 
 ```bash
-metakg-simulate seed --db .metakg/meta.sqlite --force
+metabokg-simulate seed --db .metabokg/meta.sqlite --force
 ```
 
 > **Requires:** `poetry install --extras simulate`
@@ -506,15 +506,15 @@ This writes ~34 kinetic parameter rows and ~18 regulatory interaction rows (allo
 The MCP server exposes the knowledge graph to Claude and other AI assistants via the Model Context Protocol.
 
 ```bash
-metakg-mcp --db .metakg/meta.sqlite --transport stdio
+metabokg-mcp --db .metabokg/meta.sqlite --transport stdio
 ```
 
 **Options:**
 
 | Flag | Default | Description |
 |---|---|---|
-| `--db PATH` | `.metakg/meta.sqlite` | SQLite database path |
-| `--lancedb PATH` | `.metakg/lancedb` | LanceDB vector index directory |
+| `--db PATH` | `.metabokg/meta.sqlite` | SQLite database path |
+| `--lancedb PATH` | `.metabokg/lancedb` | LanceDB vector index directory |
 | `--model NAME` | `all-MiniLM-L6-v2` | Embedding model |
 | `--transport` | `stdio` | `stdio` (Claude Desktop/Code) or `sse` (HTTP) |
 
@@ -525,11 +525,11 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 ```json
 {
   "mcpServers": {
-    "metakg": {
-      "command": "/path/to/venv/bin/metakg-mcp",
+    "metabokg": {
+      "command": "/path/to/venv/bin/metabokg-mcp",
       "args": [
-        "--db", "/absolute/path/to/meta_kg/.metakg/meta.sqlite",
-        "--lancedb", "/absolute/path/to/meta_kg/.metakg/lancedb"
+        "--db", "/absolute/path/to/metabo_kg/.metabokg/meta.sqlite",
+        "--lancedb", "/absolute/path/to/metabo_kg/.metabokg/lancedb"
       ]
     }
   }
@@ -540,10 +540,10 @@ Find your venv path with:
 
 ```bash
 poetry env info --path
-# → /Users/you/Library/Caches/pypoetry/virtualenvs/metakg-abc123-py3.12
+# → /Users/you/Library/Caches/pypoetry/virtualenvs/metabokg-abc123-py3.12
 ```
 
-The `metakg-mcp` binary is at `<venv_path>/bin/metakg-mcp`.
+The `metabokg-mcp` binary is at `<venv_path>/bin/metabokg-mcp`.
 
 ### Connecting to Claude Code / Kilo Code
 
@@ -552,11 +552,11 @@ Create `.mcp.json` in the project root:
 ```json
 {
   "mcpServers": {
-    "metakg": {
-      "command": "metakg-mcp",
+    "metabokg": {
+      "command": "metabokg-mcp",
       "args": [
-        "--db", "/absolute/path/to/meta_kg/.metakg/meta.sqlite",
-        "--lancedb", "/absolute/path/to/meta_kg/.metakg/lancedb"
+        "--db", "/absolute/path/to/metabo_kg/.metabokg/meta.sqlite",
+        "--lancedb", "/absolute/path/to/metabo_kg/.metabokg/lancedb"
       ]
     }
   }
@@ -574,7 +574,7 @@ The Streamlit web explorer provides an interactive browser-based interface for e
 > **Requires:** `poetry install --extras viz`
 
 ```bash
-metakg-viz --db .metakg/meta.sqlite --port 8500
+metabokg-viz --db .metabokg/meta.sqlite --port 8500
 ```
 
 Opens automatically at `http://localhost:8500`.
@@ -583,8 +583,8 @@ Opens automatically at `http://localhost:8500`.
 
 | Flag | Default | Description |
 |---|---|---|
-| `--db PATH` | `.metakg/meta.sqlite` | SQLite database path |
-| `--lancedb PATH` | `.metakg/lancedb` | LanceDB vector index directory |
+| `--db PATH` | `.metabokg/meta.sqlite` | SQLite database path |
+| `--lancedb PATH` | `.metabokg/lancedb` | LanceDB vector index directory |
 | `--port INT` | `8500` | Streamlit server port |
 | `--no-browser` | off | Don't open browser automatically |
 
@@ -602,14 +602,14 @@ The PyVista 3D viewer renders the knowledge graph as an interactive 3D scene.
 > **Requires:** `poetry install --extras viz3d`
 
 ```bash
-metakg-viz3d --db .metakg/meta.sqlite --layout allium
+metabokg-viz3d --db .metabokg/meta.sqlite --layout allium
 ```
 
 **Options:**
 
 | Flag | Default | Description |
 |---|---|---|
-| `--db PATH` | `.metakg/meta.sqlite` | SQLite database path |
+| `--db PATH` | `.metabokg/meta.sqlite` | SQLite database path |
 | `--layout` | `allium` | Layout strategy: `allium` or `cake` |
 | `--width INT` | `1400` | Window width in pixels |
 | `--height INT` | `900` | Window height in pixels |
@@ -653,13 +653,13 @@ poetry install --all-extras --with dev
 poetry run pytest
 
 # Run with coverage
-poetry run pytest --cov=metakg --cov-report=html
+poetry run pytest --cov=metabokg --cov-report=html
 
 # Lint
 poetry run ruff check src/
 
 # Type check
-poetry run mypy src/metakg/
+poetry run mypy src/metabokg/
 
 # Format
 poetry run ruff format src/
@@ -676,8 +676,8 @@ This installs hooks for `ruff`, `mypy`, and `detect-secrets` that run automatica
 ### Project structure
 
 ```
-meta_kg/
-├── src/metakg/          # Main package
+metabo_kg/
+├── src/metabokg/          # Main package
 │   ├── cli/             # Click CLI commands
 │   ├── parsers/         # KGML, SBML, BioPAX, CSV parsers
 │   ├── primitives.py    # MetaNode, MetaEdge data types
@@ -705,8 +705,8 @@ All CLI defaults can be overridden with environment variables:
 
 | Variable | Default | Description |
 |---|---|---|
-| `METAKG_DB` | `.metakg/meta.sqlite` | SQLite database path |
-| `METAKG_LANCEDB` | `.metakg/lancedb` | LanceDB vector index directory |
+| `METAKG_DB` | `.metabokg/meta.sqlite` | SQLite database path |
+| `METAKG_LANCEDB` | `.metabokg/lancedb` | LanceDB vector index directory |
 | `METAKG_MODEL` | `all-MiniLM-L6-v2` | Sentence-transformer model name |
 
 Example for a Docker deployment:
@@ -714,7 +714,7 @@ Example for a Docker deployment:
 ```bash
 export METAKG_DB="/data/meta.sqlite"
 export METAKG_LANCEDB="/data/lancedb"
-metakg-mcp --transport sse
+metabokg-mcp --transport sse
 ```
 
 ---
@@ -729,11 +729,11 @@ git pull
 poetry update
 
 # Rebuild the knowledge graph after significant updates
-metakg-build --data ./data/hsa_pathways
+metabokg-build --data ./data/hsa_pathways
 ```
 
-If the database schema has changed (check `CHANGELOG.md`), always use `metakg-build`
-(which wipes by default) rather than `metakg-update` to avoid merging into an old schema.
+If the database schema has changed (check `CHANGELOG.md`), always use `metabokg-build`
+(which wipes by default) rather than `metabokg-update` to avoid merging into an old schema.
 
 ---
 
@@ -785,7 +785,7 @@ print('Model cached.')
 "
 ```
 
-### `metakg-simulate` not found
+### `metabokg-simulate` not found
 
 The `simulate` extra is required:
 
@@ -793,7 +793,7 @@ The `simulate` extra is required:
 poetry install --extras simulate
 ```
 
-### `metakg-viz` not found or `ModuleNotFoundError: streamlit`
+### `metabokg-viz` not found or `ModuleNotFoundError: streamlit`
 
 The `viz` extra is required:
 
@@ -801,7 +801,7 @@ The `viz` extra is required:
 poetry install --extras viz
 ```
 
-### `metakg-viz3d` not found or `ModuleNotFoundError: pyvista`
+### `metabokg-viz3d` not found or `ModuleNotFoundError: pyvista`
 
 The `viz3d` extra is required:
 
@@ -827,10 +827,10 @@ ls data/hsa_pathways/*.kgml | wc -l
 
 ### LanceDB index missing — semantic search returns no results
 
-The vector index must be built during `metakg-build`. If you used `--no-index`, rebuild:
+The vector index must be built during `metabokg-build`. If you used `--no-index`, rebuild:
 
 ```bash
-metakg-build --data ./data/hsa_pathways
+metabokg-build --data ./data/hsa_pathways
 ```
 
 ### ODE simulation hangs or fails with "repeated convergence failures"
@@ -852,20 +852,20 @@ kg.simulate_ode(pathway_id="...", ode_method="BDF")
 1. Verify the binary path is absolute (not relative):
    ```bash
    poetry env info --path
-   # Use: <venv_path>/bin/metakg-mcp
+   # Use: <venv_path>/bin/metabokg-mcp
    ```
 2. Verify the database exists:
    ```bash
-   ls -la .metakg/meta.sqlite
+   ls -la .metabokg/meta.sqlite
    ```
 3. Restart Claude Desktop after editing `claude_desktop_config.json`.
 
 ### `WARNING: SQLite database not found`
 
-Run `metakg-build` first:
+Run `metabokg-build` first:
 
 ```bash
-metakg-build --data ./data/hsa_pathways
+metabokg-build --data ./data/hsa_pathways
 ```
 
 ---
@@ -874,8 +874,8 @@ metakg-build --data ./data/hsa_pathways
 
 ```bash
 # 1. Clone and enter the repo
-git clone https://github.com/Flux-Frontiers/meta_kg.git
-cd meta_kg
+git clone https://github.com/Flux-Frontiers/metabo_kg.git
+cd metabo_kg
 
 # 2. Install with simulation + web visualization
 poetry install --extras "simulate viz"
@@ -887,19 +887,19 @@ poetry run python scripts/download_human_kegg.py --output data/hsa_pathways
 poetry run python scripts/download_kegg_names.py
 
 # 5. Build the knowledge graph with enrichment in one step
-metakg-build --data ./data/hsa_pathways --enrich
+metabokg-build --data ./data/hsa_pathways --enrich
 
 # 6. Seed kinetic parameters from curated literature
-metakg-simulate seed
+metabokg-simulate seed
 
 # 7. Run a quick analysis
-metakg-analyze --output analysis.md
+metabokg-analyze --output analysis.md
 
 # 8. Launch the web explorer
-metakg-viz
+metabokg-viz
 
 # 9. (Optional) Start the MCP server for Claude
-metakg-mcp --transport stdio
+metabokg-mcp --transport stdio
 ```
 
 ---

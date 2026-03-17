@@ -32,7 +32,7 @@ Extracts metrics like:
 ## Trigger Phrases
 
 - "analyze this pathway database thoroughly"
-- "give me a complete metakg analysis"
+- "give me a complete metabokg analysis"
 - "pathway deep dive"
 - "metabolic network architecture report"
 - "find hub metabolites"
@@ -167,28 +167,28 @@ Compile findings into:
 
 ```bash
 # Build the knowledge graph first
-metakg-build --data pathways/ --db .metakg/meta.sqlite --wipe
+metabokg-build --data pathways/ --db .metabokg/meta.sqlite --wipe
 
 # Run thorough analysis (print to terminal)
-metakg-analyze --db .metakg/meta.sqlite
+metabokg-analyze --db .metabokg/meta.sqlite
 
 # Save Markdown report
-metakg-analyze --db .metakg/meta.sqlite --output Analysis_$(date +%Y%m%d).md
+metabokg-analyze --db .metabokg/meta.sqlite --output Analysis_$(date +%Y%m%d).md
 
 # Top 30 items in each list
-metakg-analyze --db .metakg/meta.sqlite --top 30
+metabokg-analyze --db .metabokg/meta.sqlite --top 30
 
 # Plain text (no Markdown)
-metakg-analyze --db .metakg/meta.sqlite --plain
+metabokg-analyze --db .metabokg/meta.sqlite --plain
 ```
 
 ### Python API
 
 ```python
-from metakg.analyze import PathwayAnalyzer
-from metakg.thorough_analysis import render_thorough_report
+from metabokg.analyze import PathwayAnalyzer
+from metabokg.thorough_analysis import render_thorough_report
 
-with PathwayAnalyzer(".metakg/meta.sqlite", top_n=20) as analyzer:
+with PathwayAnalyzer(".metabokg/meta.sqlite", top_n=20) as analyzer:
     report = analyzer.run()
 
 # Print polished Markdown report
@@ -280,16 +280,16 @@ python scripts/collect_pathway_data.py --delay 1.5
 
 ```bash
 # Analyze current database
-metakg-analyze
+metabokg-analyze
 
 # Full analysis with output saved
-metakg-analyze --db .metakg/meta.sqlite --output reports/pathway_analysis.md --top 25
+metabokg-analyze --db .metabokg/meta.sqlite --output reports/pathway_analysis.md --top 25
 
 # Quick check (top 5 only)
-metakg-analyze --top 5
+metabokg-analyze --top 5
 
 # JSON-friendly plain text
-metakg-analyze --plain > analysis.txt
+metabokg-analyze --plain > analysis.txt
 ```
 
 ---
@@ -301,7 +301,7 @@ For a database built from ~30 KEGG human metabolic pathways:
 ```
 # MetaKG Pathway Analysis Report
 
-**Database:** `.metakg/meta.sqlite`
+**Database:** `.metabokg/meta.sqlite`
 **Generated:** 2026-02-27 14:30 UTC
 
 ## Phase 1 — Graph Statistics
@@ -400,5 +400,5 @@ No isolated nodes — all entities connected.
 2. **Flux balance proxies** — Estimate metabolic load from stoichiometry
 3. **Drug target scoring** — Rank reactions by target tractability × pathway essentiality
 4. **Temporal analysis** — Compare two MetaKG snapshots (before/after data update)
-5. **MCP tool integration** — Expose analysis results via `metakg-mcp` tools
+5. **MCP tool integration** — Expose analysis results via `metabokg-mcp` tools
 6. **Interactive report** — Streamlit dashboard for the analysis output

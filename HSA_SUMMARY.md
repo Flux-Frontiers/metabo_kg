@@ -71,18 +71,18 @@ poetry run python scripts/download_human_kegg.py --output data/hsa_pathways --dr
 ### 2. Build the Knowledge Graph
 ```bash
 # Build SQLite + LanceDB from pathway files
-poetry run metakg-build --data data/hsa_pathways --wipe
+poetry run metabokg-build --data data/hsa_pathways --wipe
 
 # Result:
-# - .metakg/meta.sqlite (10-15 MB, indexed)
-# - .metakg/lancedb/ (semantic vectors)
+# - .metabokg/meta.sqlite (10-15 MB, indexed)
+# - .metabokg/lancedb/ (semantic vectors)
 # - Total size: ~25-30 MB with all indices
 ```
 
 ### 3. Explore Interactively
 ```bash
 # Launch Streamlit web explorer
-poetry run metakg-viz
+poetry run metabokg-viz
 
 # Opens: http://localhost:8500
 # Features:
@@ -95,7 +95,7 @@ poetry run metakg-viz
 ### 4. Use in Claude/LLMs
 ```bash
 # Start MCP server
-poetry run metakg-mcp
+poetry run metabokg-mcp
 
 # Claude can now query with tools:
 # - query_pathway(name, k): Find pathways by description
@@ -152,8 +152,8 @@ poetry run metakg-mcp
 ## File Structure
 
 ```
-meta_kg/
-├── src/metakg/
+metabo_kg/
+├── src/metabokg/
 │   ├── app.py                 # Streamlit explorer (22K LOC, interactive UI)
 │   ├── store.py               # GraphStore: SQLite + LanceDB queries
 │   ├── parsers/               # KGML, SBML, BioPAX, CSV parsers
@@ -163,7 +163,7 @@ meta_kg/
 │   ├── download_human_kegg.py # KEGG REST API downloader (~2-3 MB)
 │   └── article_examples.py    # Reproducible example scripts
 ├── data/hsa_pathways/         # 369 human pathway KGML files (~19 MB)
-├── .metakg/
+├── .metabokg/
 │   ├── meta.sqlite            # Knowledge graph (22,290 nodes, 11,298 edges)
 │   └── lancedb/               # Vector index (20,151 embeddings)
 └── tests/                     # 97 comprehensive tests (FBA, ODE, what-if)
@@ -191,7 +191,7 @@ f1981eb  feat(viz): Display node names instead of IDs with rich hover metadata
 
 ### Example 1: Explore Glycolysis
 ```bash
-poetry run metakg-viz
+poetry run metabokg-viz
 # → Open browser
 # → Graph Browser tab → filter "pathway" nodes
 # → Click "Glycolysis / Gluconeogenesis"
@@ -201,7 +201,7 @@ poetry run metakg-viz
 
 ### Example 2: Find Shortest Path (Glucose → Energy)
 ```python
-from metakg import MetaKG
+from metabokg import MetaKG
 
 kg = MetaKG()
 path = kg.find_path("D-Glucose", "ATP", max_hops=6)
@@ -223,7 +223,7 @@ result = kg.simulate_ode(
 
 ### Example 4: Semantic Search
 ```bash
-poetry run metakg-viz
+poetry run metabokg-viz
 # → Semantic Search tab
 # → Query: "fatty acid oxidation"
 # → Get ranked results: Beta-oxidation pathway, related enzymes, metabolites
@@ -248,23 +248,23 @@ poetry run metakg-viz
 1. **Download & build human data**:
    ```bash
    poetry run python scripts/download_human_kegg.py --output data/hsa_pathways
-   poetry run metakg-build --data data/hsa_pathways --wipe
+   poetry run metabokg-build --data data/hsa_pathways --wipe
    ```
 
 2. **Explore interactively**:
    ```bash
-   poetry run metakg-viz
+   poetry run metabokg-viz
    ```
 
 3. **Integrate with Claude** (via MCP server):
    ```bash
-   poetry run metakg-mcp
+   poetry run metabokg-mcp
    # Configure in Claude settings
    ```
 
 4. **Use Python API** for custom workflows:
    ```python
-   from metakg import MetaKG
+   from metabokg import MetaKG
    kg = MetaKG()
    # query_pathway, get_compound, simulate_fba, etc.
    ```

@@ -13,7 +13,7 @@ Changes:
   → isolated nodes: 12,245 → 0
 - cli/cmd_build.py + orchestrator.py: --enrich → --no-enrich (default on)
 - CLAUDE.md: codekg-* command style restored, poetry run removed
-- .claude/commands/: metakg-build.md, metakg-simulate.md, metakg-viz.md
+- .claude/commands/: metabokg-build.md, metabokg-simulate.md, metabokg-viz.md
 - .vscode/: full set of *.prompt.md slash commands for GitHub Copilot
 - tests: 97 → 123 tests covering category, migration, KGML wiring
 

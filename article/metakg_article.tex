@@ -459,7 +459,7 @@ Enrichment proceeds in two phases, both idempotent and safe to re-run:
     once; subsequent enrichment runs read them locally:
     \begin{lstlisting}[style=bash]
 python scripts/download_kegg_names.py
-metakg-enrich --db .metakg/meta.sqlite
+metabokg-enrich --db .metabokg/meta.sqlite
     \end{lstlisting}
     Phase~2 updates compound names (e.g.\ \texttt{C00031} $\to$
     \texttt{D-Glucose}) and reaction names (e.g.\ \texttt{R00710} $\to$
@@ -471,7 +471,7 @@ Both phases can be combined with the build step via the \texttt{--enrich}
 flag:
 
 \begin{lstlisting}[style=bash]
-metakg-build --data ./pathways --enrich
+metabokg-build --data ./pathways --enrich
 \end{lstlisting}
 
 After enrichment, all query results---including MCP tool responses and
@@ -664,7 +664,7 @@ sources (BRENDA, SABIO-RK, published metabolic models) via
 
 \subsection{2D Web Explorer}
 
-The \texttt{metakg-viz} command launches a Streamlit~\citep{streamlit2019}
+The \texttt{metabokg-viz} command launches a Streamlit~\citep{streamlit2019}
 web application with three views:
 
 \begin{enumerate}[leftmargin=*,itemsep=2pt]
@@ -683,7 +683,7 @@ web application with three views:
 
 \subsection{3D Visualiser}
 
-The \texttt{metakg-viz3d} command launches a PyVista~\citep{sullivan2019pyvista}
+The \texttt{metabokg-viz3d} command launches a PyVista~\citep{sullivan2019pyvista}
 interactive 3D viewer. Two layout strategies are available:
 
 \textbf{Allium layout.} Each pathway node sits on a flat Fibonacci annulus in
@@ -739,7 +739,7 @@ graph through nine typed tools:
 The server starts with:
 
 \begin{lstlisting}[style=bash]
-metakg-mcp --db .metakg/meta.sqlite \
+metabokg-mcp --db .metabokg/meta.sqlite \
            --transport stdio
 \end{lstlisting}
 
@@ -763,10 +763,10 @@ carbohydrate metabolism, lipid metabolism, and signaling networks.
 \subsection{Building the Knowledge Graph}
 
 \begin{lstlisting}[style=bash, caption={Building the complete human metabolome knowledge graph.}]
-$ metakg-build --data ./data/hsa_pathways
+$ metabokg-build --data ./data/hsa_pathways
 Building MetaKG from ./data/hsa_pathways...
 data_root   : ./data/hsa_pathways
-db_path     : .metakg/meta.sqlite
+db_path     : .metabokg/meta.sqlite
 nodes       : 22290  {'compound': 5115, 'enzyme': 14667,
               'pathway': 369, 'reaction': 2139}
 edges       : 11298  {'CATALYZES': 2406, 'CONTAINS': 3809,
@@ -774,15 +774,15 @@ edges       : 11298  {'CATALYZES': 2406, 'CONTAINS': 3809,
 indexed     : 20151 vectors  dim=384
 \end{lstlisting}
 
-By default, \texttt{metakg-build} wipes the existing database and vector index
+By default, \texttt{metabokg-build} wipes the existing database and vector index
 before parsing (the safest, most predictable behaviour). To incrementally merge
 new pathway files instead, use the \texttt{--no-wipe} flag or the convenience
-command \texttt{metakg-update --data ./pathways}.
+command \texttt{metabokg-update --data ./pathways}.
 
 \subsection{Structural Queries via the Python API}
 
 \begin{lstlisting}[style=python, caption={Compound retrieval and neighbourhood traversal.}]
-from metakg import MetaKG
+from metabokg import MetaKG
 
 kg = MetaKG()
 
@@ -814,7 +814,7 @@ Products:   ['Pyruvate', 'ATP']
 \subsection{Shortest-Path Search}
 
 \begin{lstlisting}[style=python, caption={Finding the shortest metabolic route between two compounds.}]
-from metakg import MetaKG
+from metabokg import MetaKG
 
 kg = MetaKG()
 
@@ -860,7 +860,7 @@ queries complete in 10--50~ms.
 \subsection{Semantic Search}
 
 \begin{lstlisting}[style=python, caption={Semantic pathway retrieval.}]
-from metakg import MetaKG
+from metabokg import MetaKG
 
 kg = MetaKG()
 
@@ -884,11 +884,11 @@ sentence-transformer model handles synonymy and domain terminology effectively.
 
 \subsection{Pathway Analysis Report}
 
-The \texttt{metakg-analyze} command runs a seven-phase analysis and produces a
+The \texttt{metabokg-analyze} command runs a seven-phase analysis and produces a
 structured Markdown report:
 
 \begin{lstlisting}[style=bash]
-$ metakg-analyze --output analysis.md --top 10
+$ metabokg-analyze --output analysis.md --top 10
 \end{lstlisting}
 
 The report covers: (1)~aggregate graph statistics; (2)~hub metabolites ranked
@@ -913,7 +913,7 @@ hsa00010.xml    # KGML (KEGG)
 R-HSA-70171.owl # BioPAX (Reactome)
 custom_rxns.csv # CSV (in-house data)
 
-$ metakg-build --data ./pathways
+$ metabokg-build --data ./pathways
 \end{lstlisting}
 
 The parser dispatcher examines the root XML element of each \texttt{.xml} or
@@ -939,8 +939,8 @@ installed via \texttt{poetry install --extras viz} or \texttt{--extras viz3d}.
 \textbf{Installation.}
 
 \begin{lstlisting}[style=bash]
-git clone https://github.com/Flux-Frontiers/meta_kg
-cd meta_kg
+git clone https://github.com/Flux-Frontiers/metabo_kg
+cd metabo_kg
 poetry install --extras all
 \end{lstlisting}
 
@@ -950,8 +950,8 @@ callers should create one \texttt{MetaKG} instance per process or protect a
 shared instance with a lock.
 
 \textbf{Incremental rebuild.} The stable ID scheme makes incremental builds
-straightforward. Running \texttt{metakg-build} with \texttt{--no-wipe} (or using
-the convenience command \texttt{metakg-update}) issues \texttt{INSERT OR REPLACE}
+straightforward. Running \texttt{metabokg-build} with \texttt{--no-wipe} (or using
+the convenience command \texttt{metabokg-update}) issues \texttt{INSERT OR REPLACE}
 statements, updating existing nodes and appending new ones without duplicating entries.
 
 \textbf{Codebase self-analysis.} \textsc{MetaKG} is itself analysed with its
@@ -1005,7 +1005,7 @@ commitment to AI-accessible knowledge graphs, not merely another API layer.
 
 \textbf{Snapshot-based operation.} \textsc{MetaKG} is a local analysis tool,
 not a live database mirror. The knowledge graph is a snapshot at build time;
-users must re-run \texttt{metakg-build} after updating source files. This
+users must re-run \texttt{metabokg-build} after updating source files. This
 keeps the system self-contained and free of dependencies on external services
 during analysis. For research workflows where reproducibility matters most,
 this is an advantage. For applications requiring real-time data updates, a
@@ -1116,7 +1116,7 @@ graph systems in related biological domains (protein interactions, gene
 regulatory networks, drug--target interactions).
 
 The software is freely available at
-\url{https://github.com/Flux-Frontiers/meta_kg} under the Elastic License~2.0.
+\url{https://github.com/Flux-Frontiers/metabo_kg} under the Elastic License~2.0.
 
 % ---------------------------------------------------------------------------
 % Appendix: Format-Specific Parser Details

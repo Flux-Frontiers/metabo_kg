@@ -17,11 +17,11 @@ Three significant improvements were implemented in this session:
 | A | **Strategy C missing** — KGML `<entry type="gene">` elements carry a `reaction="rn:RXXXXX"` attribute that was never used for wiring | ~8,500 orphan enzymes |
 | B | **CONTAINS fallback missing** — 278 pathway files with zero `<reaction>` elements (signaling 04xxx, disease 05xxx, genetic info 03xxx) had no path to wire entries to anything | ~3,500 orphan nodes |
 | C | **Multi-compound entry clobber** — `<entry name="cpd:C001 cpd:C002">` only stored the last ID in `entry_map` | dozens of orphan compounds |
-| D | **Enrichment opt-in** — bare `metakg build` never ran enrichment | pipeline hygiene |
+| D | **Enrichment opt-in** — bare `metabokg build` never ran enrichment | pipeline hygiene |
 
 ### Files Changed
 
-**`src/metakg/parsers/kgml.py`**
+**`src/metabokg/parsers/kgml.py`**
 
 - Added `reaction_attr_map: dict[str, str]` — populated during gene/ortholog entry processing from `entry.attrib.get("reaction", "")`.
 - Added **Strategy C** wiring: after Strategies A and B fail, look up `reaction_attr_map` and create `CATALYZES` edge.
@@ -30,11 +30,11 @@ Three significant improvements were implemented in this session:
   - Any compound not wired via `SUBSTRATE_OF`/`PRODUCT_OF` → `pwy CONTAINS cpd`
   - Multi-compound entries handled by splitting the raw `name` attribute on whitespace (not just the last ID)
 
-**`src/metakg/cli/cmd_build.py`**
+**`src/metabokg/cli/cmd_build.py`**
 
 - `--enrich` flag (opt-in) replaced with `--no-enrich` flag (enrich now default-on) for both `build` and `update` commands.
 
-**`src/metakg/orchestrator.py`**
+**`src/metabokg/orchestrator.py`**
 
 - `MetaKG.build(enrich: bool = False)` → `enrich: bool = True`
 
@@ -71,21 +71,21 @@ KEGG pathways span very different biological domains. Storing the biological cat
 
 ### Files Changed
 
-**`src/metakg/primitives.py`**
+**`src/metabokg/primitives.py`**
 
 - Added `import re`
 - Added 8 `PATHWAY_CATEGORY_*` string constants + `ALL_PATHWAY_CATEGORIES` tuple
 - Added `_kegg_pathway_category(pathway_id: str) -> str | None` — extracts the trailing 5-digit number and maps it to a constant; returns `None` for unparseable IDs
 - Added `category: str | None = None` field to `MetaNode` dataclass (after `source_file`)
 
-**`src/metakg/store.py`**
+**`src/metabokg/store.py`**
 
 - Added `category TEXT` column to `meta_nodes` `CREATE TABLE` in `_SCHEMA_SQL`
 - Added `_migrate()` — reads `PRAGMA table_info(meta_nodes)` and issues `ALTER TABLE meta_nodes ADD COLUMN category TEXT` if absent; called from `_apply_schema()` so existing databases upgrade transparently on first open
 - Extended `write()` INSERT to 12 columns with `n.category` as the 12th value
 - Extended `all_nodes(*, kind=None, category=None)` to support `WHERE category=?` (combinable with `kind=`)
 
-**`src/metakg/parsers/kgml.py`**
+**`src/metabokg/parsers/kgml.py`**
 
 - Imported `_kegg_pathway_category`
 - Set `category=_kegg_pathway_category(pathway_kegg_id)` on `pwy_node` at creation
@@ -107,8 +107,8 @@ Total                   369   (0 NULL)
 ### Usage
 
 ```python
-from metakg import MetaKG
-from metakg.primitives import PATHWAY_CATEGORY_METABOLIC
+from metabokg import MetaKG
+from metabokg.primitives import PATHWAY_CATEGORY_METABOLIC
 
 kg = MetaKG()
 
@@ -159,7 +159,7 @@ Low-coverage modules (`analyze.py`, `app.py`, `viz3d.py`, CLI) are UI/IO-heavy l
 ## Current Database State
 
 ```
-db_path  : .metakg/meta.sqlite
+db_path  : .metabokg/meta.sqlite
 nodes    : 17,050  {compound: 5115, enzyme: 9427, pathway: 369, reaction: 2139}
 edges    : 40,166  {CATALYZES: 2394, CONTAINS: 32689, PRODUCT_OF: 2532, SUBSTRATE_OF: 2551}
 xrefs    : 24,037

@@ -22,9 +22,9 @@ Launch the MetaKG interactive network visualization. Choose between 2D (Streamli
 
 1. Confirm the database exists:
    ```bash
-   ls -lh .metakg/meta.sqlite
+   ls -lh .metabokg/meta.sqlite
    ```
-2. If missing, build first: `metakg-build --data data/hsa_pathways`
+2. If missing, build first: `metabokg-build --data data/hsa_pathways`
 
 ---
 
@@ -33,13 +33,13 @@ Launch the MetaKG interactive network visualization. Choose between 2D (Streamli
 Browser-based interactive network explorer:
 
 ```bash
-metakg-viz
+metabokg-viz
 ```
 
 Options:
 ```bash
-metakg-viz --port 8500          # Custom port (default: 8500)
-metakg-viz --db .metakg/meta.sqlite
+metabokg-viz --port 8500          # Custom port (default: 8500)
+metabokg-viz --db .metabokg/meta.sqlite
 ```
 
 **Features in the UI:**
@@ -57,16 +57,16 @@ Opens automatically in your browser at `http://localhost:8500`.
 Desktop 3D graph visualization with two layout modes:
 
 ```bash
-metakg-viz3d                          # Default: allium layout
-metakg-viz3d --layout allium         # Hub-spoke (pathways at center)
-metakg-viz3d --layout cake           # Concentric rings by topology
+metabokg-viz3d                          # Default: allium layout
+metabokg-viz3d --layout allium         # Hub-spoke (pathways at center)
+metabokg-viz3d --layout cake           # Concentric rings by topology
 ```
 
 Options:
 ```bash
-metakg-viz3d --layout allium|cake
-metakg-viz3d --db .metakg/meta.sqlite
-metakg-viz3d --width 1400 --height 900
+metabokg-viz3d --layout allium|cake
+metabokg-viz3d --db .metabokg/meta.sqlite
+metabokg-viz3d --width 1400 --height 900
 ```
 
 ### Layout Modes
@@ -98,8 +98,8 @@ metakg-viz3d --width 1400 --height 900
 Filter pathways by biological domain using the Python API:
 
 ```python
-from metakg import MetaKG
-from metakg.primitives import PATHWAY_CATEGORY_METABOLIC, PATHWAY_CATEGORY_SIGNALING
+from metabokg import MetaKG
+from metabokg.primitives import PATHWAY_CATEGORY_METABOLIC, PATHWAY_CATEGORY_SIGNALING
 
 kg = MetaKG()
 
@@ -115,5 +115,5 @@ for p in metabolic:
 
 - **Streamlit not found**: `poetry install --all-extras` or `pip install streamlit`
 - **PyVista not found**: `poetry install --all-extras` or `pip install pyvista`
-- **Port in use**: `metakg-viz --port 8501`
+- **Port in use**: `metabokg-viz --port 8501`
 - **Slow rendering**: Filter to a single pathway first

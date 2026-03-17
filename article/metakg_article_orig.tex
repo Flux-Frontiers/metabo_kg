@@ -594,7 +594,7 @@ sources (BRENDA, SABIO-RK, published metabolic models) via
 
 \subsection{2D Web Explorer}
 
-The \texttt{metakg-viz} command launches a Streamlit~\citep{streamlit2019}
+The \texttt{metabokg-viz} command launches a Streamlit~\citep{streamlit2019}
 web application that presents three views:
 
 \begin{enumerate}[leftmargin=*,itemsep=2pt]
@@ -613,7 +613,7 @@ web application that presents three views:
 
 \subsection{3D Visualiser}
 
-The \texttt{metakg-viz3d} command launches a PyVista~\citep{sullivan2019pyvista}
+The \texttt{metabokg-viz3d} command launches a PyVista~\citep{sullivan2019pyvista}
 interactive 3D viewer. Two layout strategies are implemented:
 
 \textbf{Allium layout.} Each pathway node is placed at a position on a flat
@@ -659,7 +659,7 @@ exposes the knowledge graph through four tools:
 The server is started with:
 
 \begin{lstlisting}[style=bash]
-metakg-mcp --db .metakg/meta.sqlite \
+metabokg-mcp --db .metabokg/meta.sqlite \
            --transport stdio
 \end{lstlisting}
 
@@ -683,10 +683,10 @@ carbohydrate metabolism, lipid metabolism, and signaling networks.
 \subsection{Building the Knowledge Graph}
 
 \begin{lstlisting}[style=bash, caption={Building the complete human metabolome knowledge graph.}]
-$ metakg-build --data ./data/hsa_pathways --wipe
+$ metabokg-build --data ./data/hsa_pathways --wipe
 Building MetaKG from ./data/hsa_pathways...
 data_root   : ./data/hsa_pathways
-db_path     : .metakg/meta.sqlite
+db_path     : .metabokg/meta.sqlite
 nodes       : 22290  {'compound': 5115, 'enzyme': 14667,
               'pathway': 369, 'reaction': 2139}
 edges       : 11298  {'CATALYZES': 2406, 'CONTAINS': 3809,
@@ -700,7 +700,7 @@ allows incremental additions of new pathway files to an existing graph.
 \subsection{Structural Queries via the Python API}
 
 \begin{lstlisting}[style=python, caption={Compound retrieval and neighbourhood traversal.}]
-from metakg import MetaKG
+from metabokg import MetaKG
 
 kg = MetaKG()
 
@@ -732,7 +732,7 @@ Products:   ['Pyruvate', 'ATP']
 \subsection{Shortest-Path Search}
 
 \begin{lstlisting}[style=python, caption={Finding the shortest metabolic route between two compounds.}]
-from metakg import MetaKG
+from metabokg import MetaKG
 
 kg = MetaKG()
 
@@ -778,7 +778,7 @@ queries complete in 10--50~ms.
 \subsection{Semantic Search}
 
 \begin{lstlisting}[style=python, caption={Semantic pathway retrieval.}]
-from metakg import MetaKG
+from metabokg import MetaKG
 
 kg = MetaKG()
 
@@ -804,11 +804,11 @@ competently.
 
 \subsection{Pathway Analysis Report}
 
-The \texttt{metakg-analyze} command runs a seven-phase analysis and produces
+The \texttt{metabokg-analyze} command runs a seven-phase analysis and produces
 a structured Markdown report:
 
 \begin{lstlisting}[style=bash]
-$ metakg-analyze --output analysis.md --top 10
+$ metabokg-analyze --output analysis.md --top 10
 \end{lstlisting}
 
 The report covers: (1) aggregate graph statistics; (2) hub metabolites ranked
@@ -832,7 +832,7 @@ hsa00010.xml    # KGML (KEGG)
 R-HSA-70171.owl # BioPAX (Reactome)
 custom_rxns.csv # CSV (in-house data)
 
-$ metakg-build --data ./pathways --wipe
+$ metabokg-build --data ./pathways --wipe
 \end{lstlisting}
 
 The parser dispatcher examines the root XML element of each \texttt{.xml} or
@@ -857,8 +857,8 @@ or \texttt{--extras viz3d}.
 \textbf{Installation.}
 
 \begin{lstlisting}[style=bash]
-git clone https://github.com/Flux-Frontiers/meta_kg
-cd meta_kg
+git clone https://github.com/Flux-Frontiers/metabo_kg
+cd metabo_kg
 poetry install --extras all
 \end{lstlisting}
 
@@ -868,7 +868,7 @@ callers should create one \texttt{MetaKG} instance per process or protect
 the shared instance with a lock.
 
 \textbf{Incremental rebuild.} The stable ID scheme makes incremental builds
-tractable. Running \texttt{metakg-build} without \texttt{--wipe} issues
+tractable. Running \texttt{metabokg-build} without \texttt{--wipe} issues
 \texttt{INSERT OR REPLACE} statements, which update existing nodes and append
 new ones without duplicating entries.
 
@@ -923,7 +923,7 @@ API; it represents a design commitment to AI-accessible knowledge graphs.
 
 \textbf{Snapshot-based operation.} \textsc{MetaKG} is a local analysis tool, not a live
 database mirror. The knowledge graph is a snapshot at build time; users must
-re-run \texttt{metakg-build} after updating source files. This design choice
+re-run \texttt{metabokg-build} after updating source files. This design choice
 keeps the system self-contained and avoids dependencies on external services
 during analysis. For research workflows where reproducibility is paramount, this
 is an advantage. For applications requiring real-time data updates, a live
@@ -1030,7 +1030,7 @@ graph systems in related biological domains (protein interactions, gene
 regulatory networks, drug-target interactions).
 
 The software is freely available at
-\url{https://github.com/Flux-Frontiers/meta_kg} under the Elastic License~2.0.
+\url{https://github.com/Flux-Frontiers/metabo_kg} under the Elastic License~2.0.
 
 % ---------------------------------------------------------------------------
 % Appendix: Format-Specific Parser Details

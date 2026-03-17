@@ -4,7 +4,7 @@ collect_pathway_data.py — Download real metabolic pathway data for MetaKG.
 
 Downloads KEGG KGML files for a curated set of key human metabolic pathways
 from the KEGG REST API (https://rest.kegg.jp).  Files are saved to the
-``data/hsa_pathways/`` directory, ready for ingestion by ``metakg-build``.
+``data/hsa_pathways/`` directory, ready for ingestion by ``metabokg-build``.
 
 Usage::
 
@@ -91,7 +91,7 @@ def fetch_kgml(pathway_id: str, *, timeout: int = 30) -> bytes | None:
     req = urllib.request.Request(
         url,
         headers={
-            "User-Agent": "MetaKG-data-collector/0.1 (research; https://github.com/Flux-Frontiers/meta_kg)"
+            "User-Agent": "MetaKG-data-collector/0.1 (research; https://github.com/Flux-Frontiers/metabo_kg)"
         },
     )
     try:
@@ -168,7 +168,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         prog="collect_pathway_data",
         description=(
             "Download KEGG KGML files for a curated set of metabolic pathways. "
-            "Files are saved to the output directory, ready for metakg-build."
+            "Files are saved to the output directory, ready for metabokg-build."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
@@ -213,7 +213,9 @@ def main(argv: list[str] | None = None) -> int:
     # Filter by category if requested
     pathways = PATHWAYS
     if args.category:
-        pathways = [(pid, name, cat) for pid, name, cat in PATHWAYS if cat == args.category]
+        pathways = [
+            (pid, name, cat) for pid, name, cat in PATHWAYS if cat == args.category
+        ]
         if not pathways:
             print(f"No pathways found for category '{args.category}'", file=sys.stderr)
             return 1
@@ -252,7 +254,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print()
     print("Next step — build the knowledge graph:")
-    print(f"  metakg-build --data {out_dir} --db .metakg/meta.sqlite --wipe")
+    print(f"  metabokg-build --data {out_dir} --db .metabokg/meta.sqlite --wipe")
     return 0
 
 

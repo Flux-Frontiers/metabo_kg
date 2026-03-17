@@ -34,7 +34,7 @@ Parse KEGG KGML pathway files into the MetaKG SQLite knowledge graph and LanceDB
 
 1. Confirm the database directory exists or will be created:
    ```bash
-   ls -la .metakg/ 2>/dev/null || echo "Will be created"
+   ls -la .metabokg/ 2>/dev/null || echo "Will be created"
    ```
 2. If an existing database is present, warn the user it will be wiped (default behavior).
 
@@ -45,15 +45,15 @@ Parse KEGG KGML pathway files into the MetaKG SQLite knowledge graph and LanceDB
 Run the full build (wipe + enrich by default):
 
 ```bash
-metakg-build --data "$DATA_DIR"
+metabokg-build --data "$DATA_DIR"
 ```
 
 **Common options:**
 - `--no-wipe` — Keep existing data, add only new files
 - `--no-enrich` — Skip compound/reaction name enrichment (faster)
 - `--no-index` — Skip LanceDB (SQLite only)
-- `--db PATH` — Custom SQLite path (default: `.metakg/meta.sqlite`)
-- `--lancedb PATH` — Custom LanceDB path (default: `.metakg/lancedb`)
+- `--db PATH` — Custom SQLite path (default: `.metabokg/meta.sqlite`)
+- `--lancedb PATH` — Custom LanceDB path (default: `.metabokg/lancedb`)
 
 Monitor output for:
 - Number of pathways parsed
@@ -69,7 +69,7 @@ Run a quick stats check:
 
 ```bash
 python -c "
-from metakg import MetaKG
+from metabokg import MetaKG
 kg = MetaKG()
 store = kg.store
 nodes = store.all_nodes()
@@ -82,7 +82,7 @@ print(f'Categories: {set(p.category for p in pathways if p.category)}')
 
 Or via SQL:
 ```bash
-sqlite3 .metakg/meta.sqlite "
+sqlite3 .metabokg/meta.sqlite "
 SELECT kind, COUNT(*) as n FROM meta_nodes GROUP BY kind;
 SELECT COUNT(*), category FROM meta_nodes WHERE kind='pathway' GROUP BY category;
 "
@@ -95,7 +95,7 @@ SELECT COUNT(*), category FROM meta_nodes WHERE kind='pathway' GROUP BY category
 Load literature kinetic parameters (Km, Vmax, kcat) for simulations:
 
 ```bash
-metakg-simulate seed
+metabokg-simulate seed
 ```
 
 ---
@@ -109,8 +109,8 @@ Present a summary:
 ✓ Total nodes:      <N>
 ✓ Total edges:      <N>
 ✓ Categories:       metabolic=X  signaling=X  disease=X  ...
-✓ Database:         .metakg/meta.sqlite
-✓ Vector index:     .metakg/lancedb
+✓ Database:         .metabokg/meta.sqlite
+✓ Vector index:     .metabokg/lancedb
 ```
 
 ---
@@ -120,7 +120,7 @@ Present a summary:
 To add new KGML files without wiping existing data:
 
 ```bash
-metakg-update --data "$DATA_DIR"
+metabokg-update --data "$DATA_DIR"
 ```
 
 Use this when you've downloaded new pathway files and want to merge them in.

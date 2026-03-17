@@ -10,16 +10,16 @@
 1. [Architecture Overview](#1-architecture-overview)
 2. [Data Model](#2-data-model)
 3. [File Format Parsers](#3-file-format-parsers)
-4. [Building the Knowledge Graph](#4-building-the-knowledge-graph-metakg-build)
-5. [Name Enrichment](#5-name-enrichment-metakg-enrich)
+4. [Building the Knowledge Graph](#4-building-the-knowledge-graph-metabokg-build)
+5. [Name Enrichment](#5-name-enrichment-metabokg-enrich)
 6. [Semantic Search & Vector Index](#6-semantic-search--vector-index)
 7. [Simulation Engine](#7-simulation-engine)
    - [FBA — Flux Balance Analysis](#71-fba--flux-balance-analysis)
    - [ODE — Kinetic Simulation](#72-ode--kinetic-simulation)
    - [WhatIf — Perturbation Analysis](#73-whatif--perturbation-analysis)
 8. [Kinetic & Regulatory Parameters](#8-kinetic--regulatory-parameters)
-9. [Pathway Analysis](#9-pathway-analysis-metakg-analyze)
-10. [MCP Server & Tools](#10-mcp-server--tools-metakg-mcp)
+9. [Pathway Analysis](#9-pathway-analysis-metabokg-analyze)
+10. [MCP Server & Tools](#10-mcp-server--tools-metabokg-mcp)
 11. [CLI Reference](#11-cli-reference)
 12. [Python API Reference](#12-python-api-reference)
 13. [Database Schema](#13-database-schema)
@@ -64,7 +64,7 @@
    └───────────────────────────────────────────┘
 ```
 
-MetaKG keeps all graph data in a local **SQLite** file (`.metakg/meta.sqlite`) and an optional **LanceDB** directory (`.metakg/lancedb`) for vector-similarity search.  An optional enrichment pass replaces bare KEGG accessions with human-readable names stored directly in the database.  All components interact through a single stable API; the MCP server and CLI are thin wrappers.
+MetaKG keeps all graph data in a local **SQLite** file (`.metabokg/meta.sqlite`) and an optional **LanceDB** directory (`.metabokg/lancedb`) for vector-similarity search.  An optional enrichment pass replaces bare KEGG accessions with human-readable names stored directly in the database.  All components interact through a single stable API; the MCP server and CLI are thin wrappers.
 
 ---
 
@@ -111,7 +111,7 @@ Edges carry an optional **`evidence`** JSON blob (`{"stoich": 2.0, "compartment"
 MetaNode:
   id              — stable URI-style identifier
   kind            — compound | reaction | enzyme | pathway
-  name            — primary display name (enriched to human-readable after metakg-enrich)
+  name            — primary display name (enriched to human-readable after metabokg-enrich)
   description     — free-text for embedding/search
   formula         — molecular formula (compounds)
   charge          — formal charge (compounds)
@@ -151,7 +151,7 @@ Four parsers are registered and tried in order for every file in the data direct
 - `CONTAINS` edges: pathway → all reactions
 
 > **Note:** KGML files store compound and reaction names as bare KEGG accessions (e.g. `C00031`, `R00299`).
-> Run `metakg-enrich` after building to replace these with human-readable names.
+> Run `metabokg-enrich` after building to replace these with human-readable names.
 >
 > **Scope:** Only metabolic KGML files (those containing `<reaction>` elements, typically `hsa000xx` series) are parsed. Signalling, disease, and cellular-process pathways that use only `<relation>` elements are silently skipped.
 
@@ -222,13 +222,13 @@ Multiple substrates/products in one cell can be separated by `;` or `|`.  Rows s
 
 ---
 
-## 4. Building the Knowledge Graph — `metakg-build`
+## 4. Building the Knowledge Graph — `metabokg-build`
 
 ```bash
-metakg-build \
+metabokg-build \
   --data     <DIR>                    # required: directory of pathway files
-  --db       .metakg/meta.sqlite      # SQLite output path
-  --lancedb  .metakg/lancedb         # LanceDB vector index directory
+  --db       .metabokg/meta.sqlite      # SQLite output path
+  --lancedb  .metabokg/lancedb         # LanceDB vector index directory
   --model    all-MiniLM-L6-v2        # SentenceTransformer model
   --no-index                         # skip LanceDB index build
   --no-wipe                          # keep existing data (default: wipe before build)
@@ -236,10 +236,10 @@ metakg-build \
   --enrich-data  DIR                 # KEGG TSV directory (default: data/)
 ```
 
-To incrementally add files without wiping, use `metakg-update` (same options, always merges):
+To incrementally add files without wiping, use `metabokg-update` (same options, always merges):
 
 ```bash
-metakg-update --data <DIR>
+metabokg-update --data <DIR>
 ```
 
 **What happens:**
@@ -264,7 +264,7 @@ Enrichment: 87 reaction names from graph, 198 compound names from TSV, 54 reacti
 
 ---
 
-## 5. Name Enrichment — `metakg-enrich`
+## 5. Name Enrichment — `metabokg-enrich`
 
 KGML-sourced graphs initially carry bare KEGG accessions as node names (e.g. `C00031`,
 `R00710`).  The enrichment pipeline replaces these with human-readable names and stores
@@ -291,7 +291,7 @@ provided script, then re-run enrichment:
 python scripts/download_kegg_names.py
 
 # Apply to the database
-metakg-enrich --db .metakg/meta.sqlite
+metabokg-enrich --db .metabokg/meta.sqlite
 ```
 
 Phase 2 updates:
@@ -322,38 +322,38 @@ R00710    Acetaldehyde:NAD+ oxidoreductase
 ### 5.3 Enrichment CLI options
 
 ```bash
-metakg-enrich \
-  [--db   .metakg/meta.sqlite]  # database to update
+metabokg-enrich \
+  [--db   .metabokg/meta.sqlite]  # database to update
   [--data DIR]                  # directory containing TSV files (default: data/)
 ```
 
 ### 5.4 Integrating with build
 
-Pass `--enrich` (and optionally `--enrich-data`) to `metakg-build` to run enrichment
+Pass `--enrich` (and optionally `--enrich-data`) to `metabokg-build` to run enrichment
 automatically in one step:
 
 ```bash
-metakg-build --data ./pathways --enrich
+metabokg-build --data ./pathways --enrich
 # equivalent to:
-metakg-build --data ./pathways && metakg-enrich
+metabokg-build --data ./pathways && metabokg-enrich
 ```
 
 ### 5.5 Python API
 
 ```python
-from metakg import MetaKG
-from metakg.enrich import enrich, EnrichStats
+from metabokg import MetaKG
+from metabokg.enrich import enrich, EnrichStats
 
-with MetaKG(db_path=".metakg/meta.sqlite") as kg:
+with MetaKG(db_path=".metabokg/meta.sqlite") as kg:
     # Integrated call via orchestrator
     stats: EnrichStats = kg.enrich(data_dir="data/")
     print(stats)
     # Enrichment: 87 reaction names from graph, 198 compound names from TSV, 54 reaction names from TSV
 
 # Or lower-level
-from metakg.store import MetaStore
-from metakg.enrich import enrich_reactions_from_graph, enrich_from_tsv
-store = MetaStore(".metakg/meta.sqlite")
+from metabokg.store import MetaStore
+from metabokg.enrich import enrich_reactions_from_graph, enrich_from_tsv
+store = MetaStore(".metabokg/meta.sqlite")
 n = enrich_reactions_from_graph(store)
 n = enrich_from_tsv(store, Path("data/kegg_compound_names.tsv"), "compound")
 ```
@@ -386,9 +386,9 @@ substrate of the TCA cycle via pyruvate dehydrogenase.
 ### 6.3 Python usage
 
 ```python
-from metakg import MetaKG
+from metabokg import MetaKG
 
-kg = MetaKG(db_path=".metakg/meta.sqlite", lancedb_dir=".metakg/lancedb")
+kg = MetaKG(db_path=".metabokg/meta.sqlite", lancedb_dir=".metabokg/lancedb")
 
 # Semantic pathway search — returns top-k pathway nodes
 result = kg.query_pathway("glucose catabolism", k=5)
@@ -420,13 +420,13 @@ path = kg.find_path("cpd:kegg:C00031", "cpd:kegg:C00022", max_hops=8)
 
 ## 7. Simulation Engine
 
-The simulation engine lives in `metakg.simulate`.  It requires `scipy` (`pip install metakg[simulate]`).
+The simulation engine lives in `metabokg.simulate`.  It requires `scipy` (`pip install metabokg[simulate]`).
 
 ```python
-from metakg.store import MetaStore
-from metakg.simulate import MetabolicSimulator, SimulationConfig, WhatIfScenario
+from metabokg.store import MetaStore
+from metabokg.simulate import MetabolicSimulator, SimulationConfig, WhatIfScenario
 
-store = MetaStore(".metakg/meta.sqlite")
+store = MetaStore(".metabokg/meta.sqlite")
 sim   = MetabolicSimulator(store)
 ```
 
@@ -522,7 +522,7 @@ result = sim.run_fba(config)
 **CLI:**
 
 ```bash
-metakg-simulate fba --db .metakg/meta.sqlite \
+metabokg-simulate fba --db .metabokg/meta.sqlite \
     --pathway hsa00010 \
     --objective rxn:kegg:R00196 \
     --output fba_glycolysis.md
@@ -597,7 +597,7 @@ result = sim.run_ode(config)
 **CLI:**
 
 ```bash
-metakg-simulate ode --db .metakg/meta.sqlite \
+metabokg-simulate ode --db .metabokg/meta.sqlite \
     --pathway hsa00010 \
     --time 200 --points 1000 \
     --conc cpd:kegg:C00031:5.0 \
@@ -652,7 +652,7 @@ result = sim.run_whatif(
 **CLI:**
 
 ```bash
-metakg-simulate whatif --db .metakg/meta.sqlite \
+metabokg-simulate whatif --db .metabokg/meta.sqlite \
     --pathway hsa00010 \
     --mode fba \
     --knockout enz:kegg:hsa:5211 \
@@ -719,7 +719,7 @@ class RegulatoryInteraction:
 
 ### 8.3 Built-in curated parameter library
 
-Seeded via `metakg-simulate seed` or `seed_kinetics(store)`.  All values are for *Homo sapiens*, pH 7.0, 37°C.
+Seeded via `metabokg-simulate seed` or `seed_kinetics(store)`.  All values are for *Homo sapiens*, pH 7.0, 37°C.
 
 #### Kinetic parameters (26 reactions)
 
@@ -758,7 +758,7 @@ Each entry includes: Km (mM), kcat (s⁻¹), Vmax (mM/s), Keq, ΔG°' (kJ/mol), 
 
 ```python
 # Seed all built-in values
-from metakg.kinetics_fetch import seed_kinetics
+from metabokg.kinetics_fetch import seed_kinetics
 n_kp, n_ri = seed_kinetics(store)           # skip existing
 n_kp, n_ri = seed_kinetics(store, force=True)  # overwrite
 
@@ -772,7 +772,7 @@ regs = store.regulatory_interactions_for_enzyme("enz:kegg:hsa:5211")
 regs = store.regulatory_interactions_for_reaction("rxn:kegg:R00756")
 
 # Insert custom parameters
-from metakg.primitives import KineticParam, _kp_id
+from metabokg.primitives import KineticParam, _kp_id
 kp = KineticParam(
     id=_kp_id("enz:kegg:hsa:2538", "rxn:kegg:R00299", None, "brenda"),
     enzyme_id="enz:kegg:hsa:2538",
@@ -787,10 +787,10 @@ store.upsert_kinetic_param(kp)
 
 ---
 
-## 9. Pathway Analysis — `metakg-analyze`
+## 9. Pathway Analysis — `metabokg-analyze`
 
 ```bash
-metakg-analyze --db .metakg/meta.sqlite \
+metabokg-analyze --db .metabokg/meta.sqlite \
                --output analysis.md \
                --top 20 \
                [--plain]
@@ -823,9 +823,9 @@ The report closes with a narrative paragraph covering:
 ### 9.3 Python API
 
 ```python
-from metakg.analyze import PathwayAnalyzer, render_report
+from metabokg.analyze import PathwayAnalyzer, render_report
 
-with PathwayAnalyzer(".metakg/meta.sqlite", top_n=20) as analyzer:
+with PathwayAnalyzer(".metabokg/meta.sqlite", top_n=20) as analyzer:
     report = analyzer.run()
 
 md = render_report(report, markdown=True)
@@ -834,11 +834,11 @@ print(md)
 
 ---
 
-## 10. MCP Server & Tools — `metakg-mcp`
+## 10. MCP Server & Tools — `metabokg-mcp`
 
 ```bash
-metakg-mcp --db .metakg/meta.sqlite \
-           --lancedb .metakg/lancedb \
+metabokg-mcp --db .metabokg/meta.sqlite \
+           --lancedb .metabokg/lancedb \
            --model all-MiniLM-L6-v2 \
            --transport stdio   # or sse
 ```
@@ -1005,11 +1005,11 @@ Populate the database with curated literature kinetic parameters.
 ### 10.2 Python: registering tools
 
 ```python
-from metakg import MetaKG
-from metakg.mcp_tools import create_server, register_tools
+from metabokg import MetaKG
+from metabokg.mcp_tools import create_server, register_tools
 
-kg     = MetaKG(db_path=".metakg/meta.sqlite")
-server = create_server(kg, name="my-metakg-server")
+kg     = MetaKG(db_path=".metabokg/meta.sqlite")
+server = create_server(kg, name="my-metabokg-server")
 server.run(transport="stdio")
 
 # Or mount onto an existing FastMCP instance:
@@ -1024,12 +1024,12 @@ register_tools(mcp, kg)
 
 All commands use [Click](https://click.palletsprojects.com/) and support `--help` at every level.
 
-### `metakg-build`
+### `metabokg-build`
 
 ```
-metakg-build --data <DIR>
-             [--db   .metakg/meta.sqlite]
-             [--lancedb .metakg/lancedb]
+metabokg-build --data <DIR>
+             [--db   .metabokg/meta.sqlite]
+             [--lancedb .metabokg/lancedb]
              [--model all-MiniLM-L6-v2]
              [--no-index]          skip LanceDB index
              [--no-wipe]           keep existing data (default: wipe before build)
@@ -1037,24 +1037,24 @@ metakg-build --data <DIR>
              [--enrich-data DIR]   KEGG TSV directory (default: data/)
 ```
 
-### `metakg-update`
+### `metabokg-update`
 
 Incrementally merge new pathway files into an existing database without wiping.
 
 ```
-metakg-update --data <DIR>
-              [--db   .metakg/meta.sqlite]
-              [--lancedb .metakg/lancedb]
+metabokg-update --data <DIR>
+              [--db   .metabokg/meta.sqlite]
+              [--lancedb .metabokg/lancedb]
               [--model all-MiniLM-L6-v2]
               [--no-index]
               [--enrich]
               [--enrich-data DIR]
 ```
 
-### `metakg-enrich`
+### `metabokg-enrich`
 
 ```
-metakg-enrich [--db   .metakg/meta.sqlite]
+metabokg-enrich [--db   .metabokg/meta.sqlite]
               [--data DIR]          directory with kegg_*_names.tsv files
 ```
 
@@ -1067,58 +1067,58 @@ Download KEGG name files first with:
 python scripts/download_kegg_names.py [--data DIR] [--force] [--quiet]
 ```
 
-### `metakg-mcp`
+### `metabokg-mcp`
 
 ```
-metakg-mcp [--db   .metakg/meta.sqlite]
-           [--lancedb .metakg/lancedb]
+metabokg-mcp [--db   .metabokg/meta.sqlite]
+           [--lancedb .metabokg/lancedb]
            [--model all-MiniLM-L6-v2]
            [--transport stdio|sse]
 ```
 
-### `metakg-analyze`
+### `metabokg-analyze`
 
 ```
-metakg-analyze [--db .metakg/meta.sqlite]
+metabokg-analyze [--db .metabokg/meta.sqlite]
                [--output FILE.md]
                [--top 20]
                [--plain]
 ```
 
-### `metakg-analyze-basic`
+### `metabokg-analyze-basic`
 
 ```
-metakg-analyze-basic [--db .metakg/meta.sqlite]
+metabokg-analyze-basic [--db .metabokg/meta.sqlite]
                      [--output FILE.md]
                      [--top 20]
                      [--plain]
 ```
 
-### `metakg-simulate`
+### `metabokg-simulate`
 
 ```
 # Shared options (apply to all subcommands):
-metakg-simulate [--db .metakg/meta.sqlite]
+metabokg-simulate [--db .metabokg/meta.sqlite]
                 [--output FILE.md] [--top 25] [--plain]
                 <subcommand>
 
 # Seed kinetic parameters (run once after build):
-metakg-simulate seed [--force]
+metabokg-simulate seed [--force]
 
 # FBA:
-metakg-simulate fba [--pathway ID|NAME]
+metabokg-simulate fba [--pathway ID|NAME]
                     [--objective RXN_ID]
                     [--minimize]
 
 # ODE kinetic simulation:
-metakg-simulate ode [--pathway ID|NAME]
+metabokg-simulate ode [--pathway ID|NAME]
                     [--time 100.0]
                     [--points 500]
                     [--conc CPD_ID:MM ...]      # repeatable
                     [--default-conc 1.0]
 
 # What-if perturbation:
-metakg-simulate whatif [--pathway ID|NAME]
+metabokg-simulate whatif [--pathway ID|NAME]
                         [--mode fba|ode]
                         [--knockout ENZ_ID ...]      # repeatable
                         [--factor ENZ_ID:FACTOR ...]  # repeatable
@@ -1127,13 +1127,13 @@ metakg-simulate whatif [--pathway ID|NAME]
                         [--time 100.0]
 ```
 
-### `metakg-viz`
+### `metabokg-viz`
 
-Launches a **Streamlit** web application for interactive pathway exploration (requires `pip install metakg[viz]`).
+Launches a **Streamlit** web application for interactive pathway exploration (requires `pip install metabokg[viz]`).
 
-### `metakg-viz3d`
+### `metabokg-viz3d`
 
-Launches a **PyVista** 3D graph viewer (requires `pip install metakg[viz3d]`).
+Launches a **PyVista** 3D graph viewer (requires `pip install metabokg[viz3d]`).
 
 ---
 
@@ -1142,13 +1142,13 @@ Launches a **PyVista** 3D graph viewer (requires `pip install metakg[viz3d]`).
 ### `MetaKG` — high-level orchestrator
 
 ```python
-from metakg import MetaKG
+from metabokg import MetaKG
 
 kg = MetaKG(
-    db_path     = ".metakg/meta.sqlite",
-    lancedb_dir = ".metakg/lancedb",
+    db_path     = ".metabokg/meta.sqlite",
+    lancedb_dir = ".metabokg/lancedb",
     model       = "all-MiniLM-L6-v2",
-    table       = "metakg_nodes",
+    table       = "metabokg_nodes",
 )
 
 kg.build(data_dir, wipe=False, build_index=True,
@@ -1169,11 +1169,11 @@ kg.close()
 ### `MetaStore` — SQLite persistence
 
 ```python
-from metakg.store import MetaStore
+from metabokg.store import MetaStore
 
-store = MetaStore(".metakg/meta.sqlite")
+store = MetaStore(".metabokg/meta.sqlite")
 # or:
-with MetaStore(".metakg/meta.sqlite") as store: ...
+with MetaStore(".metabokg/meta.sqlite") as store: ...
 
 # Write
 store.write(nodes, edges, wipe=False)
@@ -1213,7 +1213,7 @@ store.close()
 ### `MetabolicSimulator`
 
 ```python
-from metakg.simulate import (
+from metabokg.simulate import (
     MetabolicSimulator, SimulationConfig, WhatIfScenario,
     FBAResult, ODEResult, WhatIfResult,
     render_fba_result, render_ode_result, render_whatif_result,
@@ -1232,7 +1232,7 @@ render_whatif_result(result, store=None, top_n=20, markdown=True) → str
 ### `EnrichStats` — enrichment result
 
 ```python
-from metakg.enrich import EnrichStats
+from metabokg.enrich import EnrichStats
 
 @dataclass
 class EnrichStats:
@@ -1250,7 +1250,7 @@ class EnrichStats:
 CREATE TABLE meta_nodes (
     id            TEXT PRIMARY KEY,
     kind          TEXT NOT NULL,    -- compound|reaction|enzyme|pathway
-    name          TEXT NOT NULL,    -- human-readable after metakg-enrich
+    name          TEXT NOT NULL,    -- human-readable after metabokg-enrich
     description   TEXT,
     formula       TEXT,
     charge        INTEGER,
@@ -1359,9 +1359,9 @@ poetry install --extras biopax        # + BioPAX parsing
 poetry install --all-extras           # everything
 
 # With pip (after package release)
-pip install metakg[simulate]
-pip install metakg[simulate,viz]
-pip install metakg[all]
+pip install metabokg[simulate]
+pip install metabokg[simulate,viz]
+pip install metabokg[all]
 ```
 
 See [`docs/INSTALL.md`](INSTALL.md) for a full step-by-step installation guide.
@@ -1372,33 +1372,33 @@ See [`docs/INSTALL.md`](INSTALL.md) for a full step-by-step installation guide.
 
 ```bash
 # 1. Install
-pip install metakg[simulate,mcp]
+pip install metabokg[simulate,mcp]
 
 # 2. Build the graph from a directory of KGML / SBML / BioPAX / CSV files
-metakg-build --data ./pathways --db .metakg/meta.sqlite
+metabokg-build --data ./pathways --db .metabokg/meta.sqlite
 
 # 3. Download KEGG name lists and enrich the graph with human-readable names
 python scripts/download_kegg_names.py
-metakg-enrich --db .metakg/meta.sqlite
-# (or combine steps 2–3: metakg-build --data ./pathways --enrich)
+metabokg-enrich --db .metabokg/meta.sqlite
+# (or combine steps 2–3: metabokg-build --data ./pathways --enrich)
 
 # 4. Seed kinetic parameters from curated literature values
-metakg-simulate seed --db .metakg/meta.sqlite
+metabokg-simulate seed --db .metabokg/meta.sqlite
 
 # 5. Run steady-state FBA on glycolysis
-metakg-simulate fba --db .metakg/meta.sqlite --pathway hsa00010 -o fba.md
+metabokg-simulate fba --db .metabokg/meta.sqlite --pathway hsa00010 -o fba.md
 
 # 6. Run ODE kinetic simulation for 200 time units (BDF solver, ~0.2s)
-metakg-simulate ode --db .metakg/meta.sqlite --pathway hsa00010 \
+metabokg-simulate ode --db .metabokg/meta.sqlite --pathway hsa00010 \
     --time 200 --conc cpd:kegg:C00031:5.0 -o ode.md
 
 # 7. Knock out hexokinase and see the cascade
-metakg-simulate whatif --db .metakg/meta.sqlite --pathway hsa00010 \
+metabokg-simulate whatif --db .metabokg/meta.sqlite --pathway hsa00010 \
     --mode fba --knockout enz:kegg:hsa:2538 --name HK_KO -o hk_ko.md
 
 # 8. Run thorough pathway analysis report
-metakg-analyze --db .metakg/meta.sqlite -o analysis.md
+metabokg-analyze --db .metabokg/meta.sqlite -o analysis.md
 
 # 9. Start MCP server for Claude integration
-metakg-mcp --db .metakg/meta.sqlite --transport stdio
+metabokg-mcp --db .metabokg/meta.sqlite --transport stdio
 ```

@@ -1,5 +1,5 @@
 """
-Tests for code_kg.metakg.store — MetaStore SQLite persistence layer.
+Tests for code_kg.metabokg.store — MetaStore SQLite persistence layer.
 """
 
 import json
@@ -7,7 +7,7 @@ import sqlite3
 
 import pytest
 
-from metakg.primitives import (
+from metabokg.primitives import (
     KIND_COMPOUND,
     KIND_ENZYME,
     KIND_PATHWAY,
@@ -18,7 +18,7 @@ from metakg.primitives import (
     MetaNode,
     node_id,
 )
-from metakg.store import MetaStore
+from metabokg.store import MetaStore
 
 
 @pytest.fixture()

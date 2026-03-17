@@ -22,13 +22,13 @@ Run metabolic pathway simulations using the MetaKG database. Supports four modes
 
 1. Verify the database exists:
    ```bash
-   ls -lh .metakg/meta.sqlite
+   ls -lh .metabokg/meta.sqlite
    ```
 2. If kinetics are needed for ODE/what-if, confirm they are seeded:
    ```bash
-   sqlite3 .metakg/meta.sqlite "SELECT COUNT(*) FROM kinetic_parameters;"
+   sqlite3 .metabokg/meta.sqlite "SELECT COUNT(*) FROM kinetic_parameters;"
    ```
-   If 0, run `metakg-simulate seed` first.
+   If 0, run `metabokg-simulate seed` first.
 
 ---
 
@@ -37,14 +37,14 @@ Run metabolic pathway simulations using the MetaKG database. Supports four modes
 Load Km, Vmax, and kcat values from literature sources:
 
 ```bash
-metakg-simulate seed
+metabokg-simulate seed
 ```
 
 This populates the `kinetic_parameters` table. Safe to re-run — idempotent.
 
 Python equivalent:
 ```python
-from metakg import MetaKG
+from metabokg import MetaKG
 kg = MetaKG()
 kg.seed_kinetics()
 ```
@@ -56,17 +56,17 @@ kg.seed_kinetics()
 Find optimal flux distributions at steady state:
 
 ```bash
-metakg-simulate fba <pathway_id>
+metabokg-simulate fba <pathway_id>
 ```
 
 Example:
 ```bash
-metakg-simulate fba pwy:kegg:hsa00010   # Glycolysis
+metabokg-simulate fba pwy:kegg:hsa00010   # Glycolysis
 ```
 
 Python equivalent:
 ```python
-from metakg import MetaKG
+from metabokg import MetaKG
 kg = MetaKG()
 result = kg.simulate_fba("pwy:kegg:hsa00010", maximize=True)
 ```
@@ -83,12 +83,12 @@ result = kg.simulate_fba("pwy:kegg:hsa00010", maximize=True)
 Simulate metabolite concentrations over time:
 
 ```bash
-metakg-simulate ode <pathway_id>
+metabokg-simulate ode <pathway_id>
 ```
 
 Python (with full options):
 ```python
-from metakg import MetaKG
+from metabokg import MetaKG
 kg = MetaKG()
 result = kg.simulate_ode(
     "pwy:kegg:hsa00010",
@@ -108,13 +108,13 @@ result = kg.simulate_ode(
 Test enzyme knockouts, activity changes, or substrate overrides:
 
 ```bash
-metakg-simulate whatif <pathway_id>
+metabokg-simulate whatif <pathway_id>
 ```
 
 Python with scenario JSON:
 ```python
 import json
-from metakg import MetaKG
+from metabokg import MetaKG
 kg = MetaKG()
 
 # Enzyme knockout
@@ -137,8 +137,8 @@ result = kg.simulate_whatif("pwy:kegg:hsa00010", json.dumps(scenario), mode="fba
 ## Finding Pathway IDs
 
 ```python
-from metakg import MetaKG
-from metakg.primitives import PATHWAY_CATEGORY_METABOLIC
+from metabokg import MetaKG
+from metabokg.primitives import PATHWAY_CATEGORY_METABOLIC
 
 kg = MetaKG()
 # All metabolic pathways
@@ -149,7 +149,7 @@ for p in pathways[:10]:
 
 Or via SQL:
 ```bash
-sqlite3 .metakg/meta.sqlite "SELECT node_id, name FROM meta_nodes WHERE kind='pathway' LIMIT 20;"
+sqlite3 .metabokg/meta.sqlite "SELECT node_id, name FROM meta_nodes WHERE kind='pathway' LIMIT 20;"
 ```
 
 ---

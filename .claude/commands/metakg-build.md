@@ -5,8 +5,8 @@ Parse KEGG KGML pathway files into the MetaKG SQLite knowledge graph and LanceDB
 ## Command Argument Handling
 
 **Usage:**
-- `/metakg-build` — Interactive mode; prompts for data directory
-- `/metakg-build data/hsa_pathways` — Build from the specified KGML directory
+- `/metabokg-build` — Interactive mode; prompts for data directory
+- `/metabokg-build data/hsa_pathways` — Build from the specified KGML directory
 
 ---
 
@@ -29,7 +29,7 @@ Parse KEGG KGML pathway files into the MetaKG SQLite knowledge graph and LanceDB
 
 1. Confirm the database directory exists or will be created:
    ```bash
-   ls -la .metakg/ 2>/dev/null || echo "Will be created"
+   ls -la .metabokg/ 2>/dev/null || echo "Will be created"
    ```
 2. If an existing database is present, warn the user it will be wiped (default behavior).
 
@@ -40,15 +40,15 @@ Parse KEGG KGML pathway files into the MetaKG SQLite knowledge graph and LanceDB
 Run the full build (wipe + enrich by default):
 
 ```bash
-metakg-build --data "$DATA_DIR"
+metabokg-build --data "$DATA_DIR"
 ```
 
 **Common options:**
 - `--no-wipe` — Keep existing data, add only new files
 - `--no-enrich` — Skip compound/reaction name enrichment (faster)
 - `--no-index` — Skip LanceDB (SQLite only)
-- `--db PATH` — Custom SQLite path (default: `.metakg/meta.sqlite`)
-- `--lancedb PATH` — Custom LanceDB path (default: `.metakg/lancedb`)
+- `--db PATH` — Custom SQLite path (default: `.metabokg/meta.sqlite`)
+- `--lancedb PATH` — Custom LanceDB path (default: `.metabokg/lancedb`)
 
 Monitor output for:
 - Number of pathways parsed
@@ -63,7 +63,7 @@ Monitor output for:
 Run a quick stats check:
 
 ```bash
-sqlite3 .metakg/meta.sqlite "
+sqlite3 .metabokg/meta.sqlite "
 SELECT kind, COUNT(*) as n FROM meta_nodes GROUP BY kind;
 SELECT COUNT(*), category FROM meta_nodes WHERE kind='pathway' GROUP BY category;
 "
@@ -76,7 +76,7 @@ SELECT COUNT(*), category FROM meta_nodes WHERE kind='pathway' GROUP BY category
 Load literature kinetic parameters (Km, Vmax, kcat) for simulations:
 
 ```bash
-metakg-simulate seed
+metabokg-simulate seed
 ```
 
 ---
@@ -90,8 +90,8 @@ Present a summary:
 ✓ Total nodes:      <N>
 ✓ Total edges:      <N>
 ✓ Categories:       metabolic=X  signaling=X  disease=X  ...
-✓ Database:         .metakg/meta.sqlite
-✓ Vector index:     .metakg/lancedb
+✓ Database:         .metabokg/meta.sqlite
+✓ Vector index:     .metabokg/lancedb
 ```
 
 ---
@@ -101,7 +101,7 @@ Present a summary:
 To add new KGML files without wiping:
 
 ```bash
-metakg-update --data "$DATA_DIR"
+metabokg-update --data "$DATA_DIR"
 ```
 
 ## Important Rules

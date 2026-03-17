@@ -1,13 +1,13 @@
 """
-Tests for metakg.orchestrator — MetaKG top-level orchestrator and result types.
+Tests for metabokg.orchestrator — MetaKG top-level orchestrator and result types.
 """
 
 import json
 
 import pytest
 
-from metakg import MetabolicRuntimeStats, MetaKG
-from metakg.primitives import (
+from metabokg import MetabolicRuntimeStats, MetaKG
+from metabokg.primitives import (
     KIND_COMPOUND,
     KIND_ENZYME,
     KIND_PATHWAY,

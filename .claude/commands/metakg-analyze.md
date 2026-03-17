@@ -15,23 +15,23 @@ Analyzes the MetaKG database and produces a polished, CodeKG-style report includ
 
 ```bash
 # Print to terminal
-/metakg-analyze
+/metabokg-analyze
 
 # Save to file (with timestamp)
-/metakg-analyze --output
+/metabokg-analyze --output
 
 # Show top N items per ranking
-/metakg-analyze --top 30
+/metabokg-analyze --top 30
 
 # Plain text format (no Markdown)
-/metakg-analyze --plain
+/metabokg-analyze --plain
 ```
 
 ## Before Running
 
 Make sure you have:
-1. ✓ Built the MetaKG database: `metakg-build --data pathways/ --wipe`
-2. ✓ Database exists at `.metakg/meta.sqlite`
+1. ✓ Built the MetaKG database: `metabokg-build --data pathways/ --wipe`
+2. ✓ Database exists at `.metabokg/meta.sqlite`
 
 ## Output
 
@@ -48,16 +48,16 @@ Make sure you have:
 
 ```bash
 # Analyze default database
-metakg-analyze
+metabokg-analyze
 
 # Save Markdown report
-metakg-analyze --db .metakg/meta.sqlite --output Analysis_$(date +%Y%m%d).md
+metabokg-analyze --db .metabokg/meta.sqlite --output Analysis_$(date +%Y%m%d).md
 
 # Full details with top 50 items
-metakg-analyze --top 50 --output report.md
+metabokg-analyze --top 50 --output report.md
 
 # Plain text format for piping or scripting
-metakg-analyze --plain > analysis.txt
+metabokg-analyze --plain > analysis.txt
 ```
 
 ## Report Sections
@@ -76,6 +76,6 @@ metakg-analyze --plain > analysis.txt
 
 ## Learn More
 
-- [MetaKG CLI Reference](../../CLAUDE.md#metakg-commands)
+- [MetaKG CLI Reference](../../CLAUDE.md#metabokg-commands)
 - [PathwayAnalyzer Python API](../../README.md#python-api)
 - [Metabolic Simulations](../../CLAUDE.md#simulation-and-analysis)

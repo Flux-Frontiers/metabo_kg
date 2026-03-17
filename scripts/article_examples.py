@@ -7,7 +7,7 @@ Run all worked examples from article Section 6 and capture real output.
 Usage:
     poetry run python scripts/article_examples.py
 
-This script assumes metakg-build --data ./pathways has been run already.
+This script assumes metabokg-build --data ./pathways has been run already.
 """
 
 import sys
@@ -16,7 +16,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from metakg import MetaKG
+from metabokg import MetaKG
 
 
 def example_1_building():
@@ -24,10 +24,10 @@ def example_1_building():
     print("\n" + "=" * 80)
     print("Example 6.2.1: Building the Knowledge Graph")
     print("=" * 80)
-    print("$ metakg-build --data ./pathways --wipe")
+    print("$ metabokg-build --data ./pathways --wipe")
     print("Building MetaKG from ./pathways...")
     print("data_root   : ./pathways")
-    print("db_path     : .metakg/meta.sqlite")
+    print("db_path     : .metabokg/meta.sqlite")
 
     # Get actual stats from database
     kg = MetaKG()
@@ -48,7 +48,7 @@ def example_2_structural_queries():
     print("Example 6.3.1: Structural Queries via Python API")
     print("=" * 80)
     print("""
-from metakg import MetaKG
+from metabokg import MetaKG
 
 kg = MetaKG()
 
@@ -104,7 +104,7 @@ def example_3_shortest_path():
     print("Example 6.4: Shortest-Path Search")
     print("=" * 80)
     print("""
-from metakg import MetaKG
+from metabokg import MetaKG
 
 kg = MetaKG()
 
@@ -141,7 +141,7 @@ def example_4_semantic_search():
     print("Example 6.5: Semantic Search")
     print("=" * 80)
     print("""
-from metakg import MetaKG
+from metabokg import MetaKG
 
 kg = MetaKG()
 
@@ -176,7 +176,7 @@ def main():
     print("# MetaKG Article Examples - Real Output")
     print("#" * 80)
     print("\nRunning examples from article Section 6 (Worked Example)")
-    print("Assumes: metakg-build --data ./pathways has been run")
+    print("Assumes: metabokg-build --data ./pathways has been run")
 
     try:
         example_1_building()
@@ -193,7 +193,7 @@ def main():
 
         print(f"\nError: {e}")
         traceback.print_exc()
-        print("\nMake sure you've run: poetry run metakg-build --data ./pathways")
+        print("\nMake sure you've run: poetry run metabokg-build --data ./pathways")
         sys.exit(1)
 
 

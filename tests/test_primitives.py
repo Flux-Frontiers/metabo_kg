@@ -1,10 +1,10 @@
 """
-Tests for code_kg.metakg.primitives — MetaNode, MetaEdge, node_id, synthetic_id.
+Tests for code_kg.metabokg.primitives — MetaNode, MetaEdge, node_id, synthetic_id.
 """
 
 import json
 
-from metakg.primitives import (
+from metabokg.primitives import (
     KIND_COMPOUND,
     KIND_ENZYME,
     KIND_PATHWAY,

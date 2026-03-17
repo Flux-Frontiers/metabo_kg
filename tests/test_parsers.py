@@ -1,5 +1,5 @@
 """
-Tests for code_kg.metakg parsers — KGML, SBML, CSV.
+Tests for code_kg.metabokg parsers — KGML, SBML, CSV.
 
 BioPAX tests are omitted here since rdflib is an optional dependency.
 """
@@ -8,7 +8,7 @@ import textwrap
 
 import pytest
 
-from metakg.primitives import (
+from metabokg.primitives import (
     KIND_COMPOUND,
     KIND_ENZYME,
     KIND_PATHWAY,
@@ -78,7 +78,7 @@ R002,PGI reaction,Glucose-6-phosphate,Fructose-6-phosphate,Phosphoglucose isomer
 
 class TestKGMLParser:
     def test_parse_returns_nodes_and_edges(self, tmp_path):
-        from metakg.parsers.kgml import KGMLParser
+        from metabokg.parsers.kgml import KGMLParser
 
         f = tmp_path / "hsa00010.xml"
         f.write_text(KGML_SAMPLE)
@@ -88,7 +88,7 @@ class TestKGMLParser:
         assert len(edges) > 0
 
     def test_pathway_node_present(self, tmp_path):
-        from metakg.parsers.kgml import KGMLParser
+        from metabokg.parsers.kgml import KGMLParser
 
         f = tmp_path / "hsa00010.xml"
         f.write_text(KGML_SAMPLE)
@@ -97,7 +97,7 @@ class TestKGMLParser:
         assert KIND_PATHWAY in kinds
 
     def test_reaction_node_present(self, tmp_path):
-        from metakg.parsers.kgml import KGMLParser
+        from metabokg.parsers.kgml import KGMLParser
 
         f = tmp_path / "hsa00010.xml"
         f.write_text(KGML_SAMPLE)
@@ -106,7 +106,7 @@ class TestKGMLParser:
         assert KIND_REACTION in kinds
 
     def test_compound_nodes_present(self, tmp_path):
-        from metakg.parsers.kgml import KGMLParser
+        from metabokg.parsers.kgml import KGMLParser
 
         f = tmp_path / "hsa00010.xml"
         f.write_text(KGML_SAMPLE)
@@ -115,7 +115,7 @@ class TestKGMLParser:
         assert len(compounds) >= 2
 
     def test_substrate_edge_present(self, tmp_path):
-        from metakg.parsers.kgml import KGMLParser
+        from metabokg.parsers.kgml import KGMLParser
 
         f = tmp_path / "hsa00010.xml"
         f.write_text(KGML_SAMPLE)
@@ -125,21 +125,21 @@ class TestKGMLParser:
         assert "PRODUCT_OF" in rels
 
     def test_can_handle_kgml_extension(self, tmp_path):
-        from metakg.parsers.kgml import KGMLParser
+        from metabokg.parsers.kgml import KGMLParser
 
         f = tmp_path / "test.kgml"
         f.write_text(KGML_SAMPLE)
         assert KGMLParser().can_handle(f)
 
     def test_cannot_handle_non_pathway_xml(self, tmp_path):
-        from metakg.parsers.kgml import KGMLParser
+        from metabokg.parsers.kgml import KGMLParser
 
         f = tmp_path / "test.xml"
         f.write_text('<?xml version="1.0"?><sbml/>')
         assert not KGMLParser().can_handle(f)
 
     def test_invalid_xml_raises_value_error(self, tmp_path):
-        from metakg.parsers.kgml import KGMLParser
+        from metabokg.parsers.kgml import KGMLParser
 
         f = tmp_path / "bad.xml"
         f.write_text("<pathway><unclosed>")
@@ -148,7 +148,7 @@ class TestKGMLParser:
             KGMLParser().parse(f)
 
     def test_source_format_is_kgml(self, tmp_path):
-        from metakg.parsers.kgml import KGMLParser
+        from metabokg.parsers.kgml import KGMLParser
 
         f = tmp_path / "test.xml"
         f.write_text(KGML_SAMPLE)
@@ -156,7 +156,7 @@ class TestKGMLParser:
         assert all(n.source_format == "kgml" for n in nodes)
 
     def test_pathway_has_kegg_xref(self, tmp_path):
-        from metakg.parsers.kgml import KGMLParser
+        from metabokg.parsers.kgml import KGMLParser
 
         f = tmp_path / "test.xml"
         f.write_text(KGML_SAMPLE)
@@ -167,7 +167,7 @@ class TestKGMLParser:
         assert "kegg" in xrefs
 
     def test_pathway_category_metabolic(self, tmp_path):
-        from metakg.parsers.kgml import KGMLParser
+        from metabokg.parsers.kgml import KGMLParser
 
         # KGML_SAMPLE encodes hsa00010 — a metabolic pathway
         f = tmp_path / "hsa00010.xml"
@@ -178,7 +178,7 @@ class TestKGMLParser:
         assert pwy_nodes[0].category == PATHWAY_CATEGORY_METABOLIC
 
     def test_pathway_category_disease(self, tmp_path):
-        from metakg.parsers.kgml import KGMLParser
+        from metabokg.parsers.kgml import KGMLParser
 
         # Swap the pathway ID to a disease pathway (hsa05010)
         kgml_disease = KGML_SAMPLE.replace('name="path:hsa00010"', 'name="path:hsa05010"')
@@ -191,7 +191,7 @@ class TestKGMLParser:
 
 class TestSBMLParser:
     def test_parse_returns_nodes_and_edges(self, tmp_path):
-        from metakg.parsers.sbml import SBMLParser
+        from metabokg.parsers.sbml import SBMLParser
 
         f = tmp_path / "glycolysis.xml"
         f.write_text(SBML_SAMPLE)
@@ -200,7 +200,7 @@ class TestSBMLParser:
         assert len(edges) > 0
 
     def test_compound_nodes_from_species(self, tmp_path):
-        from metakg.parsers.sbml import SBMLParser
+        from metabokg.parsers.sbml import SBMLParser
 
         f = tmp_path / "glycolysis.xml"
         f.write_text(SBML_SAMPLE)
@@ -209,7 +209,7 @@ class TestSBMLParser:
         assert len(compounds) >= 2
 
     def test_reaction_node_present(self, tmp_path):
-        from metakg.parsers.sbml import SBMLParser
+        from metabokg.parsers.sbml import SBMLParser
 
         f = tmp_path / "glycolysis.xml"
         f.write_text(SBML_SAMPLE)
@@ -218,7 +218,7 @@ class TestSBMLParser:
         assert len(reactions) == 1
 
     def test_stoichiometry_in_edges(self, tmp_path):
-        from metakg.parsers.sbml import SBMLParser
+        from metabokg.parsers.sbml import SBMLParser
 
         f = tmp_path / "glycolysis.xml"
         f.write_text(SBML_SAMPLE)
@@ -229,14 +229,14 @@ class TestSBMLParser:
         assert ev.get("stoich") == 2.0
 
     def test_cannot_handle_non_sbml_xml(self, tmp_path):
-        from metakg.parsers.sbml import SBMLParser
+        from metabokg.parsers.sbml import SBMLParser
 
         f = tmp_path / "test.xml"
         f.write_text(KGML_SAMPLE)  # KGML, not SBML
         assert not SBMLParser().can_handle(f)
 
     def test_source_format_is_sbml(self, tmp_path):
-        from metakg.parsers.sbml import SBMLParser
+        from metabokg.parsers.sbml import SBMLParser
 
         f = tmp_path / "test.xml"
         f.write_text(SBML_SAMPLE)
@@ -246,7 +246,7 @@ class TestSBMLParser:
 
 class TestCSVParser:
     def test_parse_returns_nodes_and_edges(self, tmp_path):
-        from metakg.parsers.csv_tsv import CSVParser
+        from metabokg.parsers.csv_tsv import CSVParser
 
         f = tmp_path / "reactions.csv"
         f.write_text(CSV_SAMPLE)
@@ -255,7 +255,7 @@ class TestCSVParser:
         assert len(edges) > 0
 
     def test_compound_nodes_created(self, tmp_path):
-        from metakg.parsers.csv_tsv import CSVParser
+        from metabokg.parsers.csv_tsv import CSVParser
 
         f = tmp_path / "reactions.csv"
         f.write_text(CSV_SAMPLE)
@@ -265,7 +265,7 @@ class TestCSVParser:
         assert len(compounds) >= 3
 
     def test_enzyme_nodes_with_ec(self, tmp_path):
-        from metakg.parsers.csv_tsv import CSVParser
+        from metabokg.parsers.csv_tsv import CSVParser
 
         f = tmp_path / "reactions.csv"
         f.write_text(CSV_SAMPLE)
@@ -276,7 +276,7 @@ class TestCSVParser:
         assert "2.7.1.1" in ec_numbers
 
     def test_pathway_node_created(self, tmp_path):
-        from metakg.parsers.csv_tsv import CSVParser
+        from metabokg.parsers.csv_tsv import CSVParser
 
         f = tmp_path / "reactions.csv"
         f.write_text(CSV_SAMPLE)
@@ -286,7 +286,7 @@ class TestCSVParser:
         assert pathways[0].name == "Glycolysis"
 
     def test_catalyzes_edges_present(self, tmp_path):
-        from metakg.parsers.csv_tsv import CSVParser
+        from metabokg.parsers.csv_tsv import CSVParser
 
         f = tmp_path / "reactions.csv"
         f.write_text(CSV_SAMPLE)
@@ -295,7 +295,7 @@ class TestCSVParser:
         assert "CATALYZES" in rels
 
     def test_missing_required_column_raises(self, tmp_path):
-        from metakg.parsers.csv_tsv import CSVParser
+        from metabokg.parsers.csv_tsv import CSVParser
 
         f = tmp_path / "bad.csv"
         f.write_text("reaction_id,enzyme\nR001,HK\n")
@@ -303,7 +303,7 @@ class TestCSVParser:
             CSVParser().parse(f)
 
     def test_stoichiometry_blob_on_reaction(self, tmp_path):
-        from metakg.parsers.csv_tsv import CSVParser
+        from metabokg.parsers.csv_tsv import CSVParser
 
         f = tmp_path / "reactions.csv"
         f.write_text(CSV_SAMPLE)
@@ -315,7 +315,7 @@ class TestCSVParser:
             assert "products" in d
 
     def test_tsv_parsing(self, tmp_path):
-        from metakg.parsers.csv_tsv import CSVParser
+        from metabokg.parsers.csv_tsv import CSVParser
 
         tsv_content = CSV_SAMPLE.replace(",", "\t")
         f = tmp_path / "reactions.tsv"
@@ -326,7 +326,7 @@ class TestCSVParser:
 
 class TestMetabolicGraph:
     def test_extract_directory(self, tmp_path):
-        from metakg.graph import MetabolicGraph
+        from metabokg.graph import MetabolicGraph
 
         # Create a CSV file in tmp directory
         f = tmp_path / "reactions.csv"
@@ -337,7 +337,7 @@ class TestMetabolicGraph:
         assert len(nodes) > 0
 
     def test_extract_mixed_formats(self, tmp_path):
-        from metakg.graph import MetabolicGraph
+        from metabokg.graph import MetabolicGraph
 
         (tmp_path / "reactions.csv").write_text(CSV_SAMPLE)
         (tmp_path / "pathway.xml").write_text(KGML_SAMPLE)
@@ -349,7 +349,7 @@ class TestMetabolicGraph:
         assert KIND_COMPOUND in kinds
 
     def test_caches_result(self, tmp_path):
-        from metakg.graph import MetabolicGraph
+        from metabokg.graph import MetabolicGraph
 
         (tmp_path / "reactions.csv").write_text(CSV_SAMPLE)
         graph = MetabolicGraph(tmp_path)
@@ -360,7 +360,7 @@ class TestMetabolicGraph:
         assert len(n1) == len(n2)
 
     def test_result_before_extract_raises(self, tmp_path):
-        from metakg.graph import MetabolicGraph
+        from metabokg.graph import MetabolicGraph
 
         graph = MetabolicGraph(tmp_path)
         with pytest.raises(RuntimeError):

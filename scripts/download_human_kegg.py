@@ -3,7 +3,7 @@
 Download human KEGG pathways (organism code 'hsa') from KEGG FTP server.
 
 This script fetches all human pathway KGML files from KEGG and saves them
-to a local directory for use with metakg-build.
+to a local directory for use with metabokg-build.
 
 Usage:
     poetry run python scripts/download_human_kegg.py --output data/hsa_pathways
@@ -125,7 +125,7 @@ def main():
     print(f"Downloaded {success_count}/{len(pathways)} pathways")
     print(f"Location: {output_dir.absolute()}")
     print("\nNext step:")
-    print(f"  poetry run metakg-build --data {output_dir} --wipe")
+    print(f"  poetry run metabokg-build --data {output_dir} --wipe")
     print(f"{'=' * 60}")
 
 

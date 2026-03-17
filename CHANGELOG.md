@@ -19,50 +19,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Pathway category provenance** (`src/metakg/primitives.py`) — New `category` field on `MetaNode` and 8 `PATHWAY_CATEGORY_*` constants (`metabolic`, `transport`, `genetic_info_processing`, `signaling`, `cellular_process`, `organismal_system`, `human_disease`, `drug_development`), derived from the 5-digit KEGG numeric suffix via `_kegg_pathway_category()`. All 369 human pathways are categorized after a fresh build.
+- **Pathway category provenance** (`src/metabokg/primitives.py`) — New `category` field on `MetaNode` and 8 `PATHWAY_CATEGORY_*` constants (`metabolic`, `transport`, `genetic_info_processing`, `signaling`, `cellular_process`, `organismal_system`, `human_disease`, `drug_development`), derived from the 5-digit KEGG numeric suffix via `_kegg_pathway_category()`. All 369 human pathways are categorized after a fresh build.
 
-- **Category persistence in SQLite** (`src/metakg/store.py`) — `category TEXT` column added to `meta_nodes` schema. `_migrate()` runs on every open and transparently adds the column to existing databases via `ALTER TABLE`. `all_nodes()` now accepts an optional `category=` filter alongside the existing `kind=` filter.
+- **Category persistence in SQLite** (`src/metabokg/store.py`) — `category TEXT` column added to `meta_nodes` schema. `_migrate()` runs on every open and transparently adds the column to existing databases via `ALTER TABLE`. `all_nodes()` now accepts an optional `category=` filter alongside the existing `kind=` filter.
 
-- **Category set in KGML parser** (`src/metakg/parsers/kgml.py`) — `_kegg_pathway_category()` is called when constructing each pathway `MetaNode` so category is populated at parse time.
+- **Category set in KGML parser** (`src/metabokg/parsers/kgml.py`) — `_kegg_pathway_category()` is called when constructing each pathway `MetaNode` so category is populated at parse time.
 
-- **Strategy C enzyme wiring** (`src/metakg/parsers/kgml.py`) — New fallback wiring strategy reads the `reaction=` attribute on gene/ortholog `<entry>` elements to link enzymes to reactions when Strategies A and B fail. Eliminates the last class of unwired enzymes in real KEGG KGML files.
+- **Strategy C enzyme wiring** (`src/metabokg/parsers/kgml.py`) — New fallback wiring strategy reads the `reaction=` attribute on gene/ortholog `<entry>` elements to link enzymes to reactions when Strategies A and B fail. Eliminates the last class of unwired enzymes in real KEGG KGML files.
 
-- **CONTAINS fallback for isolated nodes** (`src/metakg/parsers/kgml.py`) — Gene, ortholog, and compound entries that are not wired into any reaction are now connected to their pathway node via `CONTAINS` edges, reducing isolated node count from 12,245 → 0.
+- **CONTAINS fallback for isolated nodes** (`src/metabokg/parsers/kgml.py`) — Gene, ortholog, and compound entries that are not wired into any reaction are now connected to their pathway node via `CONTAINS` edges, reducing isolated node count from 12,245 → 0.
 
-- **Agent slash commands** — New `.claude/commands/` entries (`metakg-build.md`, `metakg-simulate.md`, `metakg-viz.md`) and matching `.vscode/*.prompt.md` prompt files for all core MetaKG and CodeKG workflows.
+- **Agent slash commands** — New `.claude/commands/` entries (`metabokg-build.md`, `metabokg-simulate.md`, `metabokg-viz.md`) and matching `.vscode/*.prompt.md` prompt files for all core MetaKG and CodeKG workflows.
 
 - **`SESSION-NOTES-2026-03-06.md`** — Handoff document summarising all changes made in this session for the next agent/developer.
 
 ### Changed
 
-- **Enrichment default-on** (`src/metakg/cli/cmd_build.py`, `src/metakg/orchestrator.py`) — `--enrich` flag renamed to `--no-enrich` (inverted logic). Enrichment now runs by default on both `metakg-build` and `metakg-update`. `MetaKG.build(enrich=False)` default changed to `True`.
+- **Enrichment default-on** (`src/metabokg/cli/cmd_build.py`, `src/metabokg/orchestrator.py`) — `--enrich` flag renamed to `--no-enrich` (inverted logic). Enrichment now runs by default on both `metabokg-build` and `metabokg-update`. `MetaKG.build(enrich=False)` default changed to `True`.
 
 - **CLAUDE.md updated** — CodeKG Commands section reverted to `codekg-*` standalone command style; Typical Workflow section updated to invoke commands directly (no `poetry run` prefix needed in activated venv).
 
 ### Fixed
 
-- **`all_nodes()` category filter** (`src/metakg/store.py`) — Query now builds WHERE clause dynamically to support combined `kind` + `category` filtering without SQL injection risk.
+- **`all_nodes()` category filter** (`src/metabokg/store.py`) — Query now builds WHERE clause dynamically to support combined `kind` + `category` filtering without SQL injection risk.
 
 ---
 
 ### Changed
 
-- **`metakg-build` default behavior** — Now wipes existing database and vector index by default (safer, more predictable). Use `--no-wipe` flag to add files incrementally instead of replacing.
+- **`metabokg-build` default behavior** — Now wipes existing database and vector index by default (safer, more predictable). Use `--no-wipe` flag to add files incrementally instead of replacing.
   - Renamed `--wipe` flag → `--no-wipe` (inverted logic, default=True)
   - Updated docstring to clarify wipe-by-default behavior
   - Updated all documentation (CLAUDE.md, README.md, WORKFLOW.md) to reflect new defaults
-- **New `metakg-update` command** (`src/metakg/cli/cmd_build.py`) — Convenience alias for `metakg-build --no-wipe`. Provides explicit intent: incrementally merge new pathway files into an existing database without wiping. Supports the same enrichment and kinetics-seeding options as `build`.
-- **CLI option definition refactored** (`src/metakg/cli/options.py`) — `wipe_option` now uses Click's `flag_value=False, default=True` pattern for better clarity in inverted flags.
+- **New `metabokg-update` command** (`src/metabokg/cli/cmd_build.py`) — Convenience alias for `metabokg-build --no-wipe`. Provides explicit intent: incrementally merge new pathway files into an existing database without wiping. Supports the same enrichment and kinetics-seeding options as `build`.
+- **CLI option definition refactored** (`src/metabokg/cli/options.py`) — `wipe_option` now uses Click's `flag_value=False, default=True` pattern for better clarity in inverted flags.
 
 ### Added
 
-- **Enhanced 3D visualization CLI options** (`src/metakg/cli/cmd_viz3d.py`) — `metakg-viz3d` now supports:
+- **Enhanced 3D visualization CLI options** (`src/metabokg/cli/cmd_viz3d.py`) — `metabokg-viz3d` now supports:
   - `--layout {allium|cake}` — Select spatial layout strategy (Hub-spoke Allium vs concentric LayerCake)
   - `--width` / `--height` — Configure window dimensions (1400x900 default)
   - `--export-html PATH` / `--export-png PATH` — Batch export to file instead of interactive window
   - Improved error handling: check database existence before launching visualizer
 
-- **Improved Fibonacci disk layout algorithm** (`src/metakg/layout3d.py`) — Renamed `_golden_spiral_2d()` → `fibonacci_disk()` for clarity; enhanced docstrings. Tuned LayerCake parameters: layer gap 12→6 (tighter), disc radius 28→35 (wider), minimum spread 4→20 (prevent clamping on small pathways). Enzyme nodes moved to Z-level 3 (separate from compounds).
+- **Improved Fibonacci disk layout algorithm** (`src/metabokg/layout3d.py`) — Renamed `_golden_spiral_2d()` → `fibonacci_disk()` for clarity; enhanced docstrings. Tuned LayerCake parameters: layer gap 12→6 (tighter), disc radius 28→35 (wider), minimum spread 4→20 (prevent clamping on small pathways). Enzyme nodes moved to Z-level 3 (separate from compounds).
 
 - **3D Visualization Documentation** (`CLAUDE.md`) — New section covering layout modes, in-UI controls (pathway filter, layout selector, visibility toggles), and recommended workflow.
 
@@ -70,11 +70,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`scripts/download_kegg_reactions.py`** — New script for bulk downloading KEGG reaction details (name, definition, equation, EC numbers). Supports scanning local KGML files for reaction IDs (faster) or querying KEGG link endpoint. Output: `data/kegg_reaction_detail.tsv`.
 
-- **MetaKG Architecture Article** (`article/metakg_article.md`) — Comprehensive article explaining dual-layer architecture (SQLite + LanceDB), four query modalities, and comparison with existing systems (KEGG, BioCyc, Reactome, etc.).
+- **MetaKG Architecture Article** (`article/metabokg_article.md`) — Comprehensive article explaining dual-layer architecture (SQLite + LanceDB), four query modalities, and comparison with existing systems (KEGG, BioCyc, Reactome, etc.).
 
-- **Architecture Infographic Guide** (`article/metakg_architecture_infographic.md`) — Visual walkthrough of system components and data flow.
+- **Architecture Infographic Guide** (`article/metabokg_architecture_infographic.md`) — Visual walkthrough of system components and data flow.
 
-- **`metakg` unified CLI entry point** (`pyproject.toml`, `src/metakg/cli/main.py`) — New top-level `metakg` command registered as a `@click.group()` with `--version` support. All subcommands (`build`, `enrich`, `analyze`, `analyze-basic`, `simulate`, `mcp`, `viz`, `viz3d`) are accessible as `metakg <subcommand>` in addition to the existing standalone `metakg-*` aliases.
+- **`metabokg` unified CLI entry point** (`pyproject.toml`, `src/metabokg/cli/main.py`) — New top-level `metabokg` command registered as a `@click.group()` with `--version` support. All subcommands (`build`, `enrich`, `analyze`, `analyze-basic`, `simulate`, `mcp`, `viz`, `viz3d`) are accessible as `metabokg <subcommand>` in addition to the existing standalone `metabokg-*` aliases.
 
 - **`docs/INSTALL.md`** — New comprehensive step-by-step installation guide covering all install variants (core, simulate, viz, viz3d, biopax, all-extras), pathway data download, graph build, name enrichment, kinetics seeding, MCP server startup, web explorer, 3D visualizer, dev install, environment variables, upgrading, and troubleshooting.
 
@@ -82,17 +82,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **CLI refactored from monolithic `cli.py` to `cli/` package** (`src/metakg/cli/`) — The 642-line `src/metakg/cli.py` has been replaced by a proper package where each command group lives in its own module. All existing entry-point names and CLI behaviour are preserved.
+- **CLI refactored from monolithic `cli.py` to `cli/` package** (`src/metabokg/cli/`) — The 642-line `src/metabokg/cli.py` has been replaced by a proper package where each command group lives in its own module. All existing entry-point names and CLI behaviour are preserved.
   - `cli/__init__.py` — re-exports the root `cli` group and all standalone entry-point aliases
   - `cli/main.py` — root `@click.group()` with `--version`
   - `cli/options.py` — shared reusable Click option decorators (`db_option`, `lancedb_option`, `model_option`, `wipe_option`, `data_option`)
   - `cli/_utils.py` — shared helpers: `_timestamped_filename()`, `_parse_conc_args()`, `_parse_factor_args()`, `_write_output()`
-  - `cli/cmd_analyze.py` — `metakg analyze` / `metakg analyze-basic`
-  - `cli/cmd_build.py` — `metakg build` / `metakg enrich`
-  - `cli/cmd_mcp.py` — `metakg mcp`
-  - `cli/cmd_simulate.py` — `metakg simulate {fba,ode,whatif,seed}`
-  - `cli/cmd_viz.py` — `metakg viz`
-  - `cli/cmd_viz3d.py` — `metakg viz3d`
+  - `cli/cmd_analyze.py` — `metabokg analyze` / `metabokg analyze-basic`
+  - `cli/cmd_build.py` — `metabokg build` / `metabokg enrich`
+  - `cli/cmd_mcp.py` — `metabokg mcp`
+  - `cli/cmd_simulate.py` — `metabokg simulate {fba,ode,whatif,seed}`
+  - `cli/cmd_viz.py` — `metabokg viz`
+  - `cli/cmd_viz3d.py` — `metabokg viz3d`
 
 - **`mcp` promoted to core dependency** (`pyproject.toml`) — `mcp >= 1.0.0` moved from the optional `[mcp]` extra to the core dependency list; the MCP server is now always available without extra install flags. The `[mcp]` extra has been removed; `[viz3d]` and `[all]` extras updated accordingly. `param` optional dependency removed (no longer needed).
 
@@ -102,35 +102,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Name enrichment pipeline** (`src/metakg/enrich.py`) — New module that replaces bare KEGG accessions (`C00031`, `R00710`) with human-readable names stored directly in `meta_nodes.name`. Phase 1 (no network): derives reaction labels from catalysing enzyme gene symbols via `CATALYZES` edges (e.g. `R00710` → `ADH1A / ADH1B / ADH1C`). Phase 2 (requires TSV files): updates compound and reaction names from downloaded KEGG name lists. Both phases are idempotent.
+- **Name enrichment pipeline** (`src/metabokg/enrich.py`) — New module that replaces bare KEGG accessions (`C00031`, `R00710`) with human-readable names stored directly in `meta_nodes.name`. Phase 1 (no network): derives reaction labels from catalysing enzyme gene symbols via `CATALYZES` edges (e.g. `R00710` → `ADH1A / ADH1B / ADH1C`). Phase 2 (requires TSV files): updates compound and reaction names from downloaded KEGG name lists. Both phases are idempotent.
 
-- **`metakg-enrich` CLI command** (`src/metakg/cli.py`, `pyproject.toml`) — Standalone Click command for running name enrichment against an existing database: `metakg-enrich [--db PATH] [--data DIR]`. Also integrated as `--enrich` / `--enrich-data` flags on `metakg-build` for a single-step build+enrich workflow.
+- **`metabokg-enrich` CLI command** (`src/metabokg/cli.py`, `pyproject.toml`) — Standalone Click command for running name enrichment against an existing database: `metabokg-enrich [--db PATH] [--data DIR]`. Also integrated as `--enrich` / `--enrich-data` flags on `metabokg-build` for a single-step build+enrich workflow.
 
 - **`scripts/download_kegg_names.py`** — New bulk-download script that fetches the KEGG compound list (~19 500 entries) and reaction list (~12 400 entries) from `rest.kegg.jp/list/` and saves them as `data/kegg_compound_names.tsv` / `data/kegg_reaction_names.tsv`. Supports `--data DIR`, `--force`, `--quiet`; includes 1-second courtesy pause between requests per KEGG policy.
 
-- **`data/kegg_compound_names.tsv` / `data/kegg_reaction_names.tsv`** — Bulk KEGG name lookup tables (19 571 compounds, 12 384 reactions) committed to the repository; used by `metakg-enrich` Phase 2 and available for offline enrichment without re-downloading.
+- **`data/kegg_compound_names.tsv` / `data/kegg_reaction_names.tsv`** — Bulk KEGG name lookup tables (19 571 compounds, 12 384 reactions) committed to the repository; used by `metabokg-enrich` Phase 2 and available for offline enrichment without re-downloading.
 
-- **`MetaKG.enrich()` public method** (`src/metakg/orchestrator.py`) — Exposes enrichment via the high-level orchestrator: `kg.enrich(data_dir=None) → EnrichStats`. `build()` gains `enrich=False` and `enrich_data_dir=None` parameters.
+- **`MetaKG.enrich()` public method** (`src/metabokg/orchestrator.py`) — Exposes enrichment via the high-level orchestrator: `kg.enrich(data_dir=None) → EnrichStats`. `build()` gains `enrich=False` and `enrich_data_dir=None` parameters.
 
 ### Changed
 
-- **CLI fully migrated from argparse to Click** (`src/metakg/cli.py`) — All CLI commands rewritten with Click decorators (`@click.command`, `@click.group`, `@click.option`). `metakg-simulate` is now a `@click.group()` with shared `--db/--output/--plain/--top` options passed via `ctx.obj` to `fba`, `ode`, `whatif`, and `seed` subcommands. Error handling uses `raise click.ClickException(msg)` and `click.echo(..., err=True)`. Every command and subcommand now supports `--help` automatically. `click >= 8.0` added as a core dependency.
+- **CLI fully migrated from argparse to Click** (`src/metabokg/cli.py`) — All CLI commands rewritten with Click decorators (`@click.command`, `@click.group`, `@click.option`). `metabokg-simulate` is now a `@click.group()` with shared `--db/--output/--plain/--top` options passed via `ctx.obj` to `fba`, `ode`, `whatif`, and `seed` subcommands. Error handling uses `raise click.ClickException(msg)` and `click.echo(..., err=True)`. Every command and subcommand now supports `--help` automatically. `click >= 8.0` added as a core dependency.
 
-- **`docs/CAPABILITIES.md` updated to v0.2.0** — Added §5 (Name Enrichment) covering both enrichment phases, download script, CLI, and Python API. Updated ODE solver documentation from RK45 to BDF throughout with stiffness warning. Added `ode_method`, `ode_rtol`, `ode_atol`, `ode_max_step` fields to `SimulationConfig` reference. Added `click`, `matplotlib`, and `pandas` to dependency tables. Added `metakg-enrich` to CLI reference.
+- **`docs/CAPABILITIES.md` updated to v0.2.0** — Added §5 (Name Enrichment) covering both enrichment phases, download script, CLI, and Python API. Updated ODE solver documentation from RK45 to BDF throughout with stiffness warning. Added `ode_method`, `ode_rtol`, `ode_atol`, `ode_max_step` fields to `SimulationConfig` reference. Added `click`, `matplotlib`, and `pandas` to dependency tables. Added `metabokg-enrich` to CLI reference.
 
 - **Optional viz dependencies expanded** (`pyproject.toml`) — `matplotlib >= 3.8.0` and `pandas >= 2.0.0` added as optional dependencies, included in the `[viz]` and `[all]` extras.
 
 ### Fixed
 
-- **SQLite threading error in Streamlit** (`src/metakg/store.py`) — `sqlite3.connect()` now passes `check_same_thread=False`, resolving "SQLite objects created in a thread can only be used in that same thread" errors that occurred when the Streamlit app cached a connection via `@st.cache_resource` and served requests from worker threads.
+- **SQLite threading error in Streamlit** (`src/metabokg/store.py`) — `sqlite3.connect()` now passes `check_same_thread=False`, resolving "SQLite objects created in a thread can only be used in that same thread" errors that occurred when the Streamlit app cached a connection via `@st.cache_resource` and served requests from worker threads.
 
 ### Changed
 
-- **`store.query_semantic()` renamed to `query_text()`** (`src/metakg/store.py`, `src/metakg/app.py`) — Method renamed to accurately reflect that it performs a text-based substring match, not a true semantic/vector search; semantic search remains in `MetaIndex`. Docstring updated to clarify the distinction and direct users to `MetaIndex` for embedding-based queries.
+- **`store.query_semantic()` renamed to `query_text()`** (`src/metabokg/store.py`, `src/metabokg/app.py`) — Method renamed to accurately reflect that it performs a text-based substring match, not a true semantic/vector search; semantic search remains in `MetaIndex`. Docstring updated to clarify the distinction and direct users to `MetaIndex` for embedding-based queries.
 
-- **CLI `simulate_main()` uses `MetaKG` orchestrator** (`src/metakg/cli.py`) — `seed`, `fba`, `ode`, and `whatif` subcommands now instantiate `MetaKG` via `with MetaKG(db_path=...) as kg:` instead of directly importing `MetaStore` and `MetabolicSimulator`. Brings CLI in line with the public API surface.
+- **CLI `simulate_main()` uses `MetaKG` orchestrator** (`src/metabokg/cli.py`) — `seed`, `fba`, `ode`, and `whatif` subcommands now instantiate `MetaKG` via `with MetaKG(db_path=...) as kg:` instead of directly importing `MetaStore` and `MetabolicSimulator`. Brings CLI in line with the public API surface.
 
-- **MCP tool handlers extracted to module-level functions** (`src/metakg/mcp_tools.py`) — All per-tool logic moved from closures inside `register_tools()` to standalone `_mcp_*()` functions at module level, making them unit-testable without a live FastMCP instance. `register_tools()` now delegates to these functions and copies docstrings for MCP schema generation.
+- **MCP tool handlers extracted to module-level functions** (`src/metabokg/mcp_tools.py`) — All per-tool logic moved from closures inside `register_tools()` to standalone `_mcp_*()` functions at module level, making them unit-testable without a live FastMCP instance. `register_tools()` now delegates to these functions and copies docstrings for MCP schema generation.
 
 - **WORKFLOW.md updated for `wire_kegg_enzymes.py`** — References to the old `wire_enzymes.py` replaced; description expanded to cover the scanning/patching approach and `--dry-run` flag.
 
@@ -142,32 +142,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **KGML multi-gene entry grouping** (`src/metakg/parsers/kgml.py`) — A single KGML `<entry type="gene">` often lists multiple gene IDs (e.g. pyruvate dehydrogenase complex `hsa:5160 hsa:5161 hsa:5162`). The previous parser created one enzyme node per gene but only wired the last-processed gene to its reaction via a CATALYZES edge, leaving all others as orphaned nodes with no edges. Fix: create one canonical group node per entry (keyed on the first gene ID, labelled with KEGG graphics name); all member gene IDs stored as a list in the node's `xrefs` JSON; `entry_map` points to the single node so CATALYZES wiring is correct and complete. Effect across full human KEGG dataset: ~1,797 fewer enzyme nodes, CATALYZES edge count unchanged at 4,165, ~5,255 previously orphaned enzyme nodes eliminated.
+- **KGML multi-gene entry grouping** (`src/metabokg/parsers/kgml.py`) — A single KGML `<entry type="gene">` often lists multiple gene IDs (e.g. pyruvate dehydrogenase complex `hsa:5160 hsa:5161 hsa:5162`). The previous parser created one enzyme node per gene but only wired the last-processed gene to its reaction via a CATALYZES edge, leaving all others as orphaned nodes with no edges. Fix: create one canonical group node per entry (keyed on the first gene ID, labelled with KEGG graphics name); all member gene IDs stored as a list in the node's `xrefs` JSON; `entry_map` points to the single node so CATALYZES wiring is correct and complete. Effect across full human KEGG dataset: ~1,797 fewer enzyme nodes, CATALYZES edge count unchanged at 4,165, ~5,255 previously orphaned enzyme nodes eliminated.
 
-- **xref index expansion for list-valued entries** (`src/metakg/store.py` — `MetaStore.build_xref_index`) — Updated to expand list-valued xref entries into individual `xref_index` rows. Each member gene ID in a group node gets its own row pointing to the canonical group node, so per-gene lookup works transparently. Example: group node `enz:kegg:5160` with `xrefs={"kegg": ["5160","5161","5162"]}` produces three `xref_index` rows.
+- **xref index expansion for list-valued entries** (`src/metabokg/store.py` — `MetaStore.build_xref_index`) — Updated to expand list-valued xref entries into individual `xref_index` rows. Each member gene ID in a group node gets its own row pointing to the canonical group node, so per-gene lookup works transparently. Example: group node `enz:kegg:5160` with `xrefs={"kegg": ["5160","5161","5162"]}` produces three `xref_index` rows.
 
 ### Added
 
 - **`scripts/wire_kegg_enzymes.py`** — Analysis and patching utility that scans KGML files for reaction elements missing enzyme coverage (not handled by Strategy A or B) and patches them with `enzyme="N"` attributes. Confirmed that all 4,165 reaction elements in the full human KEGG dataset are fully covered by Strategy B; patching is only needed for hand-authored sample files.
 
-- **`metakg-analyze-basic` CLI entry point** — New `analyze_basic_main()` in `cli.py` exposing the original structured (non-narrative) analysis report as a separate command, preserving both report styles
-- **Timestamped output filenames** — `metakg-analyze`, `metakg-analyze-basic`, and `metakg-simulate` now write to auto-named files (e.g., `metakg-analysis-2026-03-03-143022.md`) when `--output` is not specified, eliminating silent stdout dumps
+- **`metabokg-analyze-basic` CLI entry point** — New `analyze_basic_main()` in `cli.py` exposing the original structured (non-narrative) analysis report as a separate command, preserving both report styles
+- **Timestamped output filenames** — `metabokg-analyze`, `metabokg-analyze-basic`, and `metabokg-simulate` now write to auto-named files (e.g., `metabokg-analysis-2026-03-03-143022.md`) when `--output` is not specified, eliminating silent stdout dumps
 - **`code-kg` core dependency** — Added `code-kg` as a production dependency in `pyproject.toml` (git source: Flux-Frontiers/code_kg); codekg CLI scripts now come from that package directly rather than being re-declared here
-- **Revised article abstract** (`article/metakg_revised.tex`) — Rewritten to lead with architectural innovation (dual-layer SQLite + LanceDB), emphasise all four query modalities plus simulation and visualisation capabilities, and highlight the complete human metabolome ingestion; format parsing demoted to supporting infrastructure
+- **Revised article abstract** (`article/metabokg_revised.tex`) — Rewritten to lead with architectural innovation (dual-layer SQLite + LanceDB), emphasise all four query modalities plus simulation and visualisation capabilities, and highlight the complete human metabolome ingestion; format parsing demoted to supporting infrastructure
 
 ### Changed
 
-- **`metakg-analyze` always writes to file** — Removed stdout fallback; output path is either the `--output` argument or a timestamped default; mirrors `metakg-simulate` behaviour
+- **`metabokg-analyze` always writes to file** — Removed stdout fallback; output path is either the `--output` argument or a timestamped default; mirrors `metabokg-simulate` behaviour
 - **CLAUDE.md refactored** — Condensed from ~600 lines to ~120-line table-driven quick reference; removed redundant prose, kept command tables, simulation examples, and CodeKG query strategy
-- **`pyproject.toml` scripts cleaned up** — Removed duplicate `codekg-*` script entries (now provided by the `code-kg` package); added `metakg-analyze-basic` entry point
+- **`pyproject.toml` scripts cleaned up** — Removed duplicate `codekg-*` script entries (now provided by the `code-kg` package); added `metabokg-analyze-basic` entry point
 - **`.codekg/lancedb` untracked from git** — Removed regenerable LanceDB vector index files from version control; `.gitignore` entry already present; index can be rebuilt with `/codekg-rebuild`
-- **Analysis report title** (`src/metakg/analyze.py`) — Changed from `"MetaKG Pathway Analysis Report"` to `"metaKG_analysis"` for cleaner file naming
+- **Analysis report title** (`src/metabokg/analyze.py`) — Changed from `"MetaKG Pathway Analysis Report"` to `"metaKG_analysis"` for cleaner file naming
 
 ### Removed
 
 - **`codekg-*` script declarations from `pyproject.toml`** — Scripts are now provided by the `code-kg` dependency package; no functional change for users
 
-- **Polished MetaKG Thorough Analysis Report** — New `src/metakg/thorough_analysis.py` module providing CodeKG-style formatted analysis output
+- **Polished MetaKG Thorough Analysis Report** — New `src/metabokg/thorough_analysis.py` module providing CodeKG-style formatted analysis output
   - Executive Summary with 5-minute KPI overview
   - Emoji-enhanced section headers (📊 📈 🔥 ⚡ 🔗 📦 🧬 🧪 ⚠️ ✅ 💡)
   - Risk level indicators (🟢 LOW 🟡 MED 🔴 HIGH) for metabolite hubs and complex reactions
@@ -175,26 +175,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Metabolic Network Strengths section highlighting well-designed patterns
   - Structured Biological Insights & Recommendations with 3-tier action plan (Immediate, Medium-term, Long-term)
   - Full Appendix with complete isolated nodes and dead-end metabolite lists
-  - Seamless CLI integration: `metakg-analyze` now generates the polished report
+  - Seamless CLI integration: `metabokg-analyze` now generates the polished report
 
-- **Claude Slash Command** — New `.claude/commands/metakg-analyze.md` for quick pathway analysis invocation with `/metakg-analyze`
+- **Claude Slash Command** — New `.claude/commands/metabokg-analyze.md` for quick pathway analysis invocation with `/metabokg-analyze`
 
 ### Changed
 
-- **`metakg-analyze` CLI Command** — Updated `src/metakg/cli.py:analyze_main()` to use new `render_thorough_report()` from `thorough_analysis.py`
+- **`metabokg-analyze` CLI Command** — Updated `src/metabokg/cli.py:analyze_main()` to use new `render_thorough_report()` from `thorough_analysis.py`
   - Same CLI interface and flags (`--db`, `--output`, `--top`, `--plain`)
   - Richer Markdown output with polished sections and emoji headers
   - Backward compatible: plain-text mode (`--plain`) still works
 
-- **MetaKG Thorough Analysis Skill** — Updated `.claude/skills/metakg-thorough-analysis/SKILL.md` Python API section to import and use `render_thorough_report()`
+- **MetaKG Thorough Analysis Skill** — Updated `.claude/skills/metabokg-thorough-analysis/SKILL.md` Python API section to import and use `render_thorough_report()`
 
 ### Removed
 
 ### Fixed
 
-- **Name enrichment Phase 2 now loads canonical KEGG reaction names** (`src/metakg/enrich.py`) — The enrichment pipeline had an architectural flaw: Phase 1 would rename reactions from bare accessions (e.g., `R00710`) to gene symbols (e.g., `ADH1A / ADH1B / ADH1C`), then Phase 2 would skip them because it only recognized bare accessions, preventing 1,771 canonical KEGG reaction function names from ever being loaded. Fixed by extracting the KEGG accession directly from the immutable node ID (format: `rxn:kegg:R00710`) instead of relying on the volatile `name` field. This implements the intended **dual-layer design**: Phase 2 now always overrides Phase 1, ensuring canonical structural names take priority over enriched gene labels. Phase 1 names are preserved only when no canonical KEGG name exists. Result: 1,771 additional reaction names now loaded (was 0 before). Example: `R00710` now displays as `"acetaldehyde:NAD+ oxidoreductase"` instead of gene symbols.
+- **Name enrichment Phase 2 now loads canonical KEGG reaction names** (`src/metabokg/enrich.py`) — The enrichment pipeline had an architectural flaw: Phase 1 would rename reactions from bare accessions (e.g., `R00710`) to gene symbols (e.g., `ADH1A / ADH1B / ADH1C`), then Phase 2 would skip them because it only recognized bare accessions, preventing 1,771 canonical KEGG reaction function names from ever being loaded. Fixed by extracting the KEGG accession directly from the immutable node ID (format: `rxn:kegg:R00710`) instead of relying on the volatile `name` field. This implements the intended **dual-layer design**: Phase 2 now always overrides Phase 1, ensuring canonical structural names take priority over enriched gene labels. Phase 1 names are preserved only when no canonical KEGG name exists. Result: 1,771 additional reaction names now loaded (was 0 before). Example: `R00710` now displays as `"acetaldehyde:NAD+ oxidoreductase"` instead of gene symbols.
 
-- **3D visualization now displays KEGG reaction function names in enzyme sidebar** (`src/metakg/viz3d.py`) — When picking an enzyme node, the sidebar now shows the reactions it catalyzes with their canonical KEGG function names (e.g., `"alcohol dehydrogenase (NAD+)"`, `"3-ketosteroid 1-dehydrogenase"`). This is now possible thanks to the enrichment fix above. Changes: (1) Load KEGG reaction names TSV at startup (lines 154–173), (2) Update enzyme display to show catalyzed reactions with KEGG function names (lines 252–280), (3) Gracefully fallback to bare accession if no KEGG name available, (4) Clarify labels: `"Enzyme"` → `"Gene symbol"` for clarity. This fixes the user request: instead of bare gene symbols like `ADH1A`, the sidebar now describes what each enzyme does.
+- **3D visualization now displays KEGG reaction function names in enzyme sidebar** (`src/metabokg/viz3d.py`) — When picking an enzyme node, the sidebar now shows the reactions it catalyzes with their canonical KEGG function names (e.g., `"alcohol dehydrogenase (NAD+)"`, `"3-ketosteroid 1-dehydrogenase"`). This is now possible thanks to the enrichment fix above. Changes: (1) Load KEGG reaction names TSV at startup (lines 154–173), (2) Update enzyme display to show catalyzed reactions with KEGG function names (lines 252–280), (3) Gracefully fallback to bare accession if no KEGG name available, (4) Clarify labels: `"Enzyme"` → `"Gene symbol"` for clarity. This fixes the user request: instead of bare gene symbols like `ADH1A`, the sidebar now describes what each enzyme does.
 
 - **Pylint configuration and test fixture naming** (`.pylintrc`, `tests/test_simulation.py`) — Created `.pylintrc` with proper configuration for the codebase; fixed unrecognized `max-lines` option (changed to `max-module-lines`). Renamed fixture `kg_with_minimal_pathway` to `kkg_with_minimal_pathway` to eliminate false pylint `redefined-outer-name` warnings in pytest test functions.
 
@@ -205,7 +205,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Comprehensive Metabolic Simulation Documentation** — Expanded CLI reference, API guide, and scientific article with complete examples for all three simulation modalities
   - CLAUDE.md: New "Simulation and Analysis" section with detailed examples for FBA, kinetic ODE integration, and what-if perturbation analysis
   - README.md: New "Metabolic Simulations" section with runnable code examples and ODE solver configuration guide
-  - article/metakg.tex: New "Metabolic Simulations" subsection explaining solver architecture and parameter seeding
+  - article/metabokg.tex: New "Metabolic Simulations" subsection explaining solver architecture and parameter seeding
   - Comprehensive explanation of why BDF solver is optimal for metabolic systems (inherent stiffness from fast enzyme kinetics + slow substrate dynamics)
   - All ODE parameters documented: ode_method, ode_rtol, ode_atol, ode_max_step with defaults and rationale
 
@@ -227,7 +227,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Includes optional vector index statistics (indexed rows and embedding dimension)
   - Provides `__str__()` for nicely formatted output and `to_dict()` for serialization
   - Eliminates internal `.store` exposure in public API
-  - Exported in `metakg` module for public use
+  - Exported in `metabokg` module for public use
 
 - **Comprehensive Unit Tests for Orchestrator** — 14 new tests for `MetabolicRuntimeStats` and `MetaKG.get_stats()`
   - Tests basic construction, serialization, and string representation
@@ -271,12 +271,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Gracefully handles missing or unavailable index
 
 - **Code Quality & Linting**
-  - Fixed import ordering in `scripts/simulation_demo.py`, `src/metakg/orchestrator.py`, and `tests/test_orchestrator.py` to comply with Ruff I001
+  - Fixed import ordering in `scripts/simulation_demo.py`, `src/metabokg/orchestrator.py`, and `tests/test_orchestrator.py` to comply with Ruff I001
   - Removed f-string prefixes from non-placeholder strings in `scripts/simulation_demo.py` (Ruff F541)
   - Removed unused imports (`tempfile`, `pathlib.Path`) from `tests/test_orchestrator.py`
   - All changes pass Ruff linting and mypy type checking
 
-- **Critical Namespace Shadowing Bug** — `src/metakg/metakg.py` was shadowing the metakg package namespace, preventing imports of submodules like `graph.py` and breaking all CLI commands. Resolved by renaming to `orchestrator.py` and updating all import statements.
+- **Critical Namespace Shadowing Bug** — `src/metabokg/metabokg.py` was shadowing the metabokg package namespace, preventing imports of submodules like `graph.py` and breaking all CLI commands. Resolved by renaming to `orchestrator.py` and updating all import statements.
 
 ### Added
 
@@ -301,7 +301,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enables tools like `query_codebase`, `pack_snippets`, `callers` for code exploration
 
 - **Comprehensive CLI Documentation** — Added `CLAUDE.md` with complete reference for both MetaKG and CodeKG commands
-  - MetaKG commands: `metakg-build`, `metakg-analyze`, `metakg-viz`, `metakg-viz3d`, `metakg-mcp`
+  - MetaKG commands: `metabokg-build`, `metabokg-analyze`, `metabokg-viz`, `metabokg-viz3d`, `metabokg-mcp`
   - CodeKG commands: `codekg-build-sqlite`, `codekg-build-lancedb`, `codekg-query`, `codekg-mcp`
   - MCP tool documentation with usage examples and query strategies
   - Typical workflows and combined MetaKG + CodeKG usage patterns
@@ -323,17 +323,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Interactive 3D rendering with color coding by metabolic entity type
   - Export to HTML and PNG formats
 
-- **Layout Algorithms** (`src/metakg/layout3d.py`)
+- **Layout Algorithms** (`src/metabokg/layout3d.py`)
   - Fibonacci spatial utilities for uniform point distribution on spheres and annuli
   - AlliumLayout class for plant-inspired botanical visualization
   - LayerCakeLayout class for stratified hierarchical visualization
   - Extensible Layout3D abstract base class for custom layout implementations
 
 - **CLI Commands**
-  - `metakg-viz` — Launch Streamlit web explorer with database and port configuration
-  - `metakg-viz3d` — Launch 3D PyVista visualizer with layout and export options
+  - `metabokg-viz` — Launch Streamlit web explorer with database and port configuration
+  - `metabokg-viz3d` — Launch 3D PyVista visualizer with layout and export options
 
-- **GraphStore Wrapper** (`src/metakg/store.py`)
+- **GraphStore Wrapper** (`src/metabokg/store.py`)
   - Convenience compatibility layer wrapping MetaStore with visualization-friendly methods
   - `query_nodes()` — Query nodes with optional kind filtering
   - `query_edges()` — Query edges with optional source/destination filtering
@@ -351,11 +351,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Orchestrator Class** — Renamed `MetaKG` source file from `metakg.py` to `orchestrator.py` for clarity and to eliminate namespace shadowing
-- **Import Paths** — Updated all references from `metakg.metakg` to `metakg.orchestrator` in `__init__.py`, `mcp_tools.py`, and `app.py`
+- **Orchestrator Class** — Renamed `MetaKG` source file from `metabokg.py` to `orchestrator.py` for clarity and to eliminate namespace shadowing
+- **Import Paths** — Updated all references from `metabokg.metabokg` to `metabokg.orchestrator` in `__init__.py`, `mcp_tools.py`, and `app.py`
 - **pyproject.toml** — Added optional visualization dependencies and `viz` + `viz3d` extras, plus CodeKG CLI entry points
-- **src/metakg/cli.py** — Added `viz_main()` and `viz3d_main()` entry points for new CLI commands
-- **src/metakg/store.py** — Extended with GraphStore compatibility wrapper class
+- **src/metabokg/cli.py** — Added `viz_main()` and `viz3d_main()` entry points for new CLI commands
+- **src/metabokg/store.py** — Extended with GraphStore compatibility wrapper class
 
 ### Technical Details
 
@@ -373,11 +373,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Metabolic pathway parser supporting KGML, SBML, BioPAX, and CSV formats
 - Semantic knowledge graph with LanceDB vector indexing
 - MCP (Model Context Protocol) server integration
-- Core CLI: `metakg-build` and `metakg-mcp` commands
+- Core CLI: `metabokg-build` and `metabokg-mcp` commands
 - SQLite-based graph persistence layer
 - Cross-reference resolution and pathway unification
 
 ---
 
-[Unreleased]: https://github.com/flux-frontiers/meta_kg/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/flux-frontiers/meta_kg/releases/tag/v0.1.0
+[Unreleased]: https://github.com/flux-frontiers/metabo_kg/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/flux-frontiers/metabo_kg/releases/tag/v0.1.0

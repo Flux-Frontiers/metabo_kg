@@ -12,7 +12,7 @@ Create a new versioned release by promoting the `[Unreleased]` section of `CHANG
 ## Step 0: Gather Release Context
 
 1. Read `CHANGELOG.md` in full.
-2. Read `pyproject.toml` and `src/metakg/__init__.py` to find the current version string.
+2. Read `pyproject.toml` and `src/metabokg/__init__.py` to find the current version string.
 3. Run `git status` and `git log --oneline -10` to understand the state of the working tree.
 4. Confirm there is content under `## [Unreleased]`; if the section is empty, stop and tell the user there is nothing to release.
 
@@ -40,7 +40,7 @@ Create a new versioned release by promoting the `[Unreleased]` section of `CHANG
 Update the version string in **both** of the following files:
 
 - `pyproject.toml` — the `version = "..."` field under `[tool.poetry]`
-- `src/metakg/__init__.py` — the `__version__` assignment
+- `src/metabokg/__init__.py` — the `__version__` assignment
 
 Set both to the new version string (without the `v` prefix).
 
@@ -107,7 +107,7 @@ In `README.md`, find the version badge line and replace `<current_version>` with
    - `CHANGELOG.md`
    - `release-notes.md`
    - `pyproject.toml`
-   - `src/metakg/__init__.py`
+   - `src/metabokg/__init__.py`
    - `README.md`
    - `docs/analysis_v<new_version>.md`
 2. Create a commit with message:

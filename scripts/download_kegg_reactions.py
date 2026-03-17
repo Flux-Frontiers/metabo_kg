@@ -162,7 +162,7 @@ def collect_ids_from_kegg(*, quiet: bool = False) -> list[str]:
 
     req = urllib.request.Request(
         _HSA_LINK_URL,
-        headers={"User-Agent": "metakg/0.1 (research)"},
+        headers={"User-Agent": "metabokg/0.1 (research)"},
     )
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
@@ -198,7 +198,7 @@ def _fetch_reaction_text(rxn_id: str, *, timeout: int = 30) -> str | None:
     :return: Response text, or ``None`` on error.
     """
     url = _GET_REACTION_URL.format(rxn_id=rxn_id)
-    req = urllib.request.Request(url, headers={"User-Agent": "metakg/0.1 (research)"})
+    req = urllib.request.Request(url, headers={"User-Agent": "metabokg/0.1 (research)"})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.read().decode("utf-8")
@@ -543,7 +543,7 @@ def main(argv: list[str] | None = None) -> int:
             "\nTo rebuild the knowledge graph with enriched reaction names:",
             file=sys.stderr,
         )
-        print("  poetry run metakg-build --data data/hsa_pathways --wipe", file=sys.stderr)
+        print("  poetry run metabokg-build --data data/hsa_pathways --wipe", file=sys.stderr)
 
     return 0
 

@@ -3,7 +3,7 @@ requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "metakg"
+name = "metabokg"
 version = "0.3.0"
 description = "Metabolic pathway parser and semantic knowledge graph with MCP support"
 authors = ["Eric G. Suchanek, PhD <suchanek@mac.com>"]
@@ -15,7 +15,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-packages = [{ include = "metakg", from = "src" }]
+packages = [{ include = "metabokg", from = "src" }]
 
 [tool.poetry.dependencies]
 python     = ">=3.12, <3.13"
@@ -85,18 +85,18 @@ pylint = "^4.0.5"
 
 [tool.poetry.scripts]
 
-# metakg metabolic pathway cli entrypoints
+# metabokg metabolic pathway cli entrypoints
 
-metakg                = "metakg.cli.main:cli"
-metakg-build          = "metakg.cli:build_main"
-metakg-update         = "metakg.cli:update_main"
-metakg-enrich         = "metakg.cli:enrich_main"
-metakg-mcp            = "metakg.cli:mcp_main"
-metakg-viz            = "metakg.cli:viz_main"
-metakg-viz3d          = "metakg.cli:viz3d_main"
-metakg-analyze        = "metakg.cli:analyze_main"
-metakg-analyze-basic  = "metakg.cli:analyze_basic_main"
-metakg-simulate       = "metakg.cli:simulate_main"
+metabokg                = "metabokg.cli.main:cli"
+metabokg-build          = "metabokg.cli:build_main"
+metabokg-update         = "metabokg.cli:update_main"
+metabokg-enrich         = "metabokg.cli:enrich_main"
+metabokg-mcp            = "metabokg.cli:mcp_main"
+metabokg-viz            = "metabokg.cli:viz_main"
+metabokg-viz3d          = "metabokg.cli:viz3d_main"
+metabokg-analyze        = "metabokg.cli:analyze_main"
+metabokg-analyze-basic  = "metabokg.cli:analyze_basic_main"
+metabokg-simulate       = "metabokg.cli:simulate_main"
 
 [tool.ruff]
 line-length    = 100

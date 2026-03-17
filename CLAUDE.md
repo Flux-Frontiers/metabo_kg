@@ -1,6 +1,6 @@
 # MetaKG CLI Commands Reference
 
-**Repository:** https://github.com/Flux-Frontiers/meta_kg | **Sister:** https://github.com/Flux-Frontiers/code_kg
+**Repository:** https://github.com/Flux-Frontiers/metabo_kg | **Sister:** https://github.com/Flux-Frontiers/code_kg
 
 ## CodeKG Tools (Available in Claude Code)
 
@@ -29,26 +29,26 @@ poetry install --all-extras  # Full install with viz, viz3d, mcp
 
 | Command | Purpose |
 |---------|---------|
-| `metakg-build --data DIR` | Parse pathways → SQLite + LanceDB (wipes & enriches by default) |
-| `metakg-update --data DIR` | Incrementally add new files without wiping |
-| `metakg-analyze [--output FILE]` | 7-phase pathway analysis |
-| `metakg-viz [--port 8500]` | 2D Streamlit explorer |
-| `metakg-viz3d [--layout allium\|cake]` | 3D PyVista visualization |
-| `metakg-mcp` | MCP server for Claude |
+| `metabokg-build --data DIR` | Parse pathways → SQLite + LanceDB (wipes & enriches by default) |
+| `metabokg-update --data DIR` | Incrementally add new files without wiping |
+| `metabokg-analyze [--output FILE]` | 7-phase pathway analysis |
+| `metabokg-viz [--port 8500]` | 2D Streamlit explorer |
+| `metabokg-viz3d [--layout allium\|cake]` | 3D PyVista visualization |
+| `metabokg-mcp` | MCP server for Claude |
 
 **Common options:**
-- `--db PATH`: SQLite db (default: `.metakg/meta.sqlite`)
-- `--lancedb PATH`: Vector index (default: `.metakg/lancedb`)
+- `--db PATH`: SQLite db (default: `.metabokg/meta.sqlite`)
+- `--lancedb PATH`: Vector index (default: `.metabokg/lancedb`)
 - `--no-wipe`: Keep existing data (default: wipe before build)
 - `--no-index`: Skip LanceDB (SQLite only)
 - `--no-enrich`: Skip enrichment (on by default)
 
 **MCP tools:** `query_pathway`, `get_compound`, `get_reaction`, `find_path`, `seed_kinetics`, `simulate_fba`, `simulate_ode`, `simulate_whatif`
 
-### 3D Visualization (`metakg-viz3d`)
+### 3D Visualization (`metabokg-viz3d`)
 
 ```bash
-metakg-viz3d [--layout allium|cake] [--db PATH] [--width W] [--height H]
+metabokg-viz3d [--layout allium|cake] [--db PATH] [--width W] [--height H]
 ```
 
 **Layout modes:**
@@ -74,7 +74,7 @@ metakg-viz3d [--layout allium|cake] [--db PATH] [--width W] [--height H]
 
 Each pathway is tagged with a **category** based on KEGG ID ranges (metabolic, signaling, disease, etc.). Use categories to filter and organize networks by biological domain.
 
-**Constants available in `metakg.primitives`:**
+**Constants available in `metabokg.primitives`:**
 ```python
 PATHWAY_CATEGORY_METABOLIC          # 00xxx–01xxx
 PATHWAY_CATEGORY_TRANSPORT          # 02xxx
@@ -88,8 +88,8 @@ PATHWAY_CATEGORY_DRUG               # 07xxx (drug development)
 
 **Query by category:**
 ```python
-from metakg import MetaKG
-from metakg.primitives import PATHWAY_CATEGORY_METABOLIC
+from metabokg import MetaKG
+from metabokg.primitives import PATHWAY_CATEGORY_METABOLIC
 
 kg = MetaKG()
 pathways = kg.store.all_nodes(kind="pathway", category=PATHWAY_CATEGORY_METABOLIC)
@@ -113,7 +113,7 @@ GROUP BY category;
 **ODE params:** `ode_rtol=1e-3`, `ode_atol=1e-5`, `ode_max_step=None`
 
 ```python
-from metakg import MetaKG
+from metabokg import MetaKG
 kg = MetaKG()
 
 # FBA (steady-state)
@@ -192,18 +192,18 @@ python scripts/download_human_kegg.py --output data/hsa_pathways
 python scripts/download_kegg_names.py
 
 # 3. Build & analyze pathways (enrichment runs by default)
-metakg-build --data ./data/hsa_pathways
+metabokg-build --data ./data/hsa_pathways
 
 # 4. Seed kinetic parameters from literature
-metakg-simulate seed
+metabokg-simulate seed
 
 # 5. Run analysis report
-metakg-analyze
+metabokg-analyze
 
 # Explore (choose your view)
-metakg-viz           # 2D Streamlit explorer
-metakg-viz3d --layout allium    # 3D visualization (allium or cake)
-metakg-mcp           # MCP server for Claude
+metabokg-viz           # 2D Streamlit explorer
+metabokg-viz3d --layout allium    # 3D visualization (allium or cake)
+metabokg-mcp           # MCP server for Claude
 
 # Optional: analyze codebase
 codekg-build --repo . --wipe

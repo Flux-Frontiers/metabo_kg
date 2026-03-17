@@ -25,7 +25,7 @@ a functional unit for that pathway step. The previous parser created one enzyme
 node per gene but only wired the **last-processed** gene to its reaction via a
 CATALYZES edge, leaving all others as orphaned nodes with no edges.
 
-**Fix (`src/metakg/parsers/kgml.py`):** Create **one canonical group node** per
+**Fix (`src/metabokg/parsers/kgml.py`):** Create **one canonical group node** per
 entry, keyed on the first gene ID and labelled with the KEGG graphics name. All
 member gene IDs are stored as a list in the node's `xrefs` JSON. The
 `entry_map` points to this single node, so CATALYZES wiring is correct and
@@ -40,7 +40,7 @@ complete.
 
 ## xref Index Update
 
-**Fix (`src/metakg/store.py` — `MetaStore.build_xref_index`):** Updated to
+**Fix (`src/metabokg/store.py` — `MetaStore.build_xref_index`):** Updated to
 expand list-valued xref entries into individual `xref_index` rows. Each member
 gene ID in a group gets its own row pointing to the canonical group node, so
 per-gene lookup works transparently.

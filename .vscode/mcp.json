@@ -1,15 +1,15 @@
 {
   "servers": {
-    "metakg": {
+    "metabokg": {
       "type": "stdio",
       "command": "poetry",
       "args": [
         "run",
-        "metakg-mcp",
+        "metabokg-mcp",
         "--db",
-        ".metakg/meta.sqlite",
+        ".metabokg/meta.sqlite",
         "--lancedb",
-        ".metakg/lancedb"
+        ".metabokg/lancedb"
       ],
       "env": {
         "POETRY_VIRTUALENVS_IN_PROJECT": "false"
@@ -17,13 +17,13 @@
     },
     "codekg": {
       "type": "stdio",
-      "command": "/Users/egs/repos/meta_kg/.venv/bin/python",
+      "command": "/Users/egs/repos/metabo_kg/.venv/bin/python",
       "args": [
         "-m",
         "code_kg",
         "mcp",
         "--repo",
-        "/Users/egs/repos/meta_kg"
+        "/Users/egs/repos/metabo_kg"
       ]
     }
   }

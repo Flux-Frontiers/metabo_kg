@@ -1,5 +1,5 @@
 """
-Tests for metakg.simulate — Metabolic simulations (FBA, ODE, what-if).
+Tests for metabokg.simulate — Metabolic simulations (FBA, ODE, what-if).
 
 Includes timeout guards to prevent ODE solver hangs.
 """
@@ -8,8 +8,8 @@ import json
 
 import pytest
 
-from metakg import MetaKG
-from metakg.primitives import (
+from metabokg import MetaKG
+from metabokg.primitives import (
     KIND_COMPOUND,
     KIND_ENZYME,
     KIND_PATHWAY,

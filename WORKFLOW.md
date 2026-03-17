@@ -22,23 +22,23 @@ wire_enzymes.py                ← one-time; already applied to data/hsa_pathway
 data/hsa_pathways/*.kgml  (patched)
      │
      ▼
-metakg-build --data data/hsa_pathways/  ← wipes and rebuilds by default
+metabokg-build --data data/hsa_pathways/  ← wipes and rebuilds by default
      │  KGMLParser → MetaNode/MetaEdge
-     ├──► .metakg/meta.sqlite   (SQLite knowledge graph)
-     └──► .metakg/lancedb/      (vector index for semantic search)
+     ├──► .metabokg/meta.sqlite   (SQLite knowledge graph)
+     └──► .metabokg/lancedb/      (vector index for semantic search)
      │
      ▼
-metakg-simulate seed           ← run once after build
+metabokg-simulate seed           ← run once after build
      │  kinetics_fetch.py → kinetic_parameters + regulatory_interactions
      ▼
-.metakg/meta.sqlite  (complete)
+.metabokg/meta.sqlite  (complete)
      │
-     ├── metakg-analyze         → Markdown pathway analysis report
-     ├── metakg-simulate fba    → flux distribution
-     ├── metakg-simulate ode    → concentration time-courses
-     ├── metakg-simulate whatif → perturbation analysis
-     ├── metakg-mcp             → MCP server (for Claude)
-     └── metakg-viz / viz3d     → interactive visualisers
+     ├── metabokg-analyze         → Markdown pathway analysis report
+     ├── metabokg-simulate fba    → flux distribution
+     ├── metabokg-simulate ode    → concentration time-courses
+     ├── metabokg-simulate whatif → perturbation analysis
+     ├── metabokg-mcp             → MCP server (for Claude)
+     └── metabokg-viz / viz3d     → interactive visualisers
 ```
 
 ---
@@ -89,28 +89,28 @@ ingesting newly downloaded or refreshed KGML files.
 
 ```bash
 # Full rebuild — wipes existing data first (default behaviour)
-metakg-build --data data/hsa_pathways/
+metabokg-build --data data/hsa_pathways/
 
 # Incremental update — merge new files without wiping
-metakg-update --data data/hsa_pathways/
+metabokg-update --data data/hsa_pathways/
 
-# Keep existing data (equivalent to metakg-update; explicit flag)
-metakg-build --data data/hsa_pathways/ --no-wipe
+# Keep existing data (equivalent to metabokg-update; explicit flag)
+metabokg-build --data data/hsa_pathways/ --no-wipe
 
 # Build without the LanceDB vector index (faster, no semantic search)
-metakg-build --data data/hsa_pathways/ --no-index
+metabokg-build --data data/hsa_pathways/ --no-index
 
 # Skip kinetic seeding (rarely needed)
-metakg-build --data data/hsa_pathways/ --no-seed-kinetics
+metabokg-build --data data/hsa_pathways/ --no-seed-kinetics
 
 # Custom paths or embedding model
-metakg-build --data data/hsa_pathways/ \
-             --db .metakg/meta.sqlite \
-             --lancedb .metakg/lancedb \
+metabokg-build --data data/hsa_pathways/ \
+             --db .metabokg/meta.sqlite \
+             --lancedb .metabokg/lancedb \
              --model all-MiniLM-L6-v2
 ```
 
-By default, `metakg-build` automatically:
+By default, `metabokg-build` automatically:
 1. Parses pathway KGML files → SQLite graph
 2. Builds xref index
 3. Builds LanceDB vector index (if `--no-index` not set)
@@ -136,7 +136,7 @@ If you need to re-seed or force-overwrite kinetic parameters:
 
 ```bash
 # Overwrite existing rows (use after updating kinetics_fetch.py)
-metakg-simulate seed --force
+metabokg-simulate seed --force
 ```
 
 Kinetics are automatically populated with 26 key reactions and 13 allosteric regulatory rules from curated literature sources (Mulquiney & Kuchel, BRENDA, eQuilibrator).
@@ -154,13 +154,13 @@ Kinetics are automatically populated with 26 key reactions and 13 allosteric reg
 
 ```bash
 # Print Markdown report to stdout
-metakg-analyze
+metabokg-analyze
 
 # Write to file
-metakg-analyze --output analysis.md
+metabokg-analyze --output analysis.md
 
 # Plain text, top 30 items per section
-metakg-analyze --output analysis.txt --plain --top 30
+metabokg-analyze --output analysis.txt --plain --top 30
 ```
 
 Covers: graph statistics, hub metabolites, complex reactions,
@@ -172,18 +172,18 @@ cross-pathway hubs, pathway coupling, dead-end metabolites, top enzymes.
 
 ```bash
 # Maximise total forward flux across a pathway
-metakg-simulate fba --pathway hsa00010
+metabokg-simulate fba --pathway hsa00010
 
 # Optimise a specific reaction (e.g. pyruvate kinase)
-metakg-simulate fba --pathway hsa00010 \
+metabokg-simulate fba --pathway hsa00010 \
     --objective rxn:kegg:R00196 \
     --output fba_glycolysis.md
 
 # Minimise instead of maximise
-metakg-simulate fba --pathway hsa00020 --minimize
+metabokg-simulate fba --pathway hsa00020 --minimize
 
 # All pathways in the graph (no --pathway filter)
-metakg-simulate fba --output fba_all.md
+metabokg-simulate fba --output fba_all.md
 ```
 
 ---
@@ -192,10 +192,10 @@ metakg-simulate fba --output fba_all.md
 
 ```bash
 # Default: 100 time units, 500 points, 1 mM initial concentration for all compounds
-metakg-simulate ode --pathway hsa00010
+metabokg-simulate ode --pathway hsa00010
 
 # Custom time range and initial conditions
-metakg-simulate ode --pathway hsa00010 \
+metabokg-simulate ode --pathway hsa00010 \
     --time 200 --points 1000 \
     --conc cpd:kegg:C00031:5.0 \
     --conc cpd:kegg:C00002:3.0 \
@@ -212,14 +212,14 @@ Km = 0.5 mM / Vmax = 1.0 mM/s when parameters are absent).
 
 ```bash
 # Enzyme knockout via FBA
-metakg-simulate whatif --pathway hsa00010 \
+metabokg-simulate whatif --pathway hsa00010 \
     --mode fba \
     --knockout enz:kegg:hsa:2538 \
     --name HK_knockout \
     --output whatif_hk.md
 
 # Partial inhibition (50%) of two enzymes via ODE
-metakg-simulate whatif --pathway hsa00010 \
+metabokg-simulate whatif --pathway hsa00010 \
     --mode ode \
     --factor enz:kegg:hsa:5211:0.5 \
     --factor enz:kegg:hsa:5213:0.5 \
@@ -227,7 +227,7 @@ metakg-simulate whatif --pathway hsa00010 \
     --output whatif_pfk.md
 
 # Substrate pulse with FBA
-metakg-simulate whatif --pathway hsa00010 \
+metabokg-simulate whatif --pathway hsa00010 \
     --mode ode \
     --conc cpd:kegg:C00031:10.0 \
     --name glucose_pulse \
@@ -243,10 +243,10 @@ for every affected reaction or compound, sorted by magnitude.
 
 ```bash
 # stdio transport (Claude Desktop / Claude Code)
-metakg-mcp
+metabokg-mcp
 
 # SSE transport (HTTP, for custom integrations)
-metakg-mcp --transport sse
+metabokg-mcp --transport sse
 ```
 
 Exposes 9 tools to the connected agent:
@@ -268,12 +268,12 @@ Exposes 9 tools to the connected agent:
 ## Quick-Start (from scratch)
 
 ```bash
-pip install metakg[simulate,mcp]
+pip install metabokg[simulate,mcp]
 
 # data/hsa_pathways/ already in repo — skip collect/wire if using available files
-metakg-build --data data/hsa_pathways/
+metabokg-build --data data/hsa_pathways/
 # ✓ Kinetic parameters are now seeded automatically during build
-metakg-analyze --output analysis.md
-metakg-simulate fba --pathway hsa00010 --output fba.md
-metakg-mcp
+metabokg-analyze --output analysis.md
+metabokg-simulate fba --pathway hsa00010 --output fba.md
+metabokg-mcp
 ```
