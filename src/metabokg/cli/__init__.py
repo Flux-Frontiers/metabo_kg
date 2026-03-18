@@ -12,14 +12,16 @@ Standalone entry-point aliases (referenced by pyproject.toml [tool.poetry.script
 are re-exported here so that e.g. ``metabokg.cli:build_main`` resolves correctly.
 """
 
+from metabokg.cli import cmd_analyze  # noqa: F401  — registers analyze, analyze-basic
+from metabokg.cli import cmd_build  # noqa: F401  — registers build, update, enrich
+from metabokg.cli import cmd_mcp  # noqa: F401  — registers mcp
+from metabokg.cli import (  # noqa: F401  — registers snapshot save/list/show/diff
+    cmd_snapshot,
+)
+from metabokg.cli import cmd_viz  # noqa: F401  — registers viz
+from metabokg.cli import cmd_viz3d  # noqa: F401  — registers viz3d
 from metabokg.cli import (  # noqa: F401  — registers simulate (fba/ode/whatif/seed)
-    cmd_analyze,  # noqa: F401  — registers analyze, analyze-basic
-    cmd_build,  # noqa: F401  — registers build, update, enrich
-    cmd_mcp,  # noqa: F401  — registers mcp
     cmd_simulate,
-    cmd_snapshot,  # noqa: F401  — registers snapshot save/list/show/diff
-    cmd_viz,  # noqa: F401  — registers viz
-    cmd_viz3d,  # noqa: F401  — registers viz3d
 )
 
 # ---------------------------------------------------------------------------
@@ -48,3 +50,4 @@ __all__ = [
     "viz_main",
     "viz3d_main",
 ]
+__version__ = "0.4.0"
