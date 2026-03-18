@@ -399,6 +399,68 @@ def _mcp_get_kinetic_params(metabokg: MetaKG, reaction_id: str) -> str:
     )
 
 
+def _mcp_snapshot_list(limit: int = 20) -> str:
+    """
+    List MetaKG metric snapshots in reverse chronological order.
+
+    Returns a JSON array of snapshot metadata dicts, each with keys:
+    ``key``, ``timestamp``, ``branch``, ``version``, ``metrics``
+    (total_nodes, total_edges, pathway_count, kinetic_params), and
+    ``deltas.vs_previous``.
+
+    :param limit: Maximum number of snapshots to return (default 20;
+        pass 0 for all).
+    :return: JSON array of snapshot metadata dicts.
+    """
+    from pathlib import Path
+
+    from metabokg.snapshots import SnapshotManager
+
+    snapshots_dir = Path.cwd() / ".metabokg" / "snapshots"
+    mgr = SnapshotManager(snapshots_dir)
+    snaps = mgr.list_snapshots(limit=limit if limit > 0 else None)
+    return json.dumps(snaps, indent=2, default=str)
+
+
+def _mcp_snapshot_show(key: str) -> str:
+    """
+    Show full details for a single MetaKG snapshot.
+
+    :param key: Tree-hash snapshot key, or ``"latest"`` for the most
+        recent snapshot.
+    :return: JSON object with full snapshot data including metrics,
+        hub metabolites, and deltas vs. previous and baseline.
+    """
+    from pathlib import Path
+
+    from metabokg.snapshots import SnapshotManager
+
+    snapshots_dir = Path.cwd() / ".metabokg" / "snapshots"
+    mgr = SnapshotManager(snapshots_dir)
+    snap = mgr.load_snapshot(key)
+    if snap is None:
+        return json.dumps({"error": f"snapshot not found: {key!r}"})
+    return json.dumps(snap.to_dict(), indent=2, default=str)
+
+
+def _mcp_snapshot_diff(key_a: str, key_b: str) -> str:
+    """
+    Compare two MetaKG snapshots side-by-side (B − A).
+
+    :param key_a: First snapshot key (tree hash or ``"latest"``).
+    :param key_b: Second snapshot key (tree hash or ``"latest"``).
+    :return: JSON object with metrics from both snapshots, aggregate delta,
+        per-kind node count deltas, and per-relation edge count deltas.
+    """
+    from pathlib import Path
+
+    from metabokg.snapshots import SnapshotManager
+
+    snapshots_dir = Path.cwd() / ".metabokg" / "snapshots"
+    mgr = SnapshotManager(snapshots_dir)
+    return json.dumps(mgr.diff_snapshots(key_a, key_b), indent=2, default=str)
+
+
 def _mcp_seed_kinetics(metabokg: MetaKG, force: bool = False) -> str:
     """
     Seed the database with curated literature kinetic parameters.
@@ -485,7 +547,12 @@ def register_tools(mcp, metabokg: MetaKG) -> None:
         default_concentration: float = 1.0,
     ) -> str:
         return _mcp_simulate_ode(
-            metabokg, pathway_id, t_end, t_points, initial_concentrations_json, default_concentration
+            metabokg,
+            pathway_id,
+            t_end,
+            t_points,
+            initial_concentrations_json,
+            default_concentration,
         )
 
     simulate_ode.__doc__ = _mcp_simulate_ode.__doc__
@@ -513,6 +580,24 @@ def register_tools(mcp, metabokg: MetaKG) -> None:
     seed_kinetics.__doc__ = _mcp_seed_kinetics.__doc__
     mcp.tool()(seed_kinetics)
 
+    def snapshot_list(limit: int = 20) -> str:
+        return _mcp_snapshot_list(limit)
+
+    snapshot_list.__doc__ = _mcp_snapshot_list.__doc__
+    mcp.tool()(snapshot_list)
+
+    def snapshot_show(key: str) -> str:
+        return _mcp_snapshot_show(key)
+
+    snapshot_show.__doc__ = _mcp_snapshot_show.__doc__
+    mcp.tool()(snapshot_show)
+
+    def snapshot_diff(key_a: str, key_b: str) -> str:
+        return _mcp_snapshot_diff(key_a, key_b)
+
+    snapshot_diff.__doc__ = _mcp_snapshot_diff.__doc__
+    mcp.tool()(snapshot_diff)
+
 
 def create_server(metabokg: MetaKG, *, name: str = "metabokg"):
     """
@@ -534,7 +619,9 @@ def create_server(metabokg: MetaKG, *, name: str = "metabokg"):
             "then use simulate_fba for steady-state flux analysis, simulate_ode for "
             "kinetic time-course simulation, and simulate_whatif for perturbation "
             "analysis (enzyme knockouts, activity changes, substrate overrides). "
-            "Use get_kinetic_params to inspect stored Km/Vmax/kcat values."
+            "Use get_kinetic_params to inspect stored Km/Vmax/kcat values. "
+            "Use snapshot_list/snapshot_show/snapshot_diff to track how the "
+            "knowledge graph evolves across builds and versions."
         ),
     )
     register_tools(server, metabokg)

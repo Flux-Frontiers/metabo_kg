@@ -1,6 +1,6 @@
-# MetaKG Simulate
+# MetaboKG Simulate
 
-Run metabolic pathway simulations using the MetaKG database. Supports four modes: seed kinetics, FBA (steady-state flux), ODE (time-course), and what-if (perturbation).
+Run metabolic pathway simulations using the MetaboKG database. Supports four modes: seed kinetics, FBA (steady-state flux), ODE (time-course), and what-if (perturbation).
 
 ## Command Argument Handling
 

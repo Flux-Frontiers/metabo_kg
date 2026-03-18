@@ -1,6 +1,6 @@
-# MetaKG Viz
+# MetaboKG Viz
 
-Launch the MetaKG interactive network visualization.
+Launch the MetaboKG interactive network visualization.
 
 ## Command Argument Handling
 

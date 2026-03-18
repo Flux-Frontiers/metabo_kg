@@ -516,7 +516,7 @@ def _build_qt_window(
     try:
         import importlib.metadata
 
-        version = importlib.metadata.version("metabokg")
+        version = importlib.metadata.version("metabo-kg")
     except Exception:
         version = "dev"
 

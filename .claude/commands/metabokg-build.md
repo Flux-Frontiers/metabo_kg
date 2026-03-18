@@ -1,6 +1,6 @@
-# MetaKG Build
+# MetaboKG Build
 
-Parse KEGG KGML pathway files into the MetaKG SQLite knowledge graph and LanceDB semantic index. Execute the following steps in sequence.
+Parse KEGG KGML pathway files into the MetaboKG SQLite knowledge graph and LanceDB semantic index. Execute the following steps in sequence.
 
 ## Command Argument Handling
 

@@ -14,7 +14,7 @@ import click
 
 
 @click.group()
-@click.version_option(version=importlib.metadata.version("metabokg"))
+@click.version_option(version=importlib.metadata.version("metabo-kg"))
 def cli() -> None:
     """MetaKG — metabolic pathway knowledge graph tools."""
 

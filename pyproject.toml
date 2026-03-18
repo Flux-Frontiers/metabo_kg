@@ -3,7 +3,7 @@ requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "metabokg"
+name = "metabo-kg"
 version = "0.3.0"
 description = "Metabolic pathway parser and semantic knowledge graph with MCP support"
 authors = ["Eric G. Suchanek, PhD <suchanek@mac.com>"]
@@ -18,13 +18,14 @@ classifiers = [
 packages = [{ include = "metabokg", from = "src" }]
 
 [tool.poetry.dependencies]
-python     = ">=3.12, <3.13"
+python     = ">=3.12,<3.14"
 lancedb    = ">=0.29.0"
 numpy      = ">=1.24.0"
 sentence-transformers = ">=2.7.0"
 click      = ">=8.0"
 mcp        = ">=1.0.0"
-code-kg    = { git = "https://github.com/Flux-Frontiers/code_kg.git", branch = "main" }
+code-kg    = { git = "https://github.com/Flux-Frontiers/code_kg.git"}
+doc-kg = {git = "https://github.com/Flux-Frontiers/doc_kg.git"}
 
 [tool.poetry.dependencies.scipy]
 version  = ">=1.11.0"
@@ -97,6 +98,7 @@ metabokg-viz3d          = "metabokg.cli:viz3d_main"
 metabokg-analyze        = "metabokg.cli:analyze_main"
 metabokg-analyze-basic  = "metabokg.cli:analyze_basic_main"
 metabokg-simulate       = "metabokg.cli:simulate_main"
+metabokg-snapshot       = "metabokg.cli:snapshot_main"
 
 [tool.ruff]
 line-length    = 100

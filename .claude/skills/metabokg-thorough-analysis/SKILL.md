@@ -1,8 +1,8 @@
-# MetaKG Thorough Pathway Analysis Skill
+# MetaboKG Thorough Pathway Analysis Skill
 
 ## Overview
 
-Performs comprehensive graph analysis of a MetaKG metabolic pathway database,
+Performs comprehensive graph analysis of a MetaboKG metabolic pathway database,
 analogous to the `codekg-thorough-analysis` skill but applied to biochemical networks.
 Extracts metrics like:
 
@@ -238,7 +238,7 @@ python scripts/collect_pathway_data.py --delay 1.5
 **Report sections:**
 
 ```markdown
-# MetaKG Pathway Analysis Report
+# MetaboKG Pathway Analysis Report
 
 ## Phase 1 — Graph Statistics
   - Node/edge counts by kind
@@ -299,7 +299,7 @@ metabokg-analyze --plain > analysis.txt
 For a database built from ~30 KEGG human metabolic pathways:
 
 ```
-# MetaKG Pathway Analysis Report
+# MetaboKG Pathway Analysis Report
 
 **Database:** `.metabokg/meta.sqlite`
 **Generated:** 2026-02-27 14:30 UTC
@@ -384,7 +384,7 @@ No isolated nodes — all entities connected.
 ✅ **Actionable** — Identifies specific compounds/reactions/enzymes to investigate
 ✅ **Biologically grounded** — Insight labels aware of cofactor biology
 ✅ **Fast** — Pure SQLite aggregate queries, no in-memory graph construction
-✅ **Reusable** — Works on any MetaKG database regardless of input format
+✅ **Reusable** — Works on any MetaboKG database regardless of input format
 ✅ **Extensible** — Add custom phases via `PathwayAnalyzer` subclass
 
 ## Edge Cases
@@ -399,6 +399,6 @@ No isolated nodes — all entities connected.
 1. **Metabolic cycle detection** — BFS-based cycle finding (TCA, urea cycle, purine salvage)
 2. **Flux balance proxies** — Estimate metabolic load from stoichiometry
 3. **Drug target scoring** — Rank reactions by target tractability × pathway essentiality
-4. **Temporal analysis** — Compare two MetaKG snapshots (before/after data update)
+4. **Temporal analysis** — Compare two MetaboKG snapshots (before/after data update)
 5. **MCP tool integration** — Expose analysis results via `metabokg-mcp` tools
 6. **Interactive report** — Streamlit dashboard for the analysis output
