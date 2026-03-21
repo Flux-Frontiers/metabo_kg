@@ -220,10 +220,24 @@ class MetaIndex:
         existing = table_list.tables if hasattr(table_list, "tables") else list(table_list)
 
         if self._table_name in existing:
+            if not wipe:
+                tbl = db.open_table(self._table_name)
+                # Auto-wipe on embedding dimension mismatch (e.g. model change)
+                schema_dim = tbl.schema.field("vector").type.list_size
+                if schema_dim != self._embedder.dim:
+                    import logging
+
+                    logging.getLogger(__name__).warning(
+                        "LanceDB vector dim %d != embedder dim %d — "
+                        "wiping stale index",
+                        schema_dim,
+                        self._embedder.dim,
+                    )
+                    wipe = True
+                else:
+                    return tbl
             if wipe:
                 db.drop_table(self._table_name)
-            else:
-                return db.open_table(self._table_name)
 
         dummy = {
             "id": "__dummy__",

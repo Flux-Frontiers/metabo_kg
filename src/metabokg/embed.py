@@ -13,12 +13,19 @@ Last Revision: 2026-02-28 20:55:28
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
+from dotenv import load_dotenv
 
-# Default sentence-transformer model used throughout MetaKG
-DEFAULT_MODEL = "all-MiniLM-L6-v2"
+# Load shared KG-RAG config from ~/.kgrag/.env (if present)
+_KGRAG_ENV = Path.home() / ".kgrag" / ".env"
+load_dotenv(_KGRAG_ENV)
+
+# Default sentence-transformer model — overridable via EMBED_MODEL env var
+DEFAULT_MODEL = os.environ.get("EMBED_MODEL", "nomic-ai/nomic-embed-text-v1.5")
 
 
 # ---------------------------------------------------------------------------
@@ -74,9 +81,9 @@ class SentenceTransformerEmbedder(Embedder):
         """
         from sentence_transformers import SentenceTransformer
 
-        self.model = SentenceTransformer(model_name)
+        self.model = SentenceTransformer(model_name, trust_remote_code=True)
         self.model_name = model_name
-        self.dim: int = self.model.get_sentence_embedding_dimension() or 384
+        self.dim: int = self.model.get_sentence_embedding_dimension() or 768
 
     def embed_texts(self, texts: list[str]) -> list[list[float]]:
         """
