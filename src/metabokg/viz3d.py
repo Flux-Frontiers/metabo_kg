@@ -154,7 +154,7 @@ def _build_qt_window(
     # These map bare KEGG accessions (e.g. "R00710") to human-readable enzyme
     # function names (e.g. "Acetaldehyde:NAD+ oxidoreductase").
     kegg_reaction_names: dict[str, str] = {}
-    tsv_path = Path(__file__).parent.parent.parent / "data" / "kegg_reaction_names.tsv"
+    tsv_path = Path(__file__).parent.parent.parent / "data" / "kegg_tables" / "kegg_reaction_names.tsv"
     if tsv_path.exists():
         try:
             import csv

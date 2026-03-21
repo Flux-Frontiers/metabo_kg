@@ -160,8 +160,8 @@ kg.seed_kinetics()
 | Script | Purpose | Output |
 |--------|---------|--------|
 | `scripts/download_human_kegg.py` | Download all hsa KGML pathway files | `data/hsa_pathways/*.kgml` |
-| `scripts/download_kegg_names.py` | Bulk-download compound + reaction name lists | `data/kegg_compound_names.tsv`, `data/kegg_reaction_names.tsv` |
-| `scripts/download_kegg_reactions.py` | Per-reaction detail: name, definition, equation, EC numbers | `data/kegg_reaction_detail.tsv` |
+| `scripts/download_kegg_names.py` | Bulk-download compound + reaction name lists | `data/kegg_tables/kegg_compound_names.tsv`, `data/kegg_tables/kegg_reaction_names.tsv` |
+| `scripts/download_kegg_reactions.py` | Per-reaction detail: name, definition, equation, EC numbers | `data/kegg_tables/kegg_reaction_detail.tsv` |
 
 **Reaction detail download (EC numbers):**
 ```bash
@@ -174,7 +174,7 @@ python scripts/download_kegg_reactions.py
 # Options: --force (re-download), --dry-run (list IDs only), --delay SECS
 ```
 
-Output format (`data/kegg_reaction_detail.tsv`):
+Output format (`data/kegg_tables/kegg_reaction_detail.tsv`):
 ```
 reaction_id  name                              definition        equation           ec_numbers
 R00710       acetaldehyde:NAD+ oxidoreductase  Acetaldehyde ...  C00084 + C00003 …  1.2.1.3; 1.2.1.4

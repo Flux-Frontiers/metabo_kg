@@ -295,8 +295,8 @@ metabokg-enrich --db .metabokg/meta.sqlite
 ```
 
 Phase 2 updates:
-- **Compound names** from `data/kegg_compound_names.tsv` (e.g. `C00031` → `D-Glucose`)
-- **Reaction names** from `data/kegg_reaction_names.tsv` (overrides Phase-1 enzyme labels
+- **Compound names** from `data/kegg_tables/kegg_compound_names.tsv` (e.g. `C00031` → `D-Glucose`)
+- **Reaction names** from `data/kegg_tables/kegg_reaction_names.tsv` (overrides Phase-1 enzyme labels
   with canonical KEGG reaction names where available)
 
 Both phases are **idempotent** — safe to run multiple times.
@@ -355,7 +355,7 @@ from metabokg.store import MetaStore
 from metabokg.enrich import enrich_reactions_from_graph, enrich_from_tsv
 store = MetaStore(".metabokg/meta.sqlite")
 n = enrich_reactions_from_graph(store)
-n = enrich_from_tsv(store, Path("data/kegg_compound_names.tsv"), "compound")
+n = enrich_from_tsv(store, Path("data/kegg_tables/kegg_compound_names.tsv"), "compound")
 ```
 
 ---

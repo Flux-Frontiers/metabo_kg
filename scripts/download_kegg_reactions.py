@@ -25,7 +25,7 @@ Workflow
    - EQUATION  — stoichiometric equation with KEGG accessions
    - ENZYME — one or more EC numbers (space-separated)
 
-3. Writes ``data/kegg_reaction_detail.tsv`` (tab-separated, one row per reaction)
+3. Writes ``data/kegg_tables/kegg_reaction_detail.tsv`` (tab-separated, one row per reaction)
    with columns::
 
        reaction_id  name  definition  equation  ec_numbers
@@ -34,7 +34,7 @@ Workflow
 
 Files written
 -------------
-data/kegg_reaction_detail.tsv
+data/kegg_tables/kegg_reaction_detail.tsv
 
 KEGG REST endpoints used
 ------------------------
@@ -95,7 +95,7 @@ KEGG_REST_BASE = "https://rest.kegg.jp"
 _HSA_LINK_URL = f"{KEGG_REST_BASE}/link/reaction/hsa"
 _GET_REACTION_URL = f"{KEGG_REST_BASE}/get/rn:{{rxn_id}}"
 _OUTPUT_FILENAME = "kegg_reaction_detail.tsv"
-_DEFAULT_DATA = Path(__file__).parent.parent / "data"
+_DEFAULT_DATA = Path(__file__).parent.parent / "data" / "kegg_tables"
 
 # Matches a canonical KEGG reaction ID (R followed by exactly 5 digits)
 _RXN_ID_RE = re.compile(r"\bR\d{5}\b")

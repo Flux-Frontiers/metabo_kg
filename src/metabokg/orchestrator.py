@@ -280,8 +280,7 @@ class MetaKG:
         :param enrich: Run name enrichment after parsing (Phase 1 always; Phase
             2 if KEGG name TSV files are present in *enrich_data_dir*).
         :param enrich_data_dir: Directory containing ``kegg_compound_names.tsv``
-            and ``kegg_reaction_names.tsv``.  Defaults to the repo-level
-            ``data/`` directory.
+            and ``kegg_reaction_names.tsv``.  Defaults to ``data/kegg_tables/``.
         :param seed_kinetics: Populate kinetic parameters from literature
             after building. Safe to call multiple times (idempotent by default).
         :return: :class:`MetabolicBuildStats`.
@@ -336,7 +335,7 @@ class MetaKG:
         downloaded KEGG lists).
 
         :param data_dir: Directory containing ``kegg_compound_names.tsv`` and
-            ``kegg_reaction_names.tsv``.  Defaults to the repo-level ``data/``.
+            ``kegg_reaction_names.tsv``.  Defaults to ``data/kegg_tables/``.
         :return: :class:`~metabokg.enrich.EnrichStats` with counts of updates.
         """
         return _enrich(self.store, data_dir)

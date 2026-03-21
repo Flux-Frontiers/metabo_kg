@@ -3,14 +3,14 @@
 download_kegg_names.py — Bulk-download KEGG compound and reaction name lists.
 
 Downloads two flat TSV files from the KEGG REST API and saves them to the
-``data/`` directory.  These are used by ``metabokg-enrich`` (and
+``data/kegg_tables/`` directory.  These are used by ``metabokg-enrich`` (and
 ``metabokg-build --enrich``) to replace bare KEGG accessions with human-readable
 names in the knowledge graph.
 
 Files written
 -------------
-data/kegg_compound_names.tsv   KEGG_ID<TAB>name  (e.g. C00031<TAB>D-Glucose)
-data/kegg_reaction_names.tsv   KEGG_ID<TAB>name  (e.g. R00710<TAB>Acetaldehyde:NAD+...)
+data/kegg_tables/kegg_compound_names.tsv   KEGG_ID<TAB>name  (e.g. C00031<TAB>D-Glucose)
+data/kegg_tables/kegg_reaction_names.tsv   KEGG_ID<TAB>name  (e.g. R00710<TAB>Acetaldehyde:NAD+...)
 
 KEGG REST endpoints used
 ------------------------
@@ -47,7 +47,7 @@ _ENDPOINTS: dict[str, str] = {
     "kegg_reaction_names.tsv": "https://rest.kegg.jp/list/reaction",
 }
 
-_DEFAULT_DATA = Path(__file__).parent.parent / "data"
+_DEFAULT_DATA = Path(__file__).parent.parent / "data" / "kegg_tables"
 
 
 def _fetch(url: str, quiet: bool = False) -> str:
@@ -126,7 +126,7 @@ def main(argv: list[str] | None = None) -> int:
     """
     p = argparse.ArgumentParser(
         prog="download_kegg_names",
-        description="Bulk-download KEGG compound and reaction name lists to data/.",
+        description="Bulk-download KEGG compound and reaction name lists to data/kegg_tables/.",
     )
     p.add_argument(
         "--data",

@@ -409,9 +409,9 @@ For Phase 2 enrichment to use canonical KEGG names, download the name lists:
 poetry run python scripts/download_kegg_names.py
 ```
 
-This downloads two TSV files to `data/`:
-- `data/kegg_compound_names.tsv` — ~19,500 compound names
-- `data/kegg_reaction_names.tsv` — ~12,400 reaction names
+This downloads two TSV files to `data/kegg_tables/`:
+- `data/kegg_tables/kegg_compound_names.tsv` — ~19,500 compound names
+- `data/kegg_tables/kegg_reaction_names.tsv` — ~12,400 reaction names
 
 Both phases are idempotent — safe to run multiple times.
 

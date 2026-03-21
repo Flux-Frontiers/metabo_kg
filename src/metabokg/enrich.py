@@ -10,10 +10,10 @@ Phase 1 — no network required, uses data already in the graph:
       taken from existing CATALYZES edges (e.g. "R00710" → "ADH1A/ADH1B/ADH1C").
 
 Phase 2 — requires downloaded KEGG name TSV files (see download_kegg_names.py):
-    • Compound nodes: names from ``data/kegg_compound_names.tsv``
+    • Compound nodes: names from ``data/kegg_tables/kegg_compound_names.tsv``
       (e.g. "C00031" → "D-Glucose").
     • Reaction nodes: canonical KEGG reaction names from
-      ``data/kegg_reaction_names.tsv``
+      ``data/kegg_tables/kegg_reaction_names.tsv``
       (e.g. "R00710" → "Acetaldehyde:NAD+ oxidoreductase").
       Always replaces Phase 1 enzyme-labels with canonical names (if available),
       ensuring structural KEGG names take priority over enriched gene symbols.
@@ -42,7 +42,7 @@ from pathlib import Path
 # Result dataclass
 # ---------------------------------------------------------------------------
 
-_DEFAULT_DATA = Path(__file__).parent.parent.parent / "data"  # repo root / data/
+_DEFAULT_DATA = Path(__file__).parent.parent.parent / "data" / "kegg_tables"
 
 
 @dataclass
@@ -254,8 +254,7 @@ def enrich(store, data_dir: Path | str | None = None, *, quiet: bool = False) ->
 
     :param store: Open :class:`~metabokg.store.MetaStore` instance.
     :param data_dir: Directory containing ``kegg_compound_names.tsv`` and
-        ``kegg_reaction_names.tsv``.  Defaults to the repo-level ``data/``
-        directory.
+        ``kegg_reaction_names.tsv``.  Defaults to ``data/kegg_tables/``.
     :param quiet: Suppress progress output.
     :return: :class:`EnrichStats` with counts of updated names.
     """

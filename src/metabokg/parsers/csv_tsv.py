@@ -103,29 +103,6 @@ class CSVParser(PathwayParser):
     def supported_extensions(self) -> tuple[str, ...]:
         return (".csv", ".tsv", ".txt")
 
-    def can_handle(self, path: Path) -> bool:
-        """Check extension *and* that the file header contains the required columns.
-
-        This prevents the parser from claiming KEGG name-list TSVs or other
-        tabular files that happen to share a ``.tsv`` / ``.csv`` extension but
-        lack the ``substrate`` and ``product`` columns needed for reaction
-        parsing.
-        """
-        if path.suffix.lower() not in self.supported_extensions:
-            return False
-
-        cfg = self.config
-        delim = "\t" if path.suffix.lower() == ".tsv" else cfg.delimiter
-        required = {cfg.substrate, cfg.product}
-
-        try:
-            with path.open(newline="", encoding="utf-8-sig") as fh:
-                reader = csv.DictReader(fh, delimiter=delim)
-                fieldnames = set(reader.fieldnames or [])
-            return required.issubset(fieldnames)
-        except Exception:
-            return False
-
     def parse(self, path: Path) -> tuple[list[MetaNode], list[MetaEdge]]:
         """
         Parse a tabular reaction file.

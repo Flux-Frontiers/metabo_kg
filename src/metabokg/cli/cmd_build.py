@@ -38,7 +38,7 @@ from metabokg.cli.options import (
     "--enrich-data",
     default=None,
     metavar="DIR",
-    help="Directory containing kegg_compound_names.tsv / kegg_reaction_names.tsv (default: data/).",
+    help="Directory containing kegg_compound_names.tsv / kegg_reaction_names.tsv (default: data/kegg_tables/).",
 )
 @click.option(
     "--no-seed-kinetics",
@@ -92,7 +92,7 @@ def build(
     "--data",
     default=None,
     metavar="DIR",
-    help="Directory containing kegg_compound_names.tsv / kegg_reaction_names.tsv (default: data/).",
+    help="Directory containing kegg_compound_names.tsv / kegg_reaction_names.tsv (default: data/kegg_tables/).",
 )
 def enrich(db: str, data: str | None) -> None:
     """Enrich node names in an existing MetaKG database.
@@ -101,8 +101,8 @@ def enrich(db: str, data: str | None) -> None:
     using CATALYZES edges already in the graph — no network required.
 
     Phase 2 (when TSV files present): replace bare KEGG accessions with
-    human-readable names from kegg_compound_names.tsv and
-    kegg_reaction_names.tsv.  Download those files first with::
+    human-readable names from data/kegg_tables/kegg_compound_names.tsv and
+    data/kegg_tables/kegg_reaction_names.tsv.  Download those files first with::
 
         python scripts/download_kegg_names.py
     """
@@ -133,7 +133,7 @@ def enrich(db: str, data: str | None) -> None:
     "--enrich-data",
     default=None,
     metavar="DIR",
-    help="Directory containing kegg_compound_names.tsv / kegg_reaction_names.tsv (default: data/).",
+    help="Directory containing kegg_compound_names.tsv / kegg_reaction_names.tsv (default: data/kegg_tables/).",
 )
 @click.option(
     "--no-seed-kinetics",
