@@ -323,6 +323,31 @@ class TestCSVParser:
         nodes, edges = CSVParser().parse(f)
         assert len(nodes) > 0
 
+    def test_can_handle_rejects_kegg_name_tsv(self, tmp_path):
+        """KEGG name-list TSVs (no substrate/product columns) must be skipped."""
+        from metabokg.parsers.csv_tsv import CSVParser
+
+        # Simulate kegg_compound_names.tsv (no header, just ID<tab>name)
+        f = tmp_path / "kegg_compound_names.tsv"
+        f.write_text("C00001\tH2O; Water\nC00002\tATP\n")
+        assert not CSVParser().can_handle(f)
+
+    def test_can_handle_accepts_valid_reaction_tsv(self, tmp_path):
+        """TSV files with required columns should still be accepted."""
+        from metabokg.parsers.csv_tsv import CSVParser
+
+        tsv_content = CSV_SAMPLE.replace(",", "\t")
+        f = tmp_path / "reactions.tsv"
+        f.write_text(tsv_content)
+        assert CSVParser().can_handle(f)
+
+    def test_can_handle_rejects_csv_without_required_columns(self, tmp_path):
+        from metabokg.parsers.csv_tsv import CSVParser
+
+        f = tmp_path / "bad.csv"
+        f.write_text("reaction_id,enzyme\nR001,HK\n")
+        assert not CSVParser().can_handle(f)
+
 
 class TestMetabolicGraph:
     def test_extract_directory(self, tmp_path):
