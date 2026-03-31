@@ -1,10 +1,10 @@
-# MetaKG — Metabolic Pathway Knowledge Graph
+# MetaboKG — Metabolic Pathway Knowledge Graph
 
 A comprehensive, extendable knowledge graph system for metabolic pathways with semantic search, interactive visualization, and MCP integration.
 
-**MetaKG** ingests pathway data from multiple formats (KGML, SBML, BioPAX, CSV), builds a unified semantic knowledge graph, and provides powerful querying and visualization tools for exploring metabolic relationships.
+**MetaboKG** ingests pathway data from multiple formats (KGML, SBML, BioPAX, CSV), builds a unified semantic knowledge graph, and provides powerful querying and visualization tools for exploring metabolic relationships.
 
-**Sister Project:** [CodeKG](https://github.com/flux-frontiers/code_kg) — A codebase knowledge graph system for Python repositories. CodeKG provides the semantic analysis capabilities that make it possible to explore MetaKG's own architecture and implementation.
+**Sister Project:** [CodeKG](https://github.com/flux-frontiers/code_kg) — A codebase knowledge graph system for Python repositories. CodeKG provides the semantic analysis capabilities that make it possible to explore MetaboKG's own architecture and implementation.
 
 [![Python 3.10 | 3.11 | 3.12](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/downloads/)
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic%202.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
@@ -56,7 +56,7 @@ poetry run python scripts/download_human_kegg.py --output data/hsa_pathways --dr
 metabokg-build --data ./data/hsa_pathways --db .metabokg/meta.sqlite --lancedb .metabokg/lancedb
 
 # Output:
-# Building MetaKG from ./data/hsa_pathways...
+# Building MetaboKG from ./data/hsa_pathways...
 # data_root   : ./data/hsa_pathways
 # db_path     : .metabokg/meta.sqlite
 # nodes       : 17050  {'compound': 5115, 'reaction': 2139, 'enzyme': 9427, 'pathway': 369}
