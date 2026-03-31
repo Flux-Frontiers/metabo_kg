@@ -77,7 +77,7 @@ metabokg-viz --port 8500
 
 ## Architecture
 
-![MetaKG Architecture Diagram](docs/metaKG_arch.png)
+![MetaboKG Architecture Diagram](docs/metaKG_arch.png)
 
 ```
 metabokg/
@@ -404,15 +404,15 @@ poetry install --extras all
 
 ```bash
 # Visualization
-export METAKG_DB=".metabokg/meta.sqlite"
-export METAKG_LANCEDB=".metabokg/lancedb"
+export METABOKG_DB=".metabokg/meta.sqlite"
+export METABOKG_LANCEDB=".metabokg/lancedb"
 
 # Embedding model
-export METAKG_MODEL="all-MiniLM-L6-v2"
+export METABOKG_MODEL="all-MiniLM-L6-v2"
 
 # Docker deployment
-export METAKG_DB="/data/meta.sqlite"
-export METAKG_LANCEDB="/data/lancedb"
+export METABOKG_DB="/data/meta.sqlite"
+export METABOKG_LANCEDB="/data/lancedb"
 ```
 
 ### Database Defaults
@@ -487,11 +487,11 @@ poetry run ruff format src/
 
 ## Citation
 
-If you use MetaKG in research, please cite:
+If you use MetaboKG in research, please cite:
 
 ```bibtex
 @software{flux_frontiers2024metabokg,
-  title={MetaKG: Metabolic Pathway Knowledge Graph},
+  title={MetaboKG: Metabolic Pathway Knowledge Graph},
   author={Flux Frontiers Contributors},
   year={2024},
   url={https://github.com/flux-frontiers/metabo_kg}
@@ -500,7 +500,7 @@ If you use MetaKG in research, please cite:
 
 ## License
 
-MetaKG is licensed under the **PolyForm Noncommercial License 1.0.0**.
+MetaboKG is licensed under the **PolyForm Noncommercial License 1.0.0**.
 
 This means:
 - ✅ Free for **academic research** and **educational** use

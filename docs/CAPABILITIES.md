@@ -1,5 +1,5 @@
 
-# MetaKG — Complete Capabilities Reference
+# MetaboKG — Complete Capabilities Reference
 
 **v0.2.0** · Metabolic pathway knowledge graph with simulation, semantic search, and MCP tooling.
 
@@ -50,7 +50,7 @@
   └───────┬────────┘
           │
     ┌─────┴────────────────────────────────┐
-    │              MetaKG                  │  high-level orchestrator
+    │              MetaboKG                │  high-level orchestrator
     │  build · enrich · query · find_path  │
     └────┬─────────┬──────────┬────────────┘
          │         │          │
@@ -64,7 +64,7 @@
    └───────────────────────────────────────────┘
 ```
 
-MetaKG keeps all graph data in a local **SQLite** file (`.metabokg/meta.sqlite`) and an optional **LanceDB** directory (`.metabokg/lancedb`) for vector-similarity search.  An optional enrichment pass replaces bare KEGG accessions with human-readable names stored directly in the database.  All components interact through a single stable API; the MCP server and CLI are thin wrappers.
+MetaboKG keeps all graph data in a local **SQLite** file (`.metabokg/meta.sqlite`) and an optional **LanceDB** directory (`.metabokg/lancedb`) for vector-similarity search.  An optional enrichment pass replaces bare KEGG accessions with human-readable names stored directly in the database.  All components interact through a single stable API; the MCP server and CLI are thin wrappers.
 
 ---
 

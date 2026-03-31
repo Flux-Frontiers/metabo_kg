@@ -1,4 +1,4 @@
-# MetaKG Workflow
+# MetaboKG Workflow
 
 End-to-end guide from raw pathway data to running simulations and serving an MCP agent.
 
