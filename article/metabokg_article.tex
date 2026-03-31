@@ -76,7 +76,7 @@
 % ---------------------------------------------------------------------------
 % Metadata
 % ---------------------------------------------------------------------------
-\title{\textbf{MetaKG: A Unified Knowledge Graph System\\for Metabolic Pathway Analysis}}
+\title{\textbf{MetaboKG: A Unified Knowledge Graph System\\for Metabolic Pathway Analysis}}
 
 \author[1]{Eric G. Suchanek, PhD}
 \affil[1]{Flux Frontiers, \href{https://github.com/Flux-Frontiers}{github.com/Flux-Frontiers}}
@@ -92,7 +92,7 @@
 % ---------------------------------------------------------------------------
 \begin{abstract}
 \noindent
-We present \textsc{MetaKG}, a local-first metabolic knowledge graph whose
+We present \textsc{MetaboKG}, a local-first metabolic knowledge graph whose
 dual-layer architecture unifies structural precision and semantic expressivity
 in a single system: SQLite encodes the full property graph of compounds,
 reactions, enzymes, and pathways with stoichiometric and regulatory
@@ -104,7 +104,7 @@ and stoichiometric detail assembly---without forcing the user to choose between
 relational precision and semantic exploration. A post-build name-enrichment
 pipeline replaces bare KEGG accessions with human-readable names sourced from
 KEGG bulk name lists, making all query results immediately interpretable.
-Beyond querying, \textsc{MetaKG} integrates three simulation modalities
+Beyond querying, \textsc{MetaboKG} integrates three simulation modalities
 directly into the knowledge graph: Flux Balance Analysis for steady-state flux
 optimisation, kinetic ODE integration with Michaelis-Menten rate laws (seeded
 from BRENDA and SABIO-RK) using an implicit stiff solver (BDF), and what-if
@@ -113,7 +113,7 @@ exploration is supported by a 2D Streamlit graph browser and a 3D PyVista
 visualiser with Fibonacci-annulus and layer-stratified layouts (both under
 active development). All capabilities are exposed through a unified Python API,
 command-line interface, and Model~Context~Protocol (MCP) server exposing nine
-typed tools, making \textsc{MetaKG} a first-class data source for AI reasoning
+typed tools, making \textsc{MetaboKG} a first-class data source for AI reasoning
 systems. We demonstrate the system on the complete \textit{Homo sapiens}
 metabolome---all 369 KEGG pathways ingested as a single queryable graph
 (17,050 nodes, 11,286 edges, 9,427 enzymes, 20,151 indexed embeddings)---with
@@ -173,7 +173,7 @@ reproducible, programmable system.
 
 \subsection{The Solution: Dual-Layer Query Architecture}
 
-\textsc{MetaKG} resolves this tension with a dual-layer local knowledge graph
+\textsc{MetaboKG} resolves this tension with a dual-layer local knowledge graph
 that eliminates the forced choice between structural precision and semantic
 expressivity. The key idea is to separate query problems by modality:
 
@@ -217,7 +217,7 @@ All four query modalities are exposed through a unified Python API,
 command-line interface, and Model~Context~Protocol (MCP) server. The system
 runs entirely locally---no network, no database server, no external services
 after setup. This is a deliberate design choice. Unlike live database mirrors,
-\textsc{MetaKG} treats the knowledge graph as a reproducible,
+\textsc{MetaboKG} treats the knowledge graph as a reproducible,
 version-controlled snapshot. Users rebuild when input files change, enabling
 reproducible analysis, offline workflows, and integration into research
 pipelines. The system scales to organism-scale pathway corpora: the complete
@@ -227,7 +227,7 @@ milliseconds to seconds.
 
 \subsection{Design Goals}
 
-\textsc{MetaKG} is built around three core principles, in priority order:
+\textsc{MetaboKG} is built around three core principles, in priority order:
 
 \begin{enumerate}[leftmargin=*, itemsep=2pt]
 \item \textbf{Dual-layer query architecture.} Combine structural and semantic
@@ -265,7 +265,7 @@ concludes.
 
 \subsection{Property Graph Schema}
 
-\textsc{MetaKG} represents metabolism as a directed property graph
+\textsc{MetaboKG} represents metabolism as a directed property graph
 $G = (V, E)$. Vertices $V$ are \emph{entities} of four kinds:
 
 \begin{description}[leftmargin=*, itemsep=2pt]
@@ -288,7 +288,7 @@ and source-specific annotations.
 
 \begin{table}[H]
   \centering
-  \caption{Edge relation types in the MetaKG graph schema.}
+  \caption{Edge relation types in the MetaboKG graph schema.}
   \label{tab:relations}
   \small
   \begin{tabular}{@{}lll@{}}
@@ -309,7 +309,7 @@ and source-specific annotations.
 \subsection{Stable Identifier Scheme}
 
 Identifier reconciliation is one of the persistent difficulties in biological
-data integration. \textsc{MetaKG} assigns each node a stable, URI-style
+data integration. \textsc{MetaboKG} assigns each node a stable, URI-style
 string identifier of the form:
 
 \begin{center}
@@ -364,7 +364,7 @@ coordinating three subsystems:
 
 The dual-layer design is the core architectural contribution. By routing
 structural queries (naturally SQL problems) to SQLite and semantic queries
-(naturally vector problems) to LanceDB, \textsc{MetaKG} avoids forcing a
+(naturally vector problems) to LanceDB, \textsc{MetaboKG} avoids forcing a
 choice between relational precision and semantic expressivity. A user can
 traverse the graph by stoichiometry using SQL, then search for semantically
 similar pathways using embeddings---all within the same interface.
@@ -398,7 +398,7 @@ Pathway files (KGML / SBML / BioPAX / CSV)
         |
   Query API + CLI + MCP server
   \end{lstlisting}
-  \caption{MetaKG data pipeline. Format-specific parsers produce a stream of
+  \caption{MetaboKG data pipeline. Format-specific parsers produce a stream of
   normalised \texttt{MetaNode} and \texttt{MetaEdge} objects that are merged
   by stable identifier, persisted to SQLite, and indexed as dense vectors in
   LanceDB. An optional name-enrichment pass replaces bare KEGG accessions with
@@ -411,7 +411,7 @@ Pathway files (KGML / SBML / BioPAX / CSV)
 \label{sec:parsers}
 % ---------------------------------------------------------------------------
 
-\textsc{MetaKG} ingests metabolic pathway data from four standard formats:
+\textsc{MetaboKG} ingests metabolic pathway data from four standard formats:
 KEGG Markup Language (KGML), Systems Biology Markup Language (SBML), Biological
 Pathway Exchange (BioPAX), and plain tabular files (CSV/TSV). All parsers
 conform to an abstract interface: they detect the file type, parse it, and
@@ -434,7 +434,7 @@ specifications for each format appear in Appendix~\ref{sec:parsers-detail}.
 KGML-sourced graphs initially carry bare KEGG accessions as node names
 (e.g.\ \texttt{C00031}, \texttt{R00710}). While these identifiers are
 unambiguous, they are not human-readable and impede exploratory analysis.
-\textsc{MetaKG} provides an optional post-build enrichment pipeline that
+\textsc{MetaboKG} provides an optional post-build enrichment pipeline that
 replaces accessions with canonical names and stores them directly in
 \texttt{meta\_nodes.name}, making them available everywhere---CLI, MCP,
 Streamlit, and the Python API.
@@ -484,7 +484,7 @@ without re-running.
 \label{sec:storage}
 % ---------------------------------------------------------------------------
 
-The dual-layer storage architecture is what gives MetaKG its query
+The dual-layer storage architecture is what gives MetaboKG its query
 flexibility. Rather than routing all queries through a single backend (as
 relational databases do) or abandoning structure entirely (as vector-only
 systems do), it maintains two complementary stores, each optimised for a
@@ -537,7 +537,7 @@ and read many times.
 \subsection{Semantic Index}
 
 Structural queries alone are insufficient for exploratory use cases where the
-user does not know an exact identifier. \textsc{MetaKG} therefore maintains a
+user does not know an exact identifier. \textsc{MetaboKG} therefore maintains a
 vector index over node descriptions using LanceDB~\citep{lancedb2023} as the
 approximate nearest-neighbour engine and the \texttt{all-MiniLM-L6-v2}
 sentence-transformer model~\citep{reimers2019sbert} as the default encoder.
@@ -571,7 +571,7 @@ class Embedder(Protocol):
 \label{sec:query}
 % ---------------------------------------------------------------------------
 
-\textsc{MetaKG} exposes four query modalities through a unified API. These
+\textsc{MetaboKG} exposes four query modalities through a unified API. These
 operations share the same underlying graph but use different access patterns
 suited to different analysis tasks. Together, they support both precision
 (exact structural queries) and exploration (semantic discovery).
@@ -629,7 +629,7 @@ user-facing functions accept identifiers from any source database.
 
 \subsection{Metabolic Simulations}
 
-Building on the structural query layer, \textsc{MetaKG} provides three
+Building on the structural query layer, \textsc{MetaboKG} provides three
 simulation modalities:
 
 \begin{enumerate}[leftmargin=*,itemsep=2pt]
@@ -709,7 +709,7 @@ figures).
 
 The Model Context Protocol (MCP)~\citep{anthropic2024mcp} is a lightweight
 JSON-RPC standard that lets large-language-model assistants call typed tool
-functions. \textsc{MetaKG} implements an MCP server exposing the knowledge
+functions. \textsc{MetaboKG} implements an MCP server exposing the knowledge
 graph through nine typed tools:
 
 \begin{description}[leftmargin=*,itemsep=2pt]
@@ -753,7 +753,7 @@ Claude~\citep{anthropic2024claude} and compatible MCP clients.
 \label{sec:usage}
 % ---------------------------------------------------------------------------
 
-We demonstrate \textsc{MetaKG} on the complete \textit{Homo sapiens}
+We demonstrate \textsc{MetaboKG} on the complete \textit{Homo sapiens}
 metabolome: all 369 KEGG pathways (metabolic, signaling, and regulatory).
 This corpus spans central carbon metabolism (glycolysis/gluconeogenesis, TCA
 cycle, pentose phosphate pathway, fatty acid degradation, oxidative
@@ -954,12 +954,12 @@ straightforward. Running \texttt{metabokg-build} with \texttt{--no-wipe} (or usi
 the convenience command \texttt{metabokg-update}) issues \texttt{INSERT OR REPLACE}
 statements, updating existing nodes and appending new ones without duplicating entries.
 
-\textbf{Codebase self-analysis.} \textsc{MetaKG} is itself analysed with its
+\textbf{Codebase self-analysis.} \textsc{MetaboKG} is itself analysed with its
 sister tool \textsc{CodeKG}~\citep{fluxfrontiers2025codekg}, which builds a
 structural and semantic knowledge graph of the Python source code. This
-enables navigating the MetaKG implementation via natural-language queries and
+enables navigating the MetaboKG implementation via natural-language queries and
 confirms that the two tools share compatible architectural patterns. On the
-\textsc{MetaKG} codebase, the \textsc{CodeKG} static analysis produces 3,136
+\textsc{MetaboKG} codebase, the \textsc{CodeKG} static analysis produces 3,136
 nodes and 2,920 edges spanning 27 modules, embedded into a 384-dimensional
 vector index of 290 vectors.
 
@@ -970,7 +970,7 @@ vector index of 290 vectors.
 
 \subsection{Architectural Design Choices and Novel Aspects}
 
-Several deliberate design trade-offs distinguish \textsc{MetaKG} from existing
+Several deliberate design trade-offs distinguish \textsc{MetaboKG} from existing
 systems. First, the dual-layer architecture (SQLite for structure, LanceDB for
 semantics) is novel in the metabolic pathway domain. Graph databases like
 Neo4j handle complex queries but carry operational overhead (server
@@ -978,13 +978,13 @@ management, scaling, deployment) and do not address multi-format parsing.
 Specialised vector databases like Weaviate or Pinecone excel at semantic
 search but are poor fits for structural graph traversal and require network
 access. By pairing lightweight SQLite with local vector search,
-\textsc{MetaKG} delivers both capabilities in a self-contained package suited
+\textsc{MetaboKG} delivers both capabilities in a self-contained package suited
 to exploratory research and reproducible analysis.
 
 Second, the deterministic identifier scheme with synthetic hashing enables
 reproducible cross-format merging without a centralised reconciliation
 service. Unlike MetaNetX (which requires API calls to reconcile identifiers),
-\textsc{MetaKG} produces self-contained graphs. The same input files always
+\textsc{MetaboKG} produces self-contained graphs. The same input files always
 yield the same output graph, making the knowledge graph a version-controlled
 artefact that supports reproducible science and offline workflows.
 
@@ -1003,7 +1003,7 @@ commitment to AI-accessible knowledge graphs, not merely another API layer.
 
 \subsection{Scope and Design Trade-offs}
 
-\textbf{Snapshot-based operation.} \textsc{MetaKG} is a local analysis tool,
+\textbf{Snapshot-based operation.} \textsc{MetaboKG} is a local analysis tool,
 not a live database mirror. The knowledge graph is a snapshot at build time;
 users must re-run \texttt{metabokg-build} after updating source files. This
 keeps the system self-contained and free of dependencies on external services
@@ -1028,7 +1028,7 @@ automatically. More thorough reconciliation would require integration with a
 name normalisation service such as
 MetaNetX~\citep{moretti2021metanetx} or UMLS~\citep{bodenreider2004umls}.
 
-\textbf{Stoichiometric models and simulations.} \textsc{MetaKG} provides
+\textbf{Stoichiometric models and simulations.} \textsc{MetaboKG} provides
 three simulation modalities: (1)~Flux Balance Analysis (FBA) for steady-state
 flux optimisation; (2)~kinetic ODE integration with Michaelis-Menten rate laws
 using an implicit stiff solver (BDF) tuned for metabolic pathways; and
@@ -1080,11 +1080,11 @@ optimisation (fitting from experimental data) is also planned.
 \label{sec:conclusion}
 % ---------------------------------------------------------------------------
 
-\textsc{MetaKG} fills a gap in metabolic data integration. Existing systems
+\textsc{MetaboKG} fills a gap in metabolic data integration. Existing systems
 force a choice among convenient web interfaces (limited programmability, no
 semantic search, web-dependent), specialised graph databases (high operational
 complexity, parsing unsolved), and reconciliation services (no queryable graph
-provided). \textsc{MetaKG} breaks this pattern with a dual-layer local
+provided). \textsc{MetaboKG} breaks this pattern with a dual-layer local
 knowledge graph that unifies multi-format pathway data and delivers four
 orthogonal query modalities---structural, pathfinding, semantic, and
 stoichiometric---through a single API, CLI, and LLM-accessible MCP interface.
@@ -1102,13 +1102,13 @@ first-class data sources for AI assistants.
 
 The design philosophy---local-first, self-contained, snapshot-based---is
 deliberate and represents a clean separation from live database mirrors. This
-makes \textsc{MetaKG} especially well suited to research workflows where
+makes \textsc{MetaboKG} especially well suited to research workflows where
 reproducibility, offline analysis, and version control matter most. For
 applications needing real-time data, larger graph corpora, or distributed
 deployment, the modular architecture allows the storage and index backends to
 be swapped.
 
-We expect \textsc{MetaKG} to be immediately useful as: (1)~a foundation for
+We expect \textsc{MetaboKG} to be immediately useful as: (1)~a foundation for
 pathway analysis scripts; (2)~a data preparation stage for machine-learning
 workflows; (3)~an AI-accessible knowledge source for metabolic reasoning in
 large-language-model applications; and (4)~a template for similar knowledge
@@ -1201,7 +1201,7 @@ matching over the RDF graph to extract:
 
 \subsection{CSV/TSV Parser}
 
-For custom or unpublished data, \textsc{MetaKG} accepts flat tables with a
+For custom or unpublished data, \textsc{MetaboKG} accepts flat tables with a
 configurable column schema. The default column layout is:
 
 \begin{center}
