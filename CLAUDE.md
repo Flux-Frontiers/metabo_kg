@@ -1,4 +1,4 @@
-# MetaKG CLI Commands Reference
+# MetaboKG CLI Commands Reference
 
 **Repository:** https://github.com/Flux-Frontiers/metabo_kg | **Sister:** https://github.com/Flux-Frontiers/code_kg
 
@@ -25,7 +25,7 @@ poetry install --all-extras  # Full install with viz, viz3d, mcp
 
 ---
 
-## MetaKG Commands
+## MetaboKG Commands
 
 | Command | Purpose |
 |---------|---------|

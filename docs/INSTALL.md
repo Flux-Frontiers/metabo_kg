@@ -1,4 +1,4 @@
-# MetaKG — Installation Guide
+# MetaboKG — Installation Guide
 
 **v0.2.0** · Metabolic pathway knowledge graph with simulation, semantic search, and MCP tooling.
 
@@ -90,7 +90,7 @@ The repository includes sample KEGG pathway data in `data/hsa_pathways/` (a subs
 
 ## 3. Installation Options
 
-MetaKG uses **Poetry extras** to keep the core install lightweight. Choose the combination that matches your use case.
+MetaboKG uses **Poetry extras** to keep the core install lightweight. Choose the combination that matches your use case.
 
 ### 3.1 Core install (recommended starting point)
 
@@ -265,7 +265,7 @@ except ImportError:
 
 ## 5. Downloading Pathway Data
 
-MetaKG ships with a subset of human KEGG pathways in `data/hsa_pathways/`. For the full human metabolome (369 pathways, ~19 MB), use the provided download script:
+MetaboKG ships with a subset of human KEGG pathways in `data/hsa_pathways/`. For the full human metabolome (369 pathways, ~19 MB), use the provided download script:
 
 ```bash
 # Download all 369 human KEGG pathways
@@ -625,7 +625,7 @@ metabokg-viz3d --db .metabokg/meta.sqlite --layout allium
 
 ## 12. Development Install
 
-For contributing to MetaKG or running the test suite, install with the `dev` dependency group. In Poetry, dependency groups are separate from optional extras and are activated with `--with dev`.
+For contributing to MetaboKG or running the test suite, install with the `dev` dependency group. In Poetry, dependency groups are separate from optional extras and are activated with `--with dev`.
 
 ```bash
 # Core + dev tools only (no optional extras)
@@ -685,7 +685,7 @@ metabo_kg/
 │   ├── index.py         # LanceDB vector indexing (MetaIndex)
 │   ├── embed.py         # Sentence-transformer embeddings
 │   ├── graph.py         # File discovery and parser dispatch
-│   ├── orchestrator.py  # High-level MetaKG API
+│   ├── orchestrator.py  # High-level MetaboKG API
 │   ├── simulate.py      # FBA + ODE simulation engine
 │   ├── mcp_tools.py     # MCP tool registrations
 │   ├── app.py           # Streamlit web explorer
@@ -705,15 +705,15 @@ All CLI defaults can be overridden with environment variables:
 
 | Variable | Default | Description |
 |---|---|---|
-| `METAKG_DB` | `.metabokg/meta.sqlite` | SQLite database path |
-| `METAKG_LANCEDB` | `.metabokg/lancedb` | LanceDB vector index directory |
-| `METAKG_MODEL` | `all-MiniLM-L6-v2` | Sentence-transformer model name |
+| `METABOKG_DB` | `.metabokg/meta.sqlite` | SQLite database path |
+| `METABOKG_LANCEDB` | `.metabokg/lancedb` | LanceDB vector index directory |
+| `METABOKG_MODEL` | `all-MiniLM-L6-v2` | Sentence-transformer model name |
 
 Example for a Docker deployment:
 
 ```bash
-export METAKG_DB="/data/meta.sqlite"
-export METAKG_LANCEDB="/data/lancedb"
+export METABOKG_DB="/data/meta.sqlite"
+export METABOKG_LANCEDB="/data/lancedb"
 metabokg-mcp --transport sse
 ```
 

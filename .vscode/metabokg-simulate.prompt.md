@@ -1,11 +1,11 @@
 ---
 mode: 'agent'
-description: 'Run MetaKG simulations: seed kinetics, FBA steady-state, ODE time-course, or what-if perturbation analysis.'
+description: 'Run MetaboKG simulations: seed kinetics, FBA steady-state, ODE time-course, or what-if perturbation analysis.'
 ---
 
-# MetaKG Simulate
+# MetaboKG Simulate
 
-Run metabolic pathway simulations using the MetaKG database. Supports four modes: seed kinetics, FBA (steady-state flux), ODE (time-course), and what-if (perturbation).
+Run metabolic pathway simulations using the MetaboKG database. Supports four modes: seed kinetics, FBA (steady-state flux), ODE (time-course), and what-if (perturbation).
 
 ## Command Argument Handling
 
@@ -44,8 +44,8 @@ This populates the `kinetic_parameters` table. Safe to re-run — idempotent.
 
 Python equivalent:
 ```python
-from metabokg import MetaKG
-kg = MetaKG()
+from metabokg import MetaboKG
+kg = MetaboKG()
 kg.seed_kinetics()
 ```
 
@@ -66,8 +66,8 @@ metabokg-simulate fba pwy:kegg:hsa00010   # Glycolysis
 
 Python equivalent:
 ```python
-from metabokg import MetaKG
-kg = MetaKG()
+from metabokg import MetaboKG
+kg = MetaboKG()
 result = kg.simulate_fba("pwy:kegg:hsa00010", maximize=True)
 ```
 
@@ -88,8 +88,8 @@ metabokg-simulate ode <pathway_id>
 
 Python (with full options):
 ```python
-from metabokg import MetaKG
-kg = MetaKG()
+from metabokg import MetaboKG
+kg = MetaboKG()
 result = kg.simulate_ode(
     "pwy:kegg:hsa00010",
     t_end=20,
@@ -114,8 +114,8 @@ metabokg-simulate whatif <pathway_id>
 Python with scenario JSON:
 ```python
 import json
-from metabokg import MetaKG
-kg = MetaKG()
+from metabokg import MetaboKG
+kg = MetaboKG()
 
 # Enzyme knockout
 scenario = {"enzyme_knockouts": ["enz:kegg:hsa:2539"]}
@@ -137,10 +137,10 @@ result = kg.simulate_whatif("pwy:kegg:hsa00010", json.dumps(scenario), mode="fba
 ## Finding Pathway IDs
 
 ```python
-from metabokg import MetaKG
+from metabokg import MetaboKG
 from metabokg.primitives import PATHWAY_CATEGORY_METABOLIC
 
-kg = MetaKG()
+kg = MetaboKG()
 # All metabolic pathways
 pathways = kg.store.all_nodes(kind="pathway", category=PATHWAY_CATEGORY_METABOLIC)
 for p in pathways[:10]:

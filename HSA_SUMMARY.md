@@ -1,4 +1,4 @@
-# MetaKG: Human Metabolic Knowledge Graph
+# MetaboKG: Human Metabolic Knowledge Graph
 
 **A unified, local-first metabolic pathway knowledge graph system with dual-layer query architecture (SQLite + LanceDB), semantic search, and interactive visualization.**
 
@@ -136,9 +136,9 @@ poetry run metabokg-mcp
 4. **Snapshot-based**: Version-controllable data, offline-capable workflows
 5. **MCP integration**: Future-proof for LLM integration (Claude, ChatGPT, etc.)
 
-### What Distinguishes MetaKG
+### What Distinguishes MetaboKG
 
-| Feature | KEGG | BioCyc | Reactome | **MetaKG** |
+| Feature | KEGG | BioCyc | Reactome | **MetaboKG** |
 |---------|------|--------|----------|-----------|
 | Multi-format unification | ✗ | ✗ | ✗ | **✓** |
 | Local deployment | ✗ | ✗ | ✗ | **✓** |
@@ -273,7 +273,7 @@ poetry run metabokg-viz
 
 ## License & Data
 
-- **MetaKG code**: MIT or applicable project license
+- **MetaboKG code**: MIT or applicable project license
 - **KEGG data**: Free for academic/non-profit use (see [KEGG License](https://www.kegg.jp/kegg/legal.html))
 - **Reproducibility**: All data is version-controllable, no external dependencies
 

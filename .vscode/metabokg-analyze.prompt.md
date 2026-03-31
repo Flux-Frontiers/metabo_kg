@@ -1,15 +1,15 @@
 ---
 mode: 'agent'
-description: 'Generate a comprehensive metabolic pathway analysis report from the MetaKG database.'
+description: 'Generate a comprehensive metabolic pathway analysis report from the MetaboKG database.'
 ---
 
-# MetaKG Thorough Pathway Analysis
+# MetaboKG Thorough Pathway Analysis
 
-Generate a comprehensive metabolic pathway analysis report from the MetaKG database.
+Generate a comprehensive metabolic pathway analysis report from the MetaboKG database.
 
 ## What This Does
 
-Analyzes the MetaKG database and produces a polished report including:
+Analyzes the MetaboKG database and produces a polished report including:
 - **Executive Summary** with key metrics
 - **7-Phase Analysis**: hub metabolites, complex reactions, cross-pathway junctions, pathway coupling, topology, and enzyme coverage
 - **Network Health Assessment**: identifies dead-ends, isolated nodes, sparse areas
@@ -35,7 +35,7 @@ metabokg-analyze --plain
 ## Before Running
 
 Make sure you have:
-1. ✓ Built the MetaKG database: `metabokg-build --data pathways/ --wipe`
+1. ✓ Built the MetaboKG database: `metabokg-build --data pathways/ --wipe`
 2. ✓ Database exists at `.metabokg/meta.sqlite`
 
 ## Output
@@ -81,6 +81,6 @@ metabokg-analyze --plain > analysis.txt
 
 ## Learn More
 
-- [MetaKG CLI Reference](../CLAUDE.md#metabokg-commands)
+- [MetaboKG CLI Reference](../CLAUDE.md#metabokg-commands)
 - [PathwayAnalyzer Python API](../README.md#python-api)
 - [Metabolic Simulations](../CLAUDE.md#simulations)

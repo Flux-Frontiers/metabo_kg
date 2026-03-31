@@ -1,10 +1,10 @@
-# MetaKG — Metabolic Pathway Knowledge Graph
+# MetaboKG — Metabolic Pathway Knowledge Graph
 
 A comprehensive, extendable knowledge graph system for metabolic pathways with semantic search, interactive visualization, and MCP integration.
 
-**MetaKG** ingests pathway data from multiple formats (KGML, SBML, BioPAX, CSV), builds a unified semantic knowledge graph, and provides powerful querying and visualization tools for exploring metabolic relationships.
+**MetaboKG** ingests pathway data from multiple formats (KGML, SBML, BioPAX, CSV), builds a unified semantic knowledge graph, and provides powerful querying and visualization tools for exploring metabolic relationships.
 
-**Sister Project:** [CodeKG](https://github.com/flux-frontiers/code_kg) — A codebase knowledge graph system for Python repositories. CodeKG provides the semantic analysis capabilities that make it possible to explore MetaKG's own architecture and implementation.
+**Sister Project:** [CodeKG](https://github.com/flux-frontiers/code_kg) — A codebase knowledge graph system for Python repositories. CodeKG provides the semantic analysis capabilities that make it possible to explore MetaboKG's own architecture and implementation.
 
 [![Python 3.10 | 3.11 | 3.12](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/downloads/)
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic%202.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
@@ -56,7 +56,7 @@ poetry run python scripts/download_human_kegg.py --output data/hsa_pathways --dr
 metabokg-build --data ./data/hsa_pathways --db .metabokg/meta.sqlite --lancedb .metabokg/lancedb
 
 # Output:
-# Building MetaKG from ./data/hsa_pathways...
+# Building MetaboKG from ./data/hsa_pathways...
 # data_root   : ./data/hsa_pathways
 # db_path     : .metabokg/meta.sqlite
 # nodes       : 17050  {'compound': 5115, 'reaction': 2139, 'enzyme': 9427, 'pathway': 369}
@@ -77,7 +77,7 @@ metabokg-viz --port 8500
 
 ## Architecture
 
-![MetaKG Architecture Diagram](docs/metaKG_arch.png)
+![MetaboKG Architecture Diagram](docs/metaKG_arch.png)
 
 ```
 metabokg/
@@ -404,15 +404,15 @@ poetry install --extras all
 
 ```bash
 # Visualization
-export METAKG_DB=".metabokg/meta.sqlite"
-export METAKG_LANCEDB=".metabokg/lancedb"
+export METABOKG_DB=".metabokg/meta.sqlite"
+export METABOKG_LANCEDB=".metabokg/lancedb"
 
 # Embedding model
-export METAKG_MODEL="all-MiniLM-L6-v2"
+export METABOKG_MODEL="all-MiniLM-L6-v2"
 
 # Docker deployment
-export METAKG_DB="/data/meta.sqlite"
-export METAKG_LANCEDB="/data/lancedb"
+export METABOKG_DB="/data/meta.sqlite"
+export METABOKG_LANCEDB="/data/lancedb"
 ```
 
 ### Database Defaults
@@ -487,11 +487,11 @@ poetry run ruff format src/
 
 ## Citation
 
-If you use MetaKG in research, please cite:
+If you use MetaboKG in research, please cite:
 
 ```bibtex
 @software{flux_frontiers2024metabokg,
-  title={MetaKG: Metabolic Pathway Knowledge Graph},
+  title={MetaboKG: Metabolic Pathway Knowledge Graph},
   author={Flux Frontiers Contributors},
   year={2024},
   url={https://github.com/flux-frontiers/metabo_kg}
@@ -500,7 +500,7 @@ If you use MetaKG in research, please cite:
 
 ## License
 
-MetaKG is licensed under the **PolyForm Noncommercial License 1.0.0**.
+MetaboKG is licensed under the **PolyForm Noncommercial License 1.0.0**.
 
 This means:
 - ✅ Free for **academic research** and **educational** use

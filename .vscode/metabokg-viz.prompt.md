@@ -1,11 +1,11 @@
 ---
 mode: 'agent'
-description: 'Launch the MetaKG 2D Streamlit network explorer or 3D PyVista visualization.'
+description: 'Launch the MetaboKG 2D Streamlit network explorer or 3D PyVista visualization.'
 ---
 
-# MetaKG Viz
+# MetaboKG Viz
 
-Launch the MetaKG interactive network visualization. Choose between 2D (Streamlit browser-based) or 3D (PyVista desktop).
+Launch the MetaboKG interactive network visualization. Choose between 2D (Streamlit browser-based) or 3D (PyVista desktop).
 
 ## Command Argument Handling
 
@@ -98,10 +98,10 @@ metabokg-viz3d --width 1400 --height 900
 Filter pathways by biological domain using the Python API:
 
 ```python
-from metabokg import MetaKG
+from metabokg import MetaboKG
 from metabokg.primitives import PATHWAY_CATEGORY_METABOLIC, PATHWAY_CATEGORY_SIGNALING
 
-kg = MetaKG()
+kg = MetaboKG()
 
 # List all metabolic pathways
 metabolic = kg.store.all_nodes(kind="pathway", category=PATHWAY_CATEGORY_METABOLIC)

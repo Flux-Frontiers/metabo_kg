@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to MetaKG are documented in this file.
+All notable changes to MetaboKG are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **CONTAINS fallback for isolated nodes** (`src/metabokg/parsers/kgml.py`) — Gene, ortholog, and compound entries that are not wired into any reaction are now connected to their pathway node via `CONTAINS` edges, reducing isolated node count from 12,245 → 0.
 
-- **Agent slash commands** — New `.claude/commands/` entries (`metabokg-build.md`, `metabokg-simulate.md`, `metabokg-viz.md`) and matching `.vscode/*.prompt.md` prompt files for all core MetaKG and CodeKG workflows.
+- **Agent slash commands** — New `.claude/commands/` entries (`metabokg-build.md`, `metabokg-simulate.md`, `metabokg-viz.md`) and matching `.vscode/*.prompt.md` prompt files for all core MetaboKG and CodeKG workflows.
 
 - **`SESSION-NOTES-2026-03-06.md`** — Handoff document summarising all changes made in this session for the next agent/developer.
 
@@ -70,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`scripts/download_kegg_reactions.py`** — New script for bulk downloading KEGG reaction details (name, definition, equation, EC numbers). Supports scanning local KGML files for reaction IDs (faster) or querying KEGG link endpoint. Output: `data/kegg_reaction_detail.tsv`.
 
-- **MetaKG Architecture Article** (`article/metabokg_article.md`) — Comprehensive article explaining dual-layer architecture (SQLite + LanceDB), four query modalities, and comparison with existing systems (KEGG, BioCyc, Reactome, etc.).
+- **MetaboKG Architecture Article** (`article/metabokg_article.md`) — Comprehensive article explaining dual-layer architecture (SQLite + LanceDB), four query modalities, and comparison with existing systems (KEGG, BioCyc, Reactome, etc.).
 
 - **Architecture Infographic Guide** (`article/metabokg_architecture_infographic.md`) — Visual walkthrough of system components and data flow.
 
@@ -161,13 +161,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CLAUDE.md refactored** — Condensed from ~600 lines to ~120-line table-driven quick reference; removed redundant prose, kept command tables, simulation examples, and CodeKG query strategy
 - **`pyproject.toml` scripts cleaned up** — Removed duplicate `codekg-*` script entries (now provided by the `code-kg` package); added `metabokg-analyze-basic` entry point
 - **`.codekg/lancedb` untracked from git** — Removed regenerable LanceDB vector index files from version control; `.gitignore` entry already present; index can be rebuilt with `/codekg-rebuild`
-- **Analysis report title** (`src/metabokg/analyze.py`) — Changed from `"MetaKG Pathway Analysis Report"` to `"metaKG_analysis"` for cleaner file naming
+- **Analysis report title** (`src/metabokg/analyze.py`) — Changed from `"MetaboKG Pathway Analysis Report"` to `"metabokg_analysis"` for cleaner file naming
 
 ### Removed
 
 - **`codekg-*` script declarations from `pyproject.toml`** — Scripts are now provided by the `code-kg` dependency package; no functional change for users
 
-- **Polished MetaKG Thorough Analysis Report** — New `src/metabokg/thorough_analysis.py` module providing CodeKG-style formatted analysis output
+- **Polished MetaboKG Thorough Analysis Report** — New `src/metabokg/thorough_analysis.py` module providing CodeKG-style formatted analysis output
   - Executive Summary with 5-minute KPI overview
   - Emoji-enhanced section headers (📊 📈 🔥 ⚡ 🔗 📦 🧬 🧪 ⚠️ ✅ 💡)
   - Risk level indicators (🟢 LOW 🟡 MED 🔴 HIGH) for metabolite hubs and complex reactions
@@ -186,7 +186,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Richer Markdown output with polished sections and emoji headers
   - Backward compatible: plain-text mode (`--plain`) still works
 
-- **MetaKG Thorough Analysis Skill** — Updated `.claude/skills/metabokg-thorough-analysis/SKILL.md` Python API section to import and use `render_thorough_report()`
+- **MetaboKG Thorough Analysis Skill** — Updated `.claude/skills/metabokg-thorough-analysis/SKILL.md` Python API section to import and use `render_thorough_report()`
 
 ### Removed
 
@@ -287,24 +287,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated license badge for Elastic License 2.0
 
 - **CodeKG Sister Project Reference** — Added prominent reference to CodeKG in README
-  - Sister Project section highlighting CodeKG's role in enabling semantic analysis of MetaKG's own codebase
+  - Sister Project section highlighting CodeKG's role in enabling semantic analysis of MetaboKG's own codebase
   - Added CodeKG to Acknowledgments section as primary enabling technology
 
 - **Architecture Diagram in README** — Integrated visual architecture diagram (`docs/metaKG_arch.png`) into the Architecture section
   - Provides quick visual overview of system components and organization
   - Complements detailed file structure documentation
 
-- **CodeKG Integration for Codebase Analysis** — MetaKG can now be analyzed using CodeKG's knowledge graph tools
+- **CodeKG Integration for Codebase Analysis** — MetaboKG can now be analyzed using CodeKG's knowledge graph tools
   - Built static analysis graph (SQLite): 3,136 nodes, 2,920 edges across 27 modules
   - Built semantic vector index (LanceDB): 290 vectors with 384-dimensional embeddings
   - Configured MCP servers for Claude Code, GitHub Copilot, Kilo Code, and Cline
   - Enables tools like `query_codebase`, `pack_snippets`, `callers` for code exploration
 
-- **Comprehensive CLI Documentation** — Added `CLAUDE.md` with complete reference for both MetaKG and CodeKG commands
-  - MetaKG commands: `metabokg-build`, `metabokg-analyze`, `metabokg-viz`, `metabokg-viz3d`, `metabokg-mcp`
+- **Comprehensive CLI Documentation** — Added `CLAUDE.md` with complete reference for both MetaboKG and CodeKG commands
+  - MetaboKG commands: `metabokg-build`, `metabokg-analyze`, `metabokg-viz`, `metabokg-viz3d`, `metabokg-mcp`
   - CodeKG commands: `codekg-build-sqlite`, `codekg-build-lancedb`, `codekg-query`, `codekg-mcp`
   - MCP tool documentation with usage examples and query strategies
-  - Typical workflows and combined MetaKG + CodeKG usage patterns
+  - Typical workflows and combined MetaboKG + CodeKG usage patterns
   - All examples include `poetry run` activation for virtual environment
 
 - **MCP Server Configuration** — Added MCP server definitions for multiple clients
@@ -369,7 +369,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial standalone MetaKG package release
+- Initial standalone MetaboKG package release
 - Metabolic pathway parser supporting KGML, SBML, BioPAX, and CSV formats
 - Semantic knowledge graph with LanceDB vector indexing
 - MCP (Model Context Protocol) server integration

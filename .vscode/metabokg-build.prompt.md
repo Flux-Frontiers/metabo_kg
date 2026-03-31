@@ -1,11 +1,11 @@
 ---
 mode: 'agent'
-description: 'Build or rebuild the MetaKG SQLite + LanceDB database from KGML pathway files.'
+description: 'Build or rebuild the MetaboKG SQLite + LanceDB database from KGML pathway files.'
 ---
 
-# MetaKG Build
+# MetaboKG Build
 
-Parse KEGG KGML pathway files into the MetaKG SQLite knowledge graph and LanceDB semantic index. Execute the following steps in sequence.
+Parse KEGG KGML pathway files into the MetaboKG SQLite knowledge graph and LanceDB semantic index. Execute the following steps in sequence.
 
 ## Command Argument Handling
 
@@ -69,8 +69,8 @@ Run a quick stats check:
 
 ```bash
 python -c "
-from metabokg import MetaKG
-kg = MetaKG()
+from metabokg import MetaboKG
+kg = MetaboKG()
 store = kg.store
 nodes = store.all_nodes()
 pathways = store.all_nodes(kind='pathway')

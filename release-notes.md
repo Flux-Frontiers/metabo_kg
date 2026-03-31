@@ -14,7 +14,7 @@
 
 - **CONTAINS fallback for isolated nodes** (`src/metabokg/parsers/kgml.py`) — Gene, ortholog, and compound entries that are not wired into any reaction are now connected to their pathway node via `CONTAINS` edges, reducing isolated node count from 12,245 → 0.
 
-- **Agent slash commands** — New `.claude/commands/` entries (`metabokg-build.md`, `metabokg-simulate.md`, `metabokg-viz.md`) and matching `.vscode/*.prompt.md` prompt files for all core MetaKG and CodeKG workflows.
+- **Agent slash commands** — New `.claude/commands/` entries (`metabokg-build.md`, `metabokg-simulate.md`, `metabokg-viz.md`) and matching `.vscode/*.prompt.md` prompt files for all core MetaboKG and CodeKG workflows.
 
 - **`SESSION-NOTES-2026-03-06.md`** — Handoff document summarising all changes made in this session for the next agent/developer.
 
@@ -28,7 +28,7 @@
 
 - **`scripts/download_kegg_reactions.py`** — New script for bulk downloading KEGG reaction details (name, definition, equation, EC numbers).
 
-- **MetaKG Architecture Article** (`article/metabokg_article.md`) — Comprehensive article explaining dual-layer architecture (SQLite + LanceDB), four query modalities, and comparison with existing systems.
+- **MetaboKG Architecture Article** (`article/metabokg_article.md`) — Comprehensive article explaining dual-layer architecture (SQLite + LanceDB), four query modalities, and comparison with existing systems.
 
 - **Architecture Infographic Guide** (`article/metabokg_architecture_infographic.md`) — Visual walkthrough of system components and data flow.
 
@@ -56,7 +56,7 @@
 
 - **`code-kg` core dependency** — Added as production dependency for codebase analysis capabilities.
 
-- **Polished MetaKG Thorough Analysis Report** (`src/metabokg/thorough_analysis.py`) — New module providing formatted analysis output with executive summary, risk indicators, and structured recommendations.
+- **Polished MetaboKG Thorough Analysis Report** (`src/metabokg/thorough_analysis.py`) — New module providing formatted analysis output with executive summary, risk indicators, and structured recommendations.
 
 ## Changed
 
