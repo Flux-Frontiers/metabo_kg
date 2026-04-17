@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "metabo-kg"
-version = "0.4.0"
+version = "0.4.1"
 description = "Metabolic pathway parser and semantic knowledge graph with MCP support"
 authors = ["Eric G. Suchanek, PhD <suchanek@mac.com>"]
 license = "Elastic-2.0"
@@ -24,8 +24,14 @@ numpy      = ">=1.24.0"
 sentence-transformers = ">=2.7.0"
 click      = ">=8.0"
 mcp        = ">=1.0.0"
-code-kg    = { git = "https://github.com/Flux-Frontiers/code_kg.git"}
-doc-kg = {git = "https://github.com/Flux-Frontiers/doc_kg.git"}
+
+# our own adaptors
+kg-snapshot = { git = "https://github.com/Flux-Frontiers/kg_snapshot.git" }
+pycode-kg = {git = "https://github.com/Flux-Frontiers/pycode_kg.git", optional=true}
+agent-kg = {git = "https://github.com/Flux-Frontiers/agent_kg.git", optional=true}
+ftree-kg = {git = "https://github.com/Flux-Frontiers/ftree_kg.git", optional=true}
+doc-kg = {git = "https://github.com/Flux-Frontiers/doc_kg.git", optional=true}
+memory-kg = {git = "https://github.com/Flux-Frontiers/memory_kg.git", optional=true}
 
 [tool.poetry.dependencies.scipy]
 version  = ">=1.11.0"
@@ -73,6 +79,7 @@ simulate = ["scipy"]
 viz      = ["streamlit", "pyvis", "matplotlib", "pandas"]
 viz3d    = ["pyvista", "pyvistaqt", "PyQt5", "param"]
 all      = ["rdflib", "scipy", "streamlit", "pyvis", "matplotlib", "pandas", "pyvista", "pyvistaqt", "PyQt5", "param"]
+kg = ["pycode-kg", "agent-kg", "ftree-kg", "doc-kg", "memory-kg"]
 
 [tool.poetry.group.dev.dependencies]
 pytest     = ">=8.0.0"
@@ -116,3 +123,6 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts   = "-v --tb=short"
+
+[tool.pycodekg]
+include = ["src"]

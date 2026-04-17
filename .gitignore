@@ -193,8 +193,12 @@ dmypy.json
 *.fdb_latexmk
 *.synctex.gz
 
-# CodeKG generated artifacts (derived, rebuildable)
-.codekg/
+# PyCodeKG generated artifacts — databases are transient/reproducible, snapshots are tracked
+.pycodekg/lancedb/
+.pycodekg/lancedb-*
+.pycodekg/graph.sqlite
+.pycodekg/graph.sqlite*
+.pycodekg/models
 
 # Local MCP configuration (contains absolute paths)
 .mcp.json

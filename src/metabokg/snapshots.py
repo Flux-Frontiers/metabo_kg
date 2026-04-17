@@ -27,13 +27,24 @@ Usage
 
 from __future__ import annotations
 
+import importlib.metadata
 import json
 import sqlite3
-import subprocess
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+from kg_snapshot.snapshots import PruneResult as PruneResult  # noqa: F401 — re-export
+from kg_snapshot.snapshots import SnapshotManager as _BaseSnapshotManager
+
+
+def _package_version() -> str:
+    """Return the installed metabo-kg package version, or 'unknown'."""
+    try:
+        return importlib.metadata.version("metabo-kg")
+    except importlib.metadata.PackageNotFoundError:
+        return "unknown"
 
 
 @dataclass
@@ -66,8 +77,8 @@ class Snapshot:
 
     branch: str  # git branch name
     timestamp: str  # ISO 8601 UTC
-    version: str  # e.g., "1.0.0"
     metrics: SnapshotMetrics
+    version: str = ""  # e.g., "1.0.0"; auto-detected from package if not supplied
     hub_metabolites: list[dict[str, Any]] = field(default_factory=list)  # top hub compounds
     vs_previous: SnapshotDelta | None = None
     vs_baseline: SnapshotDelta | None = None
@@ -106,6 +117,7 @@ class Snapshot:
 
         key = data.pop("key", "")
         data.pop("tree_hash", None)
+        data.setdefault("version", "")
 
         return Snapshot(
             tree_hash=key,
@@ -142,7 +154,7 @@ class SnapshotManifest:
         )
 
 
-class SnapshotManager:
+class SnapshotManager(_BaseSnapshotManager):
     """Manages MetaKG snapshot storage, retrieval, and comparison."""
 
     def __init__(self, snapshots_dir: Path | str, db_path: Path | str | None = None):
@@ -165,7 +177,7 @@ class SnapshotManager:
 
     def capture(
         self,
-        version: str,
+        version: str | None = None,
         branch: str | None = None,
         graph_stats_dict: dict | None = None,
         tree_hash: str = "",
@@ -175,7 +187,8 @@ class SnapshotManager:
         """
         Capture a snapshot from current database state.
 
-        :param version: Version string (e.g., ``"1.0.0"``).
+        :param version: Version string; auto-detected from the installed
+            ``metabo-kg`` package if not provided.
         :param branch: Git branch name; auto-detected if ``None``.
         :param graph_stats_dict: Output from ``MetaStore.stats()``; queried
             from ``db_path`` if not provided.
@@ -184,6 +197,8 @@ class SnapshotManager:
         :param hub_metabolites: Top hub compounds with reaction counts.
         :return: New :class:`Snapshot` instance.
         """
+        if not version:
+            version = _package_version()
         if branch is None:
             branch = self._get_current_branch()
         if not tree_hash:
@@ -514,30 +529,4 @@ class SnapshotManager:
         except sqlite3.Error:
             return []
 
-    # ------------------------------------------------------------------
-    # Git helpers
-    # ------------------------------------------------------------------
-
-    @staticmethod
-    def _get_current_tree_hash() -> str:
-        """Get current git tree hash (HEAD^{tree})."""
-        try:
-            return subprocess.check_output(
-                ["git", "rev-parse", "HEAD^{tree}"],
-                text=True,
-                stderr=subprocess.DEVNULL,
-            ).strip()
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            return ""
-
-    @staticmethod
-    def _get_current_branch() -> str:
-        """Get current git branch name."""
-        try:
-            return subprocess.check_output(
-                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-                text=True,
-                stderr=subprocess.DEVNULL,
-            ).strip()
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            return "unknown"
+    # _get_current_tree_hash and _get_current_branch inherited from _BaseSnapshotManager

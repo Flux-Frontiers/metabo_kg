@@ -58,8 +58,8 @@ def build(
 ) -> None:
     """Build the MetaKG metabolic knowledge graph from pathway files.
 
-    Wipes the existing database and vector index before building (default).
-    Use --no-wipe to add files incrementally instead."""
+    Keeps existing data by default. Use --wipe to clear the database and
+    vector index before building."""
     data_dir = Path(data).resolve()
     if not data_dir.exists():
         raise click.ClickException(f"data directory not found: {data_dir}")

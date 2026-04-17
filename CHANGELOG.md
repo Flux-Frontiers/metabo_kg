@@ -9,7 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`metabokg install-hooks` command** (`src/metabokg/cli/cmd_hooks.py`) — New CLI command that installs a unified pre-commit git hook. The hook delegates to `.pre-commit-config.yaml` for quality checks (ruff, mypy, detect-secrets), rebuilds the CodeKG index, then captures snapshots for CodeKG, MetaboKG, and DocKG (the latter two only when their databases are present), staging all snapshot directories atomically. Skip with `CODEKG_SKIP_SNAPSHOT=1 git commit`.
+
+- **Snapshot auto-version detection** (`src/metabokg/snapshots.py`) — `SnapshotManager.capture()` now detects the installed package version via `importlib.metadata` when `version=None` is passed, eliminating the fragile `pyproject.toml` grep that was previously done in the hook script. `Snapshot.version` is backward-compatible (defaults to `""` for legacy snapshots).
+
+- **Analysis report** (`metabokg-analysis-2026-03-18-002618.md`) — Full 7-phase metabolic network analysis report: 369 pathways, 17,050 nodes, 40,166 edges; hub metabolites, complex reactions, cross-pathway junctions, coupling patterns, and network health summary.
+
+- **Pre-commit refactor notes** (`pre-commit-refactor.md`) — Developer document describing all changes across `Metabo_kg`, `code_kg`, and `doc_kg` in this refactor.
+
 ### Changed
+
+- **`metabokg build` `--wipe` default flipped** (`src/metabokg/cli/options.py`, `src/metabokg/cli/cmd_build.py`) — Default is now to keep existing data; use `--wipe` to wipe before building. Aligns with `codekg build` behavior. The previous `--no-wipe` opt-out flag has been removed.
+
+- **`.pre-commit-config.yaml` portable and broader excludes** — Poetry entry paths changed from absolute (`/Users/egs/.local/bin/poetry run ...`) to relative (`poetry run ...`) so hooks work in any environment. `check-added-large-files` and `detect-secrets` excludes broadened from `.codekg/` only to `^\.[^/]+/` (all hidden directories), preventing large generated files in `.metabokg/` and `.dockg/` from triggering false positives.
+
+- **`snapshot save` VERSION arg now optional** (`src/metabokg/cli/cmd_snapshot.py`) — Version is auto-detected from the installed package; passing it explicitly is no longer required.
 
 ### Fixed
 

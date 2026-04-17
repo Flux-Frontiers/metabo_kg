@@ -9,7 +9,6 @@ cmd_snapshot.py — Click subcommands for managing MetaKG temporal snapshots.
 
 from __future__ import annotations
 
-import importlib.metadata
 import json
 from pathlib import Path
 
@@ -72,12 +71,6 @@ def save_snapshot(
         metabokg snapshot save 1.2.0
         metabokg snapshot save          # uses installed package version
     """
-    if not version:
-        try:
-            version = importlib.metadata.version("metabo-kg")
-        except importlib.metadata.PackageNotFoundError:
-            version = "unknown"
-
     db_path = Path(db)
     if not db_path.exists():
         click.echo(
@@ -158,7 +151,7 @@ def list_snapshots(snapshots_dir: str | None, limit: int | None, output_json: bo
         key = snap["key"][:12]
         ts = snap["timestamp"][:16].replace("T", " ")
         branch = snap["branch"][:12]
-        ver = snap["version"][:8]
+        ver = snap.get("version", "")[:8]
         m = snap["metrics"]
         nodes = m["total_nodes"]
         edges = m["total_edges"]
@@ -259,6 +252,63 @@ def show_snapshot(key: str, snapshots_dir: str | None) -> None:
 # ---------------------------------------------------------------------------
 # snapshot diff
 # ---------------------------------------------------------------------------
+
+
+@snapshot.command("prune")
+@click.option(
+    "--snapshots-dir",
+    default=None,
+    type=click.Path(),
+    help="Snapshots directory (default: .metabokg/snapshots).",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Show what would be removed without deleting anything.",
+)
+def prune_snapshots(snapshots_dir: str | None, dry_run: bool) -> None:
+    """
+    Remove vestigial snapshots that carry no new metric information.
+
+    Cleans up three categories:
+
+    \b
+    1. Metric-duplicates — interior snapshots with unchanged metrics.
+    2. Broken entries — manifest entries whose JSON file is missing.
+    3. Orphaned files — JSON files on disk not referenced by the manifest.
+
+    The oldest (baseline) and newest (latest) snapshots are always kept.
+
+    Example:
+        metabokg snapshot prune --dry-run
+        metabokg snapshot prune
+    """
+    snapshots_path = (
+        Path(snapshots_dir).resolve() if snapshots_dir else Path.cwd() / ".metabokg" / "snapshots"
+    )
+    mgr = SnapshotManager(snapshots_path)
+    result = mgr.prune_snapshots(dry_run=dry_run)
+
+    prefix = "[dry-run] " if dry_run else ""
+    if result.total_cleaned == 0:
+        click.echo("Nothing to prune.")
+        return
+
+    if result.removed:
+        click.echo(f"{prefix}Metric-duplicates removed: {len(result.removed)}")
+        for key in result.removed:
+            click.echo(f"  - {key}")
+    if result.broken_entries:
+        click.echo(f"{prefix}Broken manifest entries removed: {len(result.broken_entries)}")
+        for key in result.broken_entries:
+            click.echo(f"  - {key}")
+    if result.orphaned_files:
+        click.echo(f"{prefix}Orphaned JSON files removed: {len(result.orphaned_files)}")
+        for fname in result.orphaned_files:
+            click.echo(f"  - {fname}")
+
+    action = "would be" if dry_run else "were"
+    click.echo(f"\nTotal: {result.total_cleaned} item(s) {action} cleaned.")
 
 
 @snapshot.command("diff")

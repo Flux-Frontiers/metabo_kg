@@ -1,8 +1,8 @@
 # MetaboKG CLI Commands Reference
 
-**Repository:** https://github.com/Flux-Frontiers/metabo_kg | **Sister:** https://github.com/Flux-Frontiers/code_kg
+**Repository:** https://github.com/Flux-Frontiers/metabo_kg | **Sister:** https://github.com/Flux-Frontiers/pycode_kg
 
-## CodeKG Tools (Available in Claude Code)
+## PyCodeKG Tools (Available in Claude Code)
 
 | Tool | Purpose |
 |------|---------|
@@ -29,7 +29,8 @@ poetry install --all-extras  # Full install with viz, viz3d, mcp
 
 | Command | Purpose |
 |---------|---------|
-| `metabokg-build --data DIR` | Parse pathways → SQLite + LanceDB (wipes & enriches by default) |
+| `metabokg-build --data DIR` | Parse pathways → SQLite + LanceDB (enriches by default, no wipe) |
+| `metabokg-build --data DIR --wipe` | Full rebuild: wipe then parse |
 | `metabokg-update --data DIR` | Incrementally add new files without wiping |
 | `metabokg-analyze [--output FILE]` | 7-phase pathway analysis |
 | `metabokg-viz [--port 8500]` | 2D Streamlit explorer |
@@ -39,7 +40,7 @@ poetry install --all-extras  # Full install with viz, viz3d, mcp
 **Common options:**
 - `--db PATH`: SQLite db (default: `.metabokg/meta.sqlite`)
 - `--lancedb PATH`: Vector index (default: `.metabokg/lancedb`)
-- `--no-wipe`: Keep existing data (default: wipe before build)
+- `--wipe`: Wipe existing data before building (default: keep existing)
 - `--no-index`: Skip LanceDB (SQLite only)
 - `--no-enrich`: Skip enrichment (on by default)
 
@@ -133,18 +134,18 @@ kg.seed_kinetics()
 
 ---
 
-## CodeKG Commands
+## PyCodeKG Commands
 
 | Command | Purpose |
 |---------|---------|
-| `codekg-build [--repo DIR] [--wipe]` | Full pipeline: AST → SQLite → LanceDB |
-| `codekg-build-sqlite [--repo DIR] [--wipe]` | Structural analysis → SQLite only |
-| `codekg-build-lancedb [--repo DIR] [--wipe]` | Embeddings → LanceDB (requires SQLite already built) |
-| `codekg-query QUERY [--k 8] [--hop 1]` | Semantic + graph search, ranked summary |
-| `codekg-pack QUERY [--k 8] [--hop 1]` | Source-grounded snippet packs |
-| `codekg-mcp [--repo DIR]` | MCP server |
-| `codekg-analyze [--repo DIR]` | Architectural analysis report |
-| `codekg-viz` / `codekg-viz3d` | Streamlit / PyVista visualizer |
+| `pycodekg-build [--repo DIR] [--wipe]` | Full pipeline: AST → SQLite → LanceDB |
+| `pycodekg-build-sqlite [--repo DIR] [--wipe]` | Structural analysis → SQLite only |
+| `pycodekg-build-lancedb [--repo DIR] [--wipe]` | Embeddings → LanceDB (requires SQLite already built) |
+| `pycodekg-query QUERY [--k 8] [--hop 1]` | Semantic + graph search, ranked summary |
+| `pycodekg-pack QUERY [--k 8] [--hop 1]` | Source-grounded snippet packs |
+| `pycodekg-mcp [--repo DIR]` | MCP server |
+| `pycodekg-analyze [--repo DIR]` | Architectural analysis report |
+| `pycodekg-viz` / `pycodekg-viz3d` | Streamlit / PyVista visualizer |
 
 **Query strategy:**
 - `k=8, hop=1`: standard exploration
@@ -206,9 +207,9 @@ metabokg-viz3d --layout allium    # 3D visualization (allium or cake)
 metabokg-mcp           # MCP server for Claude
 
 # Optional: analyze codebase
-codekg-build --repo . --wipe
-codekg-query "orchestrator pipeline"
-codekg-pack "pathway category provenance"
+pycodekg-build --repo . --wipe
+pycodekg-query "orchestrator pipeline"
+pycodekg-pack "pathway category provenance"
 ```
 
 ---
@@ -218,7 +219,7 @@ codekg-pack "pathway category provenance"
 - **Paths:** Relative to CWD
 - **Embedding model:** ~100MB, downloaded once
 - **ODE solvers:** Metabolic systems are stiff → use BDF (not RK45)
-- **CodeKG node ID:** `fn:src/path/file.py:Class.method`
+- **PyCodeKG node ID:** `fn:src/path/file.py:Class.method`
 - **Rebuild:** Use `--wipe` after major refactors to avoid stale data
 - **Graph quality:** No isolated nodes (all 17K+ nodes are wired), all pathways categorized
 - **Enrichment:** Now default-on during build; use `--no-enrich` to skip

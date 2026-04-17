@@ -1,20 +1,15 @@
-feat(graph): pathway categories, zero isolated nodes, agent slash commands
+feat(cli): add install-hooks command and align build/snapshot defaults
 
-Add pathway category provenance, eliminate isolated nodes, and add
-MetaKG/CodeKG slash command files for Claude Code and GitHub Copilot.
+- New `metabokg install-hooks` command installs a unified pre-commit hook
+  that runs quality checks, rebuilds CodeKG, and captures snapshots for
+  CodeKG, MetaboKG, and DocKG atomically before each commit.
+- `metabokg build` default flipped: `--wipe` is now opt-in (keep existing
+  data by default), aligning with `codekg build` behavior.
+- Snapshot version auto-detected via `importlib.metadata` — hooks no
+  longer need to grep pyproject.toml for the version string.
+- `.pre-commit-config.yaml` made portable (relative poetry paths) with
+  broader hidden-dir excludes (`^\.[^/]+/`) for detect-secrets and
+  check-added-large-files.
+- Add MetaboKG analysis report and pre-commit refactor notes.
 
-Changes:
-- primitives.py: MetaNode.category field + 8 PATHWAY_CATEGORY_* constants
-  + _kegg_pathway_category() mapping KEGG 5-digit suffix → category
-- store.py: category TEXT column, _migrate() for backward compat,
-  all_nodes(category=) filter
-- parsers/kgml.py: Strategy C enzyme wiring (reaction= attr fallback)
-  + CONTAINS fallback for all unwired gene/compound entries
-  → isolated nodes: 12,245 → 0
-- cli/cmd_build.py + orchestrator.py: --enrich → --no-enrich (default on)
-- CLAUDE.md: codekg-* command style restored, poetry run removed
-- .claude/commands/: metabokg-build.md, metabokg-simulate.md, metabokg-viz.md
-- .vscode/: full set of *.prompt.md slash commands for GitHub Copilot
-- tests: 97 → 123 tests covering category, migration, KGML wiring
-
-Co-Authored-By: GitHub Copilot <noreply@github.com>
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
