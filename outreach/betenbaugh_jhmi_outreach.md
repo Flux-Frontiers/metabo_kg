@@ -48,11 +48,13 @@ Your group's work on CHO cell metabolic reprogramming, bioreactor flux analysis,
 and multi-omics integration sits exactly at the intersection where MetaboKG is
 strongest:
 
+- **Native CHO (`cge`) pathway support** — KEGG's *Cricetulus griseus* pathways
+  ingest with the same command as human; no code changes required
 - **FBA on any KEGG pathway in two lines of Python** — no model file setup
   needed; the knowledge graph *is* the stoichiometric model
 - **Enzyme knockout / activity scaling** for in-silico CHO perturbations before
   wet-lab experiments
-- **Semantic search** over 17 K nodes lets students and postdocs explore
+- **Semantic search** over 17 K+ nodes lets students and postdocs explore
   pathways without knowing exact KEGG IDs
 - **MCP server** exposes all tools as a typed AI interface — Claude or any MCP
   client can query, simulate, and visualise the graph interactively
@@ -65,14 +67,19 @@ cd metabo_kg
 python3.12 -m venv .venv && source .venv/bin/activate
 poetry install --all-extras           # or: pip install metabokg[all]
 
-# Download all 369 human KEGG pathways
+# Option A — Human pathways (369 hsa pathways)
 python scripts/download_human_kegg.py --output data/hsa_pathways
-
-# Build the knowledge graph (enrichment on by default)
 metabokg-build --data ./data/hsa_pathways
 
-# Run FBA on glycolysis
-metabokg-simulate fba --pathway hsa00010 --output glycolysis_fba.md
+# Option B — CHO pathways (Cricetulus griseus / cge, same KGML format)
+python scripts/download_cho_kegg.py --output data/cge_pathways
+metabokg-build --data ./data/cge_pathways
+
+# Option C — Unified human + CHO graph
+metabokg-update --data ./data/cge_pathways   # merges into existing hsa graph
+
+# Run FBA on CHO glycolysis
+metabokg-simulate fba --pathway cge00010 --output cho_glycolysis_fba.md
 
 # Launch web explorer
 metabokg-viz --port 8500
