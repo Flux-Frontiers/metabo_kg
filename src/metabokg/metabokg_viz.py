@@ -7,6 +7,10 @@ Usage:
 
 Launches ``streamlit run`` against the bundled app.py in the package directory.
 Works both from the source tree and when installed from a wheel.
+
+Author: Eric G. Suchanek, PhD
+Last Revision: 2026-04-19
+License: Elastic 2.0
 """
 
 from __future__ import annotations
@@ -36,8 +40,10 @@ def main(
     """
     import os
 
-    db = db or os.environ.get("METABOKG_DB", ".metabokg/hsa.sqlite")
-    lancedb = lancedb or os.environ.get("METABOKG_LANCEDB", ".metabokg/lancedb")
+    from metabokg.cli.options import resolve_db, resolve_lancedb
+
+    db = resolve_db(db)
+    lancedb = resolve_lancedb(lancedb)
 
     # app.py is bundled alongside this module in the package directory
     app_path = Path(__file__).parent / "app.py"

@@ -39,49 +39,72 @@ source .venv/bin/activate
 poetry install --extras all
 ```
 
-### Download Pathway Data
+### Pathway Data
 
-**Human KEGG Pathways (369 pathways, ~19 MB):**
+**Human (`data/hsa_pathways/`) and CHO (`data/cge_pathways/`) KEGG pathways are included in the repository** — no download needed for these.
+
+To refresh or re-download them:
+
 ```bash
 poetry run python scripts/download_human_kegg.py --output data/hsa_pathways
-
-# Preview without downloading:
-poetry run python scripts/download_human_kegg.py --output data/hsa_pathways --dry-run
-```
-
-**Chinese Hamster Ovary (CHO) KEGG Pathways (366 pathways, organism: `cge`):**
-```bash
 poetry run python scripts/download_cho_kegg.py --output data/cge_pathways
-
-# Preview without downloading:
-poetry run python scripts/download_cho_kegg.py --output data/cge_pathways --dry-run
 ```
 
-**iCHO2441 Genome-Scale Metabolic Model (6,663 reactions, SBML):**
+**iCHO2441 Genome-Scale Metabolic Model (6,663 reactions, SBML)** — XML files are included in `data/icho_model/` but the knowledge graph has not been built yet. To build:
+
+```bash
+metabokg-build --data data/icho_model  # → data/icho_model/.metabokg/icho.sqlite
+```
+
+To re-download the source XML:
 ```bash
 poetry run python scripts/download_icho_model.py --output data/icho_model
-
-# Preview without downloading:
-poetry run python scripts/download_icho_model.py --output data/icho_model --dry-run
 ```
 
-### Build the Knowledge Graph
+### Build the Metabolic Knowledge Graphs
+
+The `--data` directory drives automatic colocation — no `--db` or `--lancedb` flags needed.
+
+#### Human (*Homo sapiens*, `hsa`)
 
 ```bash
-# Parse pathway files and build the KG (enrichment enabled by default)
-metabokg-build --data ./data/hsa_pathways --db .metabokg/hsa.sqlite --lancedb .metabokg/lancedb
+metabokg-build --data ./data/hsa_pathways
 
 # Output:
 # Building MetaboKG from ./data/hsa_pathways...
 # data_root   : ./data/hsa_pathways
-# db_path     : .metabokg/hsa.sqlite
+# db_path     : data/hsa_pathways/.metabokg/hsa.sqlite
 # nodes       : 17050  {'compound': 5115, 'reaction': 2139, 'enzyme': 9427, 'pathway': 369}
 # edges       : 40166  {'SUBSTRATE_OF': 2551, 'PRODUCT_OF': 2532, 'CATALYZES': 2394, 'CONTAINS': 32689}
 # isolated    : 0
 # indexed     : 14911 vectors  dim=384
 ```
 
-**Complete Human Metabolome:** All 369 KEGG metabolic and regulatory pathways integrated into a single queryable knowledge graph with 17K+ fully-connected nodes and 40K+ edges. All pathways automatically categorized by biological domain.
+**Complete Human Metabolome:** All 369 KEGG metabolic and regulatory pathways in a single queryable knowledge graph with 17K+ fully-connected nodes and 40K+ edges.
+
+#### Chinese Hamster Ovary (*C. griseus*, `cge`)
+
+```bash
+metabokg-build --data ./data/cge_pathways
+
+# Output:
+# Building MetaboKG from ./data/cge_pathways...
+# data_root   : ./data/cge_pathways
+# db_path     : data/cge_pathways/.metabokg/cge.sqlite
+# nodes       : ~16800  {'compound': ..., 'reaction': ..., 'enzyme': ..., 'pathway': 366}
+# edges       : ~39000  {'SUBSTRATE_OF': ..., 'PRODUCT_OF': ..., 'CATALYZES': ..., 'CONTAINS': ...}
+# isolated    : 0
+```
+
+> **Enzyme name resolution** for CHO uses `data/cge_gene_names.tsv` (bundled). To refresh: `python scripts/download_kegg_names.py --genes cge`
+
+#### iCHO2441 Genome-Scale Metabolic Model (SBML)
+
+```bash
+metabokg-build --data ./data/icho_model
+
+# db_path     : data/icho_model/.metabokg/icho.sqlite
+```
 
 ### Launch Web Explorer
 
@@ -102,16 +125,11 @@ MetaboKG supports multiple organisms, each stored in its own database for federa
 | iCHO2441 GEM (SBML) | `download_icho_model.py` | `data/icho_model/` | 6,663 reactions |
 
 ```bash
-# Build each organism into its own database
-metabokg-build --data data/hsa_pathways                            # human (default db)
-metabokg-build --data data/cge_pathways --db .metabokg/cge.sqlite  # CHO
-metabokg-build --data data/icho_model   --db .metabokg/icho.sqlite # iCHO GEM
+# db and lancedb colocate automatically under each data dir
+metabokg-build --data data/hsa_pathways  # → data/hsa_pathways/.metabokg/hsa.sqlite
+metabokg-build --data data/cge_pathways  # → data/cge_pathways/.metabokg/cge.sqlite
+metabokg-build --data data/icho_model    # → data/icho_model/.metabokg/icho.sqlite
 ```
-
-> **Enzyme name resolution** for CHO requires `data/cge_gene_names.tsv`. Download once:
-> ```bash
-> python scripts/download_kegg_names.py --genes cge hsa
-> ```
 
 ## Architecture
 
@@ -168,15 +186,18 @@ metabokg/
 Parse pathway files and build the knowledge graph.
 
 ```bash
-metabokg-build --data ./pathways \
-             --db .metabokg/hsa.sqlite \
-             --lancedb .metabokg/lancedb \
-             --model all-MiniLM-L6-v2
+# Minimal — db and lancedb colocate automatically under <data-dir>/.metabokg/
+metabokg-build --data ./data/hsa_pathways
+
+# With overrides
+metabokg-build --data ./data/hsa_pathways \
+             --model all-MiniLM-L6-v2 \
+             --wipe
 
 Options:
   --data PATH              Directory containing pathway files (required)
-  --db PATH                SQLite database path (default: .metabokg/hsa.sqlite)
-  --lancedb PATH           LanceDB directory (default: .metabokg/lancedb)
+  --db PATH                SQLite database path (default: <data-dir>/.metabokg/<org>.sqlite)
+  --lancedb PATH           LanceDB directory (default: <data-dir>/.metabokg/lancedb)
   --model NAME             Sentence-transformer model (default: all-MiniLM-L6-v2)
   --no-index               Skip building LanceDB vector index
   --wipe                   Wipe existing data before building (default: keep existing)
@@ -186,8 +207,18 @@ Options:
 
 Incrementally merge new pathway files into an existing database without wiping.
 
+If new files are in the **same data directory** as the original build, colocation resolves the db automatically:
+
 ```bash
-metabokg-update --data ./new_pathways
+metabokg-update --data data/hsa_pathways  # → data/hsa_pathways/.metabokg/hsa.sqlite
+```
+
+If new files are in a **different directory**, specify `--db` and `--lancedb` explicitly to target the correct existing KG:
+
+```bash
+metabokg-update --data data/new_hsa_files \
+  --db data/hsa_pathways/.metabokg/hsa.sqlite \
+  --lancedb data/hsa_pathways/.metabokg/lancedb
 ```
 
 ### `metabokg-viz`
@@ -195,8 +226,8 @@ metabokg-update --data ./new_pathways
 Launch interactive Streamlit web explorer.
 
 ```bash
-metabokg-viz --db .metabokg/hsa.sqlite \
-           --lancedb .metabokg/lancedb \
+metabokg-viz --db data/hsa_pathways/data/hsa_pathways/.metabokg/hsa.sqlite \
+           --lancedb data/hsa_pathways/data/hsa_pathways/.metabokg/lancedb \
            --port 8500
 
 Options:
@@ -216,7 +247,7 @@ Options:
 Launch interactive 3D PyVista metabolic pathway visualizer.
 
 ```bash
-metabokg-viz3d --db .metabokg/hsa.sqlite \
+metabokg-viz3d --db data/hsa_pathways/data/hsa_pathways/.metabokg/hsa.sqlite \
              --layout allium \
              --width 1400 \
              --height 900
@@ -240,8 +271,8 @@ Options:
 Start MCP server to expose the knowledge graph to Claude and other AI assistants.
 
 ```bash
-metabokg-mcp --db .metabokg/hsa.sqlite \
-           --lancedb .metabokg/lancedb \
+metabokg-mcp --db data/hsa_pathways/data/hsa_pathways/.metabokg/hsa.sqlite \
+           --lancedb data/hsa_pathways/data/hsa_pathways/.metabokg/lancedb \
            --transport stdio
 
 Options:
@@ -258,8 +289,8 @@ Options:
 from metabokg import MetaKG
 
 # Build the knowledge graph
-kg = MetaKG(db_path=".metabokg/hsa.sqlite", lancedb_dir=".metabokg/lancedb")
-stats = kg.build(data_dir="./pathways", wipe=True, build_index=True)
+kg = MetaKG(db_path="data/hsa_pathways/.metabokg/hsa.sqlite", lancedb_dir="data/hsa_pathways/.metabokg/lancedb")
+stats = kg.build(data_dir="./data/hsa_pathways", wipe=True, build_index=True)
 print(stats)
 
 # Query a single node
@@ -293,7 +324,7 @@ kg.close()
 ```python
 from metabokg import MetaKG
 
-kg = MetaKG(db_path=".metabokg/hsa.sqlite", lancedb_dir=".metabokg/lancedb")
+kg = MetaKG(db_path="data/hsa_pathways/.metabokg/hsa.sqlite", lancedb_dir="data/hsa_pathways/.metabokg/lancedb")
 
 # Semantic similarity search
 results = kg.query_pathway("glucose metabolism", k=10)
@@ -309,7 +340,7 @@ kg.close()
 ```python
 from metabokg import MetaKG
 
-kg = MetaKG(db_path=".metabokg/hsa.sqlite", lancedb_dir=".metabokg/lancedb")
+kg = MetaKG(db_path="data/hsa_pathways/.metabokg/hsa.sqlite", lancedb_dir="data/hsa_pathways/.metabokg/lancedb")
 
 # Run steady-state optimization
 result = kg.simulate_fba(
@@ -372,7 +403,7 @@ from metabokg.store import GraphStore
 from metabokg.layout3d import AlliumLayout, LayoutNode, LayoutEdge
 
 # Load graph
-store = GraphStore(".metabokg/hsa.sqlite")
+store = GraphStore("data/hsa_pathways/.metabokg/hsa.sqlite")
 nodes_data = store.query_nodes()
 edges_data = store.query_edges()
 
@@ -447,8 +478,8 @@ poetry install --extras all
 
 ```bash
 # Visualization
-export METABOKG_DB=".metabokg/hsa.sqlite"
-export METABOKG_LANCEDB=".metabokg/lancedb"
+export METABOKG_DB="data/hsa_pathways/.metabokg/hsa.sqlite"
+export METABOKG_LANCEDB="data/hsa_pathways/.metabokg/lancedb"
 
 # Embedding model
 export METABOKG_MODEL="all-MiniLM-L6-v2"
@@ -460,8 +491,8 @@ export METABOKG_LANCEDB="/data/lancedb"
 
 ### Database Defaults
 
-- **SQLite** — `.metabokg/hsa.sqlite`
-- **LanceDB** — `.metabokg/lancedb`
+- **SQLite** — `<data-dir>/.metabokg/<org>.sqlite` (colocated with pathway data, e.g. `data/hsa_pathways/.metabokg/hsa.sqlite`)
+- **LanceDB** — `<data-dir>/.metabokg/lancedb`
 - **Embedding Model** — `all-MiniLM-L6-v2` (384-dimensional vectors)
 
 ## Performance Characteristics

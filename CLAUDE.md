@@ -139,16 +139,16 @@ kg.seed_kinetics()
 Each organism or model builds into its own named db and registers as a separate
 KGRAG corpus, enabling federated cross-organism queries.
 
-| Corpus | DB path | Content |
-|--------|---------|---------|
-| `metabokg-hsa` | `.metabokg/hsa.sqlite` *(default)* | 369 human pathways |
-| `metabokg-cge` | `.metabokg/cge.sqlite` | 366 CHO (*C. griseus*) pathways |
-| `metabokg-icho` | `.metabokg/icho.sqlite` | iCHO2441 GEM, 6,663 reactions |
+| Corpus | DB path (colocated) | Content |
+|--------|---------------------|---------|
+| `metabokg-hsa` | `data/hsa_pathways/.metabokg/hsa.sqlite` | 369 human pathways *(bundled in repo)* |
+| `metabokg-cge` | `data/cge_pathways/.metabokg/cge.sqlite` | 366 CHO (*C. griseus*) pathways *(bundled in repo)* |
+| `metabokg-icho` | `data/icho_model/.metabokg/icho.sqlite` | iCHO2441 GEM, 6,663 reactions |
 
 ```bash
-metabokg-build --data data/hsa_pathways                          # human (default db)
-metabokg-build --data data/cge_pathways --db .metabokg/cge.sqlite
-metabokg-build --data data/icho_model   --db .metabokg/icho.sqlite
+metabokg-build --data data/hsa_pathways  # → data/hsa_pathways/.metabokg/hsa.sqlite
+metabokg-build --data data/cge_pathways  # → data/cge_pathways/.metabokg/cge.sqlite
+metabokg-build --data data/icho_model    # → data/icho_model/.metabokg/icho.sqlite
 ```
 
 - **Enzyme name resolution** requires `data/{org}_gene_names.tsv` — download once with
@@ -181,9 +181,13 @@ metabokg-build --data data/icho_model   --db .metabokg/icho.sqlite
 
 ## Data Download Scripts
 
+**All source data is bundled in the repo** (`data/hsa_pathways/`, `data/cge_pathways/`, `data/icho_model/*.xml`). Scripts below are for refreshing data only.
+
 | Script | Purpose | Output |
 |--------|---------|--------|
-| `scripts/download_human_kegg.py` | Download all hsa KGML pathway files | `data/hsa_pathways/*.kgml` |
+| `scripts/download_human_kegg.py` | Re-download hsa KGML pathway files | `data/hsa_pathways/*.kgml` |
+| `scripts/download_cho_kegg.py` | Re-download cge KGML pathway files | `data/cge_pathways/*.kgml` |
+| `scripts/download_icho_model.py` | Re-download iCHO2441 SBML XML | `data/icho_model/*.xml` |
 | `scripts/download_kegg_names.py` | Bulk-download compound + reaction name lists | `data/kegg_compound_names.tsv`, `data/kegg_reaction_names.tsv` |
 | `scripts/download_kegg_reactions.py` | Per-reaction detail: name, definition, equation, EC numbers | `data/kegg_reaction_detail.tsv` |
 
@@ -209,13 +213,14 @@ R00710       acetaldehyde:NAD+ oxidoreductase  Acetaldehyde ...  C00084 + C00003
 ## Typical Workflow
 
 ```bash
-# 1. Download pathway KGML files
-python scripts/download_human_kegg.py --output data/hsa_pathways
+# 1. hsa and cge pathway files are bundled in the repo — no download needed
+#    To refresh: python scripts/download_human_kegg.py --output data/hsa_pathways
 
 # 2. (Optional) Download KEGG name lists for canonical names in enrichment
 python scripts/download_kegg_names.py
 
 # 3. Build & analyze pathways (enrichment runs by default)
+#    db colocates automatically: data/hsa_pathways/.metabokg/hsa.sqlite
 metabokg-build --data ./data/hsa_pathways
 
 # 4. Seed kinetic parameters from literature

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-app.py — MetaKG Streamlit Metabolic Knowledge Graph Explorer
+app.py — MetaboKG Streamlit Metabolic Knowledge Graph Explorer
 
 Interactive metabolic pathway explorer with:
   • Sidebar: configure database paths and query parameters
@@ -20,13 +20,13 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components
 from pyvis.network import Network
 
 from metabokg.simulate import FBAResult, MetabolicSimulator, ODEResult, SimulationConfig
@@ -49,6 +49,7 @@ _DESCRIPTION_HOVER_LEN = 150  # Hover title
 _DESCRIPTION_CARD_LEN = 200  # Search result card
 _LABEL_TRUNCATE_LEN = 30  # Bar chart labels
 _LABEL_TRUNCATE_SUFFIX = "…"
+_BARE_KEGG_ID = re.compile(r"^[RCG]\d{5}$")  # e.g. R00710, C00031, G00001
 
 _KIND_SHAPE: dict[str, str] = {
     "pathway": "box",
@@ -67,18 +68,15 @@ _REL_COLOR: dict[str, str] = {
     "XREF": "#95A5A6",  # dark grey
 }
 
-# Honour the METAKG_DB env var for Docker deployment
-_DEFAULT_DB = os.environ.get("METABOKG_DB", os.environ.get("METAKG_DB", ".metabokg/hsa.sqlite"))
-_DEFAULT_LANCEDB = os.environ.get(
-    "METABOKG_LANCEDB", os.environ.get("METAKG_LANCEDB", ".metabokg/lancedb")
-)
+_DEFAULT_DB = os.environ.get("METABOKG_DB", "data/hsa_pathways/.metabokg/hsa.sqlite")
+_DEFAULT_LANCEDB = os.environ.get("METABOKG_LANCEDB", "data/hsa_pathways/.metabokg/lancedb")
 
 # ---------------------------------------------------------------------------
 # Page config (must be first Streamlit call)
 # ---------------------------------------------------------------------------
 
 st.set_page_config(
-    page_title="MetaKG Explorer",
+    page_title="MetaboKG Explorer",
     page_icon="🧬",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -225,10 +223,6 @@ def _get_node_label(node: dict[str, Any] | None) -> str:
     """
     Extract a readable label for a node, preferring name over ID.
 
-    For reaction and compound nodes the ``name`` field is typically a raw
-    KEGG ID (e.g. "R00710" or "C00031").  We strip that prefix so the fallback
-    is at least the bare accession rather than the full ``rxn:kegg:…`` URI.
-
     :param node: Node dict from the store (or None).
     :return: Display-friendly label string.
     """
@@ -236,12 +230,9 @@ def _get_node_label(node: dict[str, Any] | None) -> str:
         return "unknown"
     name = node.get("name", "").strip()
     node_id = node.get("id", "unknown")
-    kind = node.get("kind", "")
-    # For reactions and compounds the stored name is just the bare accession
-    # (e.g. "R00710" / "C00031") which is not human-readable.  We leave the
-    # name in place for enzymes (gene names) and pathways, but for the two
-    # "ID-as-name" kinds we fall through to the caller-enriched label below.
-    if name and kind not in ("reaction", "compound"):
+    # Use name if present and not a bare KEGG accession (e.g. "R00710" / "C00031").
+    # Enriched nodes carry human-readable names for all kinds.
+    if name and not _BARE_KEGG_ID.match(name):
         return name
     # Fallback: last segment of the node URI (e.g. "R00710" from "rxn:kegg:R00710")
     return node_id.split(":")[-1]
@@ -371,7 +362,7 @@ def _render_sidebar() -> dict[str, Any]:
     db_path = st.sidebar.text_input(
         "SQLite Database Path",
         value=st.session_state.get("db_path", _DEFAULT_DB),
-        help="Path to the MetaKG SQLite database",
+        help="Path to the MetaboKG SQLite database",
     )
     st.session_state["db_path"] = db_path
 
@@ -468,7 +459,7 @@ def _tab_graph(cfg: dict[str, Any]) -> None:
 
     _render_legend()
     html = _build_pyvis(filtered_nodes, filtered_edges, physics_on=cfg["physics_on"])
-    components.html(html, height=750, scrolling=False)
+    st.iframe(html, height=750)
 
     # Node list
     with st.expander(f"📋 Nodes ({len(filtered_nodes)})", expanded=False):
@@ -483,7 +474,7 @@ def _tab_graph(cfg: dict[str, Any]) -> None:
                 for n in filtered_nodes
             ]
         )
-        st.dataframe(ndf, use_container_width=True, hide_index=True)
+        st.dataframe(ndf, width="stretch", hide_index=True)
 
     # Edges list
     with st.expander(f"🔗 Edges ({len(filtered_edges)})", expanded=False):
@@ -493,7 +484,7 @@ def _tab_graph(cfg: dict[str, Any]) -> None:
                 for e in sorted(filtered_edges, key=lambda x: (x["rel"], x["src"]))
             ]
         )
-        st.dataframe(edf, use_container_width=True, hide_index=True)
+        st.dataframe(edf, width="stretch", hide_index=True)
 
 
 # ---------------------------------------------------------------------------
@@ -520,19 +511,35 @@ def _tab_search(cfg: dict[str, Any]) -> None:
         k = st.slider("Number of results", min_value=1, max_value=50, value=10)
 
         try:
-            results = store.query_text(query_text, k=k)
-            st.success(f"Found {len(results)} results")
+            lancedb_dir = cfg.get("lancedb_dir", _DEFAULT_LANCEDB)
+            use_vector = Path(lancedb_dir).exists()
 
-            for i, result in enumerate(results, 1):
+            if use_vector:
+                from metabokg import MetaKG
+
+                kg = MetaKG(db_path=cfg["db_path"], lancedb_dir=lancedb_dir)
+                query_results = kg.query(query_text, k=k)
+                kg.close()
+                hits = query_results.hits
+            else:
+                hits = store.query_text(query_text, k=k)
+
+            mode = "vector" if use_vector else "text"
+            st.success(f"Found {len(hits)} results ({mode} search)")
+
+            for i, result in enumerate(hits, 1):
                 node_id = result.get("id")
                 kind = result.get("kind", "")
                 name = result.get("name", "")
                 description = result.get("description", "")
+                score = result.get("score")
+                score_str = f"  score={score:.3f}" if isinstance(score, float) else ""
                 color = _KIND_COLOR.get(kind, "#95A5A6")
 
                 st.markdown(
                     f'<div class="node-card" style="border-left-color:{color}">'
-                    f'<b>{i}. {name}</b> <code style="color:{color}">{kind}</code><br>'
+                    f'<b>{i}. {name}</b> <code style="color:{color}">{kind}</code>'
+                    f'<small style="color:#aaa">{score_str}</small><br>'
                     f"<small>{node_id}</small><br>"
                     f"<small>{description[:_DESCRIPTION_CARD_LEN]}</small>"
                     f"</div>",
@@ -683,9 +690,9 @@ def _tab_simulation(cfg: dict[str, Any]) -> None:
         t_end = st.number_input("Stop time", min_value=1.0, value=100.0, step=10.0)
         t_points = st.number_input("Points", min_value=10, max_value=2000, value=300, step=10)
 
-        start = st.button("▶ Start", use_container_width=True)
-        stop = st.button("⏹ Stop", use_container_width=True)
-        reset = st.button("↺ Reset", use_container_width=True)
+        start = st.button("▶ Start", width="stretch")
+        stop = st.button("⏹ Stop", width="stretch")
+        reset = st.button("↺ Reset", width="stretch")
 
     if "sim_running" not in st.session_state:
         st.session_state["sim_running"] = False
@@ -772,7 +779,7 @@ def _tab_simulation(cfg: dict[str, Any]) -> None:
                 "Final concentration [mM]": [result.concentrations[c][-1] for c in selected_cpds],
             }
         ).sort_values("Final concentration [mM]", ascending=False)
-        st.dataframe(final_df, use_container_width=True, hide_index=True)
+        st.dataframe(final_df, width="stretch", hide_index=True)
 
     elif isinstance(result_obj, FBAResult):
         result = result_obj
@@ -824,7 +831,7 @@ def _tab_simulation(cfg: dict[str, Any]) -> None:
         ax.tick_params(axis="x", rotation=75)
         ax.grid(alpha=0.3, axis="y")
         st.pyplot(fig, clear_figure=True)
-        st.dataframe(plot_df, use_container_width=True, hide_index=True)
+        st.dataframe(plot_df, width="stretch", hide_index=True)
 
 
 # ---------------------------------------------------------------------------
@@ -842,10 +849,10 @@ def main() -> None:
     _init_state()
     cfg = _render_sidebar()
 
-    st.title("🧬 MetaKG Explorer")
+    st.title("🧬 MetaboKG Explorer")
     st.caption(
         "Interactive metabolic knowledge-graph explorer. "
-        "Built with [MetaKG](https://github.com/Suchanek/metabo_kg) · "
+        "Built with [MetaboKG](https://github.com/flux-frontiers/metabo_kg) · "
         "Powered by Streamlit + pyvis."
     )
 

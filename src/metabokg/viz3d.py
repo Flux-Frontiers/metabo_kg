@@ -521,7 +521,7 @@ def _build_qt_window(
         version = "dev"
 
     window = QMainWindow()
-    window.setWindowTitle(f"MetaKG 3D Explorer v{version} — {layout_name.capitalize()} Layout")
+    window.setWindowTitle(f"MetaboKG 3D Explorer v{version} — {layout_name.capitalize()} Layout")
     window.resize(width, height)
 
     # Centre widget: PyVista BackgroundPlotter embedded in Qt.
@@ -589,7 +589,7 @@ def _build_qt_window(
         new_positions = new_layout.compute(layout_nodes, layout_edges)
         pos_holder[0] = new_positions
         print(" done")
-        window.setWindowTitle(f"MetaKG 3D Explorer — {chosen.capitalize()} Layout")
+        window.setWindowTitle(f"MetaboKG 3D Explorer — {chosen.capitalize()} Layout")
 
     # Connect signal after setCurrentText so the initial selection does not
     # trigger a redundant recompute (positions were already computed by launch()).
@@ -762,7 +762,7 @@ def launch(
     - Efficient edge rendering (skipped for 5000+ edges).
     - Staged rendering (re-render only on "Render Graph" button press).
 
-    :param db_path: Path to the MetaKG SQLite database.
+    :param db_path: Path to the MetaboKG SQLite database.
     :param lancedb_dir: Path to the LanceDB directory (optional, unused in rendering).
     :param layout_name: Layout strategy: ``"allium"`` (default) or ``"cake"``.
     :param width: Window width in pixels (default: 1400).
@@ -989,7 +989,7 @@ def _run_export(
 
     pl.reset_camera()
     pl.view_isometric()
-    pl.add_title(f"MetaKG 3D Explorer — {layout_name.capitalize()} Layout")
+    pl.add_title(f"MetaboKG 3D Explorer — {layout_name.capitalize()} Layout")
 
     if export_html:
         print(f"Exporting to HTML: {export_html}...", end="", flush=True)

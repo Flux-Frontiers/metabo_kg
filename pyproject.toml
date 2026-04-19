@@ -32,6 +32,7 @@ agent-kg = {git = "https://github.com/Flux-Frontiers/agent_kg.git", optional=tru
 ftree-kg = {git = "https://github.com/Flux-Frontiers/ftree_kg.git", optional=true}
 doc-kg = {git = "https://github.com/Flux-Frontiers/doc_kg.git", optional=true}
 memory-kg = {git = "https://github.com/Flux-Frontiers/memory_kg.git", optional=true}
+watchdoc = "^0.0.1"
 
 [tool.poetry.dependencies.scipy]
 version  = ">=1.11.0"
@@ -102,6 +103,7 @@ metabokg-enrich         = "metabokg.cli:enrich_main"
 metabokg-mcp            = "metabokg.cli:mcp_main"
 metabokg-viz            = "metabokg.cli:viz_main"
 metabokg-viz3d          = "metabokg.cli:viz3d_main"
+metabokg-query          = "metabokg.cli:query_main"
 metabokg-analyze        = "metabokg.cli:analyze_main"
 metabokg-analyze-basic  = "metabokg.cli:analyze_basic_main"
 metabokg-simulate       = "metabokg.cli:simulate_main"

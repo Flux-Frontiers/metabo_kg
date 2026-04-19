@@ -366,6 +366,25 @@ class MetaKG:
                 results.append({**node, "_distance": h.distance, "member_count": member_count})
         return MetabolicQueryResult(query=name, hits=results)
 
+    def query(self, text: str, *, k: int = 10) -> MetabolicQueryResult:
+        """
+        Semantic search across all indexed node kinds (compound, enzyme, pathway).
+
+        Unlike :meth:`query_pathway`, this returns every matching node regardless
+        of kind, making it suitable for general-purpose search.
+
+        :param text: Natural-language query.
+        :param k: Maximum results to return.
+        :return: :class:`MetabolicQueryResult` with matching nodes of any kind.
+        """
+        hits = self.index.search(text, k=k)
+        results: list[dict] = []
+        for h in hits:
+            node = self.store.node(h.id)
+            if node:
+                results.append({**node, "_distance": h.distance})
+        return MetabolicQueryResult(query=text, hits=results)
+
     def get_compound(self, compound_id: str) -> dict | None:
         """
         Retrieve a compound node by internal or external ID.

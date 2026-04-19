@@ -1,23 +1,10 @@
-refactor(storage): colocate per-corpus artifacts inside data dirs
+feat(query+enrich): generic semantic search, Phase 2d/2e enrichment, code quality
 
-Each metabokg-build now places its SQLite db, LanceDB index, and
-snapshots inside <data-dir>/.metabokg/ rather than the project root.
-The db filename is derived from the data directory prefix:
-  hsa_pathways → hsa.sqlite
-  cge_pathways → cge.sqlite
-
-This eliminates ambiguity when building multiple organisms in the same
-repo and mirrors the gutenberg_kg per-book storage pattern.
-
-Key changes:
-- options.py: db/lancedb defaults → None; resolve_db()/resolve_lancedb()
-  helpers fall back via METABOKG_DB/METABOKG_LANCEDB env vars → CWD
-- cmd_build.py: _colocate_defaults() derives db name from data dir prefix
-- All CLI commands (analyze, simulate, snapshot, viz, mcp) call resolve_db()
-- .gitignore: replaced blanket .metabokg/ with specific artifact ignores
-  so snapshots/ is tracked
-- Renamed legacy meta.sqlite → hsa.sqlite everywhere; removed project-root
-  .metabokg/; rebuilt hsa and cge corpora into their data dirs
-- pre-commit large-file exclude broadened to cover all data/*.tsv and *.kgml
+Add MetaKG.query() for all-kinds semantic search, fixing metabokg query
+and Streamlit search returning empty results for compound/enzyme terms.
+Extend enrichment pipeline with glycan (Phase 2d) and KO enzyme (Phase 2e)
+phases. Add metabokg query CLI command. Fix quiet-param bug in
+enrich_reactions_from_graph. Add authorship/license headers to all
+modified modules. Simplify _get_node_label to regex-based bare ID check.
 
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>

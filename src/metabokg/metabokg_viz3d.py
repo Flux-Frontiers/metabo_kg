@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-metabokg_viz3d.py — CLI launcher for the MetaKG 3-D PyVista visualiser.
+metabokg_viz3d.py — CLI launcher for the MetaboKG 3-D PyVista visualiser.
 
 Usage::
 
@@ -11,7 +11,7 @@ Usage::
 Examples::
 
     # Open interactive window with Allium layout (default)
-    metabokg-viz3d --db .metabokg/hsa.sqlite
+    metabokg-viz3d --db data/hsa_pathways/.metabokg/hsa.sqlite
 
     # Layer-cake layout showing metabolic relationships
     metabokg-viz3d --layout cake
@@ -25,7 +25,6 @@ Author: Eric G. Suchanek, PhD
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 
@@ -39,8 +38,10 @@ def main(
     export_png: str | None = None,
 ) -> None:
     """Launch the 3-D knowledge-graph visualiser."""
-    db_str = db or os.environ.get("METABOKG_DB", ".metabokg/hsa.sqlite")
-    lancedb_str = lancedb or os.environ.get("METABOKG_LANCEDB", ".metabokg/lancedb")
+    from metabokg.cli.options import resolve_db, resolve_lancedb
+
+    db_str = resolve_db(db)
+    lancedb_str = resolve_lancedb(lancedb)
 
     db_path = Path(db_str)
     if not db_path.exists():

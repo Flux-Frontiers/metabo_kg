@@ -4,6 +4,10 @@ cmd_build.py — build and enrich subcommands.
 Registers:
   metabokg build    — parse pathway files → SQLite + LanceDB
   metabokg enrich   — enrich node names in an existing database
+
+Author: Eric G. Suchanek, PhD
+Last Revision: 2026-04-19
+License: Elastic 2.0
 """
 
 from __future__ import annotations
@@ -23,16 +27,17 @@ from metabokg.cli.options import (
 
 
 def _colocate_defaults(data_dir: Path, db: str | None, lancedb: str | None) -> tuple[str, str]:
-    """Derive db and lancedb paths from data_dir when not explicitly given.
+    """Derive db and lancedb paths when not explicitly given.
 
-    The db name is derived from the data directory: 'hsa_pathways' → 'hsa.sqlite'.
+    db name is derived from the data directory: 'hsa_pathways' → 'hsa.sqlite'.
+    lancedb defaults to the same .metabokg directory as the resolved db.
     """
     dot_dir = data_dir / ".metabokg"
     dot_dir.mkdir(parents=True, exist_ok=True)
     if db is None:
         org = data_dir.name.split("_")[0]
         db = str(dot_dir / f"{org}.sqlite")
-    resolved_lancedb = lancedb or str(dot_dir / "lancedb")
+    resolved_lancedb = lancedb or str(Path(db).parent / "lancedb")
     return db, resolved_lancedb
 
 

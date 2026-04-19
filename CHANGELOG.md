@@ -9,6 +9,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`MetaKG.query()` — general-purpose semantic search** (`src/metabokg/orchestrator.py`) — New method searches all indexed node kinds (compound, enzyme, pathway) by semantic similarity. Unlike `query_pathway()`, it does not filter results by kind, so queries like `"glucose"` or `"ATP synthase"` now correctly return compound and enzyme nodes. Both `metabokg query` (CLI) and the Streamlit Search tab now use this method; `query_pathway()` is retained for pathway-specific callers (MCP tools, etc.).
+
+- **`metabokg query` CLI command** (`src/metabokg/cli/cmd_query.py`) — New subcommand for semantic or substring search across the knowledge graph. Uses vector (LanceDB) search by default; falls back to text search when the index is absent or `--text-only` is set. Supports `--k`, `--hop` (graph expansion), and `--text-only` options. Also registered as a standalone `metabokg-query` entry point.
+
+- **Phase 2d: glycan name enrichment** (`src/metabokg/enrich.py`) — New `enrich_glycans_from_tsv()` phase resolves `gl:G#####` compound nodes using `data/kegg_glycan_names.tsv` (~11 k entries). `EnrichStats` gains a `glycans_from_tsv` field.
+
+- **Phase 2e: KO enzyme name enrichment** (`src/metabokg/enrich.py`) — New `enrich_ko_enzymes_from_tsv()` phase resolves `enz:kegg:K#####` stubs using `data/kegg_ko_names.tsv` (~28 k entries). `EnrichStats` gains a `ko_enzymes_from_tsv` field.
+
+- **Bundled KEGG glycan and KO name files** (`data/kegg_glycan_names.tsv`, `data/kegg_ko_names.tsv`) — Downloaded via the extended `scripts/download_kegg_names.py` and committed to the repo for offline enrichment.
+
+### Fixed
+
+- **Streamlit semantic search returning no results** (`src/metabokg/app.py`) — `_tab_search` was calling `kg.query_pathway()` which filtered all results to `kind == "pathway"`. Switched to `kg.query()` so compound and enzyme hits are surfaced correctly. Search mode (vector / text) is now shown in the result count banner.
+
+- **`enrich_reactions_from_graph` ignoring `quiet` parameter** (`src/metabokg/enrich.py`) — The `quiet` argument was accepted but never used; added `if not quiet:` guards around progress output to match the behaviour of all other enrichment phases.
+
+- **Unused `old_name` variable** (`src/metabokg/enrich.py:enrich_from_tsv`) — Loop variable renamed to `_` since only `node_id` is used in the update path.
+
+### Changed
+
+- **`enrich.py` module docstring** — Expanded to document all 7 enrichment sub-phases (1, 2a–2e, 3) with examples for each namespace, and updated the Public API table to include the three functions that were previously undocumented.
+
+- **`_get_node_label` simplification** (`src/metabokg/app.py`) — Replaced per-kind branching with a single `_BARE_KEGG_ID` regex check (`^[RCG]\d{5}$`); enriched nodes of all kinds now display their human-readable names.
+
+- **Authorship, revision date, and license headers** added to `cmd_query.py`, `cmd_build.py`, `cli/__init__.py`, `cli/options.py`, `metabokg_viz.py`, and `enrich.py` for consistency with the rest of the codebase (`License: Elastic 2.0`).
+
+### Added
+
 - **Per-corpus colocated storage** — `metabokg-build --data <dir>` now places its SQLite database, LanceDB index, and snapshots inside `<dir>/.metabokg/` rather than the project root. The database filename is derived from the data directory prefix (`hsa_pathways` → `hsa.sqlite`, `cge_pathways` → `cge.sqlite`), eliminating ambiguity when multiple organisms are built in the same repo. Mirrors the gutenberg_kg per-book pattern.
 
 - **`resolve_db()` / `resolve_lancedb()` helpers** (`src/metabokg/cli/options.py`) — New module-level functions resolve the effective database/lancedb path via: explicit `--db` arg → `METABOKG_DB` / `METABOKG_LANCEDB` env vars → CWD fallback (`.metabokg/hsa.sqlite`). All CLI commands now call these instead of relying on Click option defaults.

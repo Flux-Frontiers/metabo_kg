@@ -35,6 +35,8 @@ End-to-end data flow from raw pathway sources to analysis, simulation, and AI-ag
 │  Phase 2a — compound names       ← kegg_compound_names.tsv                 │
 │  Phase 2b — reaction names       ← kegg_reaction_names.tsv  (overrides 1)  │
 │  Phase 2c — reaction names (fallback) ← kegg_reaction_detail.tsv           │
+│  Phase 2d — glycan names         ← kegg_glycan_names.tsv                   │
+│  Phase 2e — KO enzyme names      ← kegg_ko_names.tsv                       │
 │  Phase 3  — enzyme gene symbols  ← {org}_gene_names.tsv                    │
 └───────────────────────────────┬─────────────────────────────────────────────┘
                                 │ enriched {org}.sqlite
@@ -75,7 +77,11 @@ Fetch KEGG name reference files used during Stage 3 enrichment. Run once; re-run
 | `scripts/download_kegg_names.py` | `data/kegg_compound_names.tsv` | Phase 2a |
 | `scripts/download_kegg_names.py` | `data/kegg_reaction_names.tsv` | Phase 2b |
 | `scripts/download_kegg_reactions.py --kgml-dir data/hsa_pathways` | `data/kegg_reaction_detail.tsv` | Phase 2c |
+| `scripts/download_kegg_names.py` | `data/kegg_glycan_names.tsv` | Phase 2d |
+| `scripts/download_kegg_names.py` | `data/kegg_ko_names.tsv` | Phase 2e |
 | `scripts/download_kegg_names.py --genes hsa cge` | `data/{org}_gene_names.tsv` | Phase 3 |
+
+All five name files are downloaded in a single invocation of `download_kegg_names.py`:
 
 ```bash
 python scripts/download_kegg_names.py
@@ -110,9 +116,9 @@ python scripts/wire_kegg_enzymes.py                # re-inject CATALYZES edges a
 **Output:** `{org}.sqlite` + `lancedb/` per corpus
 
 ```bash
-metabokg-build --data data/hsa_pathways                          # hsa (default db)
-metabokg-build --data data/cge_pathways --db .metabokg/cge.sqlite
-metabokg-build --data data/icho_model   --db .metabokg/icho.sqlite
+metabokg-build --data data/hsa_pathways   # → data/hsa_pathways/.metabokg/hsa.sqlite
+metabokg-build --data data/cge_pathways   # → data/cge_pathways/.metabokg/cge.sqlite
+metabokg-build --data data/icho_model     # → data/icho_model/.metabokg/icho.sqlite
 ```
 
 **Node kinds:** `pathway · reaction · compound · enzyme`
@@ -127,19 +133,31 @@ metabokg-build --data data/icho_model   --db .metabokg/icho.sqlite
 
 ## Stage 3 — Name Enrichment
 
-Replaces bare KEGG accessions (`R00710`, `C00031`, `100689064`) with human-readable names. All phases are idempotent and run automatically during `metabokg-build`.
+Replaces bare KEGG accessions with human-readable names across all node kinds. All phases are idempotent and run automatically during `metabokg-build`.
 
-| Phase | Input | Transformation | Example |
-|-------|-------|----------------|---------|
-| 1 | CATALYZES edges in graph | reaction ← catalysing enzyme gene symbols | `R00710` → `ADH1A / ADH1B` |
-| 2a | `kegg_compound_names.tsv` | compound ← canonical KEGG name | `C00031` → `D-Glucose` |
-| 2b | `kegg_reaction_names.tsv` | reaction ← canonical KEGG name (overrides Phase 1) | `R00710` → `Acetaldehyde:NAD+ oxidoreductase` |
-| 2c | `kegg_reaction_detail.tsv` | reaction ← detail name (fallback for remaining bare IDs) | `R02736` → `ATP:pyruvate 2-O-phosphotransferase` |
-| 3 | `{org}_gene_names.tsv` | enzyme ← gene symbol | `2539` → `ADH1C` |
+| Phase | Node kind | Input TSV | Transformation | Example |
+|-------|-----------|-----------|----------------|---------|
+| 1 | reaction | *(graph-local, no file needed)* | reaction ← gene symbols of catalysing enzymes (CATALYZES edges) | `R00710` → `ADH1A / ADH1B` |
+| 2a | compound | `kegg_compound_names.tsv` | compound ← canonical KEGG name | `C00031` → `D-Glucose` |
+| 2b | reaction | `kegg_reaction_names.tsv` | reaction ← canonical KEGG name (overrides Phase 1) | `R00710` → `Acetaldehyde:NAD+ oxidoreductase` |
+| 2c | reaction | `kegg_reaction_detail.tsv` | reaction ← detail name (fallback for remaining bare IDs) | `R02736` → `ATP:pyruvate 2-O-phosphotransferase` |
+| 2d | glycan | `kegg_glycan_names.tsv` | glycan compound ← canonical KEGG glycan name | `G13086` → `Lactosylceramide` |
+| 2e | enzyme (KO) | `kegg_ko_names.tsv` | KO enzyme ← KEGG Orthology description | `K00001` → `alcohol dehydrogenase` |
+| 3 | enzyme | `{org}_gene_names.tsv` | organism enzyme ← gene symbol | `2539` → `ADH1C` |
+
+**Namespace coverage after full enrichment:**
+
+| KEGG namespace | Pattern | Enrichment phase |
+|----------------|---------|-----------------|
+| Compounds | `C#####` | Phase 2a (~18 k entries) |
+| Reactions | `R#####` | Phase 2b + 2c (~12 k entries) |
+| Glycans | `G#####` | Phase 2d (~11 k entries) |
+| KO orthologues | `K#####` | Phase 2e (~28 k entries) |
+| Organism genes | `{org}:{id}` | Phase 3 (per-organism TSV) |
 
 ```bash
 # Run standalone on an existing database
-metabokg enrich --db .metabokg/hsa.sqlite
+metabokg enrich --db data/hsa_pathways/.metabokg/hsa.sqlite
 
 # Or skip enrichment during build
 metabokg-build --data data/hsa_pathways --no-enrich
@@ -252,7 +270,7 @@ metabokg-mcp [--transport stdio|sse] [--db PATH]
 ```python
 from metabokg import MetaKG
 
-with MetaKG(db_path=".metabokg/hsa.sqlite") as kg:
+with MetaKG(db_path="data/hsa_pathways/.metabokg/hsa.sqlite") as kg:
     kg.build(data_dir="data/hsa_pathways", wipe=True)
     result = kg.query_pathway("glycolysis")
     fba    = kg.simulate_fba("pwy:kegg:hsa00010")
@@ -279,6 +297,6 @@ metabokg-analyze --output analysis.md
 metabokg-simulate fba --pathway hsa00010
 
 # Stage 6 — explore
-metabokg-viz --db data/hsa_pathways/.metabokg/hsa.sqlite
+metabokg-viz   # default: data/hsa_pathways/.metabokg/hsa.sqlite
 metabokg-mcp
 ```
