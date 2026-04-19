@@ -85,20 +85,22 @@ metabokg-simulate fba --pathway cge00010 --output cho_glycolysis_fba.md
 metabokg-viz --port 8500
 ```
 
-## Potential Collaboration
+## Licensing & Deployment
+
+MetaboKG is released under the **Elastic License 2.0** — free to use, modify,
+and deploy internally for academic and non-commercial purposes, with source
+available on GitHub. Commercial redistribution requires a separate agreement.
 
 We would welcome the chance to:
 
-1. **Demonstrate** MetaboKG on a CHO-specific pathway or a current analysis
-   your group is running — e.g., lactate metabolism, glutaminolysis, or
-   nucleotide synthesis
-2. **Co-develop** a CHO-specific kinetics layer using AMBIC data or published
-   CHO flux measurements
-3. **Explore co-authorship** on a methods/application note targeting
-   *Metabolic Engineering*, *Bioinformatics*, or *Biotechnology & Bioengineering*
+1. **License MetaboKG to JHMI / AMBIC** for internal research and teaching use
+2. **Deploy it as a shared resource** for the lab or department — either as a
+   local MCP server accessible to lab members' AI assistants, or as a hosted
+   Streamlit instance on your infrastructure
+3. **Demonstrate** the system on a live CHO pathway relevant to your current
+   work — lactate metabolism, glutaminolysis, or nucleotide synthesis
 
-The project is PolyForm Noncommercial licensed (free for academic research),
-with a GitHub repository at:
+GitHub repository:
 https://github.com/Flux-Frontiers/metabo_kg
 
 I would be happy to schedule a 30-minute call or Zoom to walk through a live
