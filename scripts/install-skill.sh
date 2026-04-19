@@ -251,8 +251,8 @@ echo ""
 
 if [ "$DO_CLINE" = "1" ]; then
     CLINE_CMD_DIR="${TARGET_REPO}/.claude/commands"
-    CLINE_CMD_FILE="${CLINE_CMD_DIR}/metabokg.md"
-    _LOCAL_CMD="${REPO_ROOT:+${REPO_ROOT}/.claude/commands/metabokg.md}"
+    CLINE_CMD_FILE="${CLINE_CMD_DIR}/metabokg-build.md"
+    _LOCAL_CMD="${REPO_ROOT:+${REPO_ROOT}/.claude/commands/metabokg-build.md}"
 
     _exec mkdir -p "$CLINE_CMD_DIR"
 
@@ -264,12 +264,12 @@ if [ "$DO_CLINE" = "1" ]; then
     else
         # Download from GitHub
         if [ -n "$DRY_RUN" ]; then
-            echo "  [dry-run] would download ${RAW_BASE}/.claude/commands/metabokg.md → ${CLINE_CMD_FILE}"
+            echo "  [dry-run] would download ${RAW_BASE}/.claude/commands/metabokg-build.md → ${CLINE_CMD_FILE}"
         elif command -v curl &>/dev/null; then
-            curl -fsSL "${RAW_BASE}/.claude/commands/metabokg.md" -o "$CLINE_CMD_FILE"
+            curl -fsSL "${RAW_BASE}/.claude/commands/metabokg-build.md" -o "$CLINE_CMD_FILE"
             echo "  ✓ Downloaded → ${CLINE_CMD_FILE}"
         elif command -v wget &>/dev/null; then
-            wget -q "${RAW_BASE}/.claude/commands/metabokg.md" -O "$CLINE_CMD_FILE"
+            wget -q "${RAW_BASE}/.claude/commands/metabokg-build.md" -O "$CLINE_CMD_FILE"
             echo "  ✓ Downloaded → ${CLINE_CMD_FILE}"
         else
             echo "  ⚠ Neither curl nor wget found — skipping Cline command install"
