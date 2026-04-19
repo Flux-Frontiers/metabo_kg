@@ -5,6 +5,12 @@
 *.sqlite-shm
 *.sqlite-wal
 
+# Downloaded KEGG/BioModels data — regenerate via download scripts
+data/icho_model/*.xml
+
+# Auto-timestamped simulation outputs — keep named outputs (cho_*.md)
+metabokg-simulate-*.md
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

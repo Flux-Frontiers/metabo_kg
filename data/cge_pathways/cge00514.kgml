@@ -1,0 +1,238 @@
+<?xml version="1.0"?>
+<!DOCTYPE pathway SYSTEM "https://www.kegg.jp/kegg/xml/KGML_v0.7.2_.dtd">
+<!-- Creation date: Jul 20, 2020 11:28:48 +0900 (GMT+9) -->
+<pathway name="path:cge00514" org="cge" number="00514"
+         title="Other types of O-glycan biosynthesis"
+         image="https://www.kegg.jp/kegg/pathway/cge/cge00514.png"
+         link="https://www.kegg.jp/kegg-bin/show_pathway?cge00514">
+    <entry id="2" name="path:cge00514" type="map"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge00514">
+        <graphics name="TITLE:Other types of O-glycan biosynthesis" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="roundrectangle" x="207" y="58" width="333" height="25"/>
+    </entry>
+    <entry id="3" name="cge:100764465 cge:100774081" type="gene" reaction="rn:R03380"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100764465+cge:100774081">
+        <graphics name="Colgalt2..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="163,591,193,591"/>
+    </entry>
+    <entry id="4" name="cge:100759864" type="gene" reaction="rn:R09316"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100759864">
+        <graphics name="B3glct" fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="283,287,298,272"/>
+    </entry>
+    <entry id="5" name="ko:K13646" type="ortholog" reaction="rn:R04491"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K13646">
+        <graphics name="K13646" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="92,591,122,591"/>
+    </entry>
+    <entry id="6" name="cge:100689187 cge:100689389 cge:100763756" type="gene" reaction="rn:R09297 rn:R09298"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689187+cge:100689389+cge:100763756">
+        <graphics name="St3gal3..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="114,243,144,243"/>
+    </entry>
+    <entry id="7" name="cge:100762397 cge:100762875 cge:100771257" type="gene" reaction="rn:R09296"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100762397+cge:100762875+cge:100771257">
+        <graphics name="Lfng..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="285,243,300,258"/>
+    </entry>
+    <entry id="8" name="cge:100689346 cge:100689430 cge:100689434" type="gene" reaction="rn:R09299"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689346+cge:100689430+cge:100689434">
+        <graphics name="B4galt3..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="195,243,225,243"/>
+    </entry>
+    <entry id="9" name="cge:100753417 cge:100758336 cge:100760260 cge:100765129" type="gene" reaction="rn:R09295"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100753417+cge:100758336+cge:100760260+cge:100765129">
+        <graphics name="Pofut1..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="349,266,379,266"/>
+    </entry>
+    <entry id="10" name="cge:100760146" type="gene" reaction="rn:R12637"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100760146">
+        <graphics name="Xxylt1" fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="88,494,118,494"/>
+    </entry>
+    <entry id="11" name="cge:100760325" type="gene" reaction="rn:R09315"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100760325">
+        <graphics name="Poglut1" fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="221,494,251,494"/>
+    </entry>
+    <entry id="12" name="cge:100758512 cge:100760543" type="gene" reaction="rn:R09290"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100758512+cge:100760543">
+        <graphics name="Gxylt2..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="153,494,183,494"/>
+    </entry>
+    <entry id="13" name="cge:100757071 cge:100768670" type="gene" reaction="rn:R09304"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100757071+cge:100768670">
+        <graphics name="Eogt..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="113,147,143,147"/>
+    </entry>
+    <entry id="14" name="ko:K05538 ko:K10968 ko:K10969" type="ortholog" reaction="rn:R09303"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K05538+K10968+K10969">
+        <graphics name="K05538..." fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="550,151,580,151"/>
+    </entry>
+    <entry id="15" name="ko:K05538 ko:K10968 ko:K10969" type="ortholog" reaction="rn:R09302"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K05538+K10968+K10969">
+        <graphics name="K05538..." fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="623,151,653,151"/>
+    </entry>
+    <entry id="16" name="ko:K10967" type="ortholog" reaction="rn:R09301"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K10967">
+        <graphics name="K10967" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="695,151,725,151"/>
+    </entry>
+    <entry id="17" name="ko:K10967" type="ortholog" reaction="rn:R09300"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K10967">
+        <graphics name="K10967" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="769,151,799,151"/>
+    </entry>
+    <entry id="18" name="cge:100755033 cge:100764752" type="gene" reaction="rn:R07620"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100755033+cge:100764752">
+        <graphics name="Pomt1..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="841,151,871,151"/>
+    </entry>
+    <entry id="19" name="ko:K10970" type="ortholog"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K10970">
+        <graphics name="K10970" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="550,175,580,175"/>
+    </entry>
+    <entry id="20" name="ko:K10970" type="ortholog"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K10970">
+        <graphics name="K10970" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="623,175,653,175"/>
+    </entry>
+    <entry id="21" name="ko:K10967" type="ortholog" reaction="rn:R09301"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K10967">
+        <graphics name="K10967" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="695,175,725,175"/>
+    </entry>
+    <entry id="22" name="ko:K10967" type="ortholog" reaction="rn:R09300"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K10967">
+        <graphics name="K10967" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="769,175,799,175"/>
+    </entry>
+    <entry id="23" name="cge:100755033 cge:100764752" type="gene" reaction="rn:R07620"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100755033+cge:100764752">
+        <graphics name="Pomt1..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="841,175,871,175"/>
+    </entry>
+    <entry id="26" name="ko:K10967" type="ortholog" reaction="rn:R09301"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K10967">
+        <graphics name="K10967" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="695,200,725,200"/>
+    </entry>
+    <entry id="27" name="ko:K10967" type="ortholog" reaction="rn:R09300"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K10967">
+        <graphics name="K10967" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="769,200,799,200"/>
+    </entry>
+    <entry id="28" name="cge:100755033 cge:100764752" type="gene" reaction="rn:R07620"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100755033+cge:100764752">
+        <graphics name="Pomt1..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="841,200,871,200"/>
+    </entry>
+    <entry id="30" name="ko:K10971" type="ortholog"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K10971">
+        <graphics name="K10971" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="548,274,564,258"/>
+    </entry>
+    <entry id="31" name="ko:K10967" type="ortholog" reaction="rn:R09301"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K10967">
+        <graphics name="K10967" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="611,251,641,251"/>
+    </entry>
+    <entry id="32" name="ko:K10967" type="ortholog" reaction="rn:R09300"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K10967">
+        <graphics name="K10967" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="685,251,715,251"/>
+    </entry>
+    <entry id="33" name="cge:100755033 cge:100764752" type="gene" reaction="rn:R07620"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100755033+cge:100764752">
+        <graphics name="Pomt1..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="757,251,787,251"/>
+    </entry>
+    <entry id="34" name="ko:K20781" type="ortholog"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K20781">
+        <graphics name="K20781" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="754,356,784,356"/>
+    </entry>
+    <entry id="36" name="ko:K20782" type="ortholog"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K20782">
+        <graphics name="K20782" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="754,499,784,499"/>
+    </entry>
+    <entry id="39" name="ko:K20782" type="ortholog"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K20782">
+        <graphics name="K20782" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="754,462,784,462"/>
+    </entry>
+    <entry id="40" name="ko:K20783" type="ortholog"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K20783">
+        <graphics name="K20783" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="683,499,713,499"/>
+    </entry>
+    <entry id="41" name="ko:K20783" type="ortholog"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K20783">
+        <graphics name="K20783" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="683,462,713,462"/>
+    </entry>
+    <entry id="42" name="ko:K20784" type="ortholog"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K20784">
+        <graphics name="K20784" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="614,499,644,499"/>
+    </entry>
+    <entry id="43" name="ko:K20784" type="ortholog"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K20784">
+        <graphics name="K20784" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="614,462,644,462"/>
+    </entry>
+    <entry id="45" name="ko:K20782" type="ortholog"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K20782">
+        <graphics name="K20782" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="754,428,784,428"/>
+    </entry>
+    <entry id="46" name="ko:K20783" type="ortholog"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K20783">
+        <graphics name="K20783" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="683,428,713,428"/>
+    </entry>
+    <entry id="48" name="ko:K20782" type="ortholog"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K20782">
+        <graphics name="K20782" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="754,391,784,391"/>
+    </entry>
+    <entry id="54" name="cge:100762397 cge:100762875 cge:100771257" type="gene" reaction="rn:R09296"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100762397+cge:100762875+cge:100771257">
+        <graphics name="Lfng..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="118,352,133,367"/>
+    </entry>
+    <entry id="55" name="cge:100753417 cge:100758336 cge:100760260 cge:100765129" type="gene" reaction="rn:R09295"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100753417+cge:100758336+cge:100760260+cge:100765129">
+        <graphics name="Pofut1..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="182,375,212,375"/>
+    </entry>
+    <entry id="56" name="cge:100751243 cge:100761169 cge:100770484 cge:107978234" type="gene" reaction="rn:R05908"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751243+cge:100761169+cge:100770484+cge:107978234">
+        <graphics name="C1galt1c1..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="608,654,618,644"/>
+    </entry>
+    <entry id="57" name="cge:100750837 cge:100751126 cge:100753226 cge:100757219 cge:100758359 cge:100759781 cge:100761752 cge:100762043 cge:100763868 cge:100764127 cge:100764829 cge:100765247 cge:100766936 cge:100767393 cge:100767525 cge:100767659 cge:100768523 cge:100768831 cge:100772146 cge:100773797" type="gene" reaction="rn:R05907"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100750837+cge:100751126+cge:100753226+cge:100757219+cge:100758359+cge:100759781+cge:100761752+cge:100762043+cge:100763868+cge:100764127+cge:100764829+cge:100765247+cge:100766936+cge:100767393+cge:100767525+cge:100767659+cge:100768523+cge:100768831+cge:100772146+cge:100773797">
+        <graphics name="Galnt17..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="681,639,701,639"/>
+    </entry>
+    <entry id="58" name="ko:K23840" type="ortholog" reaction="rn:R12482"
+        link="https://www.kegg.jp/dbget-bin/www_bget?K23840">
+        <graphics name="K23840" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="line" coords="550,655,570,655"/>
+    </entry>
+    <entry id="59" name="cge:100751243 cge:100761169 cge:100770484 cge:107978234" type="gene" reaction="rn:R05908"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751243+cge:100761169+cge:100770484+cge:107978234">
+        <graphics name="C1galt1c1..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="550,751,560,741"/>
+    </entry>
+    <entry id="60" name="cge:100750837 cge:100751126 cge:100753226 cge:100757219 cge:100758359 cge:100759781 cge:100761752 cge:100762043 cge:100763868 cge:100764127 cge:100764829 cge:100765247 cge:100766936 cge:100767393 cge:100767525 cge:100767659 cge:100768523 cge:100768831 cge:100772146 cge:100773797" type="gene" reaction="rn:R05907"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100750837+cge:100751126+cge:100753226+cge:100757219+cge:100758359+cge:100759781+cge:100761752+cge:100762043+cge:100763868+cge:100764127+cge:100764829+cge:100765247+cge:100766936+cge:100767393+cge:100767525+cge:100767659+cge:100768523+cge:100768831+cge:100772146+cge:100773797">
+        <graphics name="Galnt17..." fgcolor="#66CC66" bgcolor="#FFFFFF"
+             type="line" coords="623,736,643,736"/>
+    </entry>
+</pathway>

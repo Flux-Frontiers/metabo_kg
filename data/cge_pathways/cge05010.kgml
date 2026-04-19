@@ -1,0 +1,1223 @@
+<?xml version="1.0"?>
+<!DOCTYPE pathway SYSTEM "https://www.kegg.jp/kegg/xml/KGML_v0.7.2_.dtd">
+<!-- Creation date: Aug 11, 2021 19:14:45 +0900 (GMT+9) -->
+<pathway name="path:cge05010" org="cge" number="05010"
+         title="Alzheimer disease"
+         image="https://www.kegg.jp/kegg/pathway/cge/cge05010.png"
+         link="https://www.kegg.jp/kegg-bin/show_pathway?cge05010">
+    <entry id="10" name="cge:103161443" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:103161443">
+        <graphics name="Psenen" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="508" y="375" width="46" height="17"/>
+    </entry>
+    <entry id="11" name="cge:100752237 cge:100770550" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100752237+cge:100770550">
+        <graphics name="Psen2..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="554" y="375" width="46" height="17"/>
+    </entry>
+    <entry id="12" name="cge:100761836" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100761836">
+        <graphics name="Ncstn" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="508" y="392" width="46" height="17"/>
+    </entry>
+    <entry id="13" name="cge:100760965 cge:100772143 cge:113835209" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100760965+cge:100772143+cge:113835209">
+        <graphics name="Aph1a..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="554" y="392" width="46" height="17"/>
+    </entry>
+    <entry id="15" name="cge:100762079 cge:100764950" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100762079+cge:100764950">
+        <graphics name="Bace1..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="528" y="325" width="46" height="17"/>
+    </entry>
+    <entry id="16" name="cge:100684971 cge:100772891" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100684971+cge:100772891">
+        <graphics name="Adam17..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="526" y="222" width="46" height="17"/>
+    </entry>
+    <entry id="21" name="cge:100764780" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100764780">
+        <graphics name="Tnf" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="257" y="1378" width="46" height="17"/>
+    </entry>
+    <entry id="26" name="cge:100689222" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689222">
+        <graphics name="App" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="407" y="270" width="46" height="17"/>
+    </entry>
+    <entry id="31" name="path:cge05010" type="map"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge05010">
+        <graphics name="TITLE:Alzheimer disease" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="roundrectangle" x="132" y="58" width="184" height="25"/>
+    </entry>
+    <entry id="32" name="cge:100689370 cge:103160479 cge:113833881" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689370+cge:103160479+cge:113833881">
+        <graphics name="100689370..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1127" y="525" width="46" height="17"/>
+    </entry>
+    <entry id="33" name="cge:100759746" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100759746">
+        <graphics name="Casp4" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1214" y="693" width="46" height="17"/>
+    </entry>
+    <entry id="34" name="cge:100689061" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689061">
+        <graphics name="Casp3" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1202" y="525" width="46" height="17"/>
+    </entry>
+    <entry id="35" name="cge:100751857 cge:100754043 cge:100757098 cge:100764460 cge:100768478 cge:100773626 cge:103160806 cge:103164112 cge:107977792" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751857+cge:100754043+cge:100757098+cge:100764460+cge:100768478+cge:100773626+cge:103160806+cge:103164112+cge:107977792">
+        <graphics name="100751857..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1029" y="508" width="46" height="17"/>
+    </entry>
+    <entry id="36" name="cge:100758500" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100758500">
+        <graphics name="100758500" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1029" y="546" width="46" height="17"/>
+    </entry>
+    <entry id="40" name="cge:100689328 cge:100689361 cge:100750797 cge:100751523 cge:100752642 cge:100754039 cge:100754222 cge:100754223 cge:100754444 cge:100754681 cge:100755007 cge:100755602 cge:100755890 cge:100757242 cge:100757245 cge:100757306 cge:100757431 cge:100757916 cge:100760870 cge:100761076 cge:100761333 cge:100762129 cge:100762893 cge:100764614 cge:100764988 cge:100765100 cge:100765445 cge:100766442 cge:100766611 cge:100766693 cge:100766880 cge:100767451 cge:100768067 cge:100768089 cge:100770445 cge:100770579 cge:100770644 cge:100772543 cge:100773563 cge:100773999 cge:100774095 cge:103160345 cge:113830680 cge:118238483 cge:3979178 cge:3979179 cge:3979180 cge:3979181 cge:3979183 cge:3979184 cge:3979190" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689328+cge:100689361+cge:100750797+cge:100751523+cge:100752642+cge:100754039+cge:100754222+cge:100754223+cge:100754444+cge:100754681+cge:100755007+cge:100755602+cge:100755890+cge:100757242+cge:100757245+cge:100757306+cge:100757431+cge:100757916+cge:100760870+cge:100761076+cge:100761333+cge:100762129+cge:100762893+cge:100764614+cge:100764988+cge:100765100+cge:100765445+cge:100766442+cge:100766611+cge:100766693+cge:100766880+cge:100767451+cge:100768067+cge:100768089+cge:100770445+cge:100770579+cge:100770644+cge:100772543+cge:100773563+cge:100773999+cge:100774095+cge:103160345+cge:113830680+cge:118238483+cge:3979178+cge:3979179+cge:3979180+cge:3979181+cge:3979183+cge:3979184+cge:3979190">
+        <graphics name="Ndufa1..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="828" y="269" width="46" height="17"/>
+    </entry>
+    <entry id="41" name="cge:100689402 cge:100750732 cge:100771246 cge:100774657" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689402+cge:100750732+cge:100771246+cge:100774657">
+        <graphics name="Sdhc..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="828" y="298" width="46" height="17"/>
+    </entry>
+    <entry id="42" name="cge:100750822 cge:100759002 cge:100762374 cge:100763175 cge:100765588 cge:100766032 cge:100766805 cge:100768142 cge:100771461 cge:100774773 cge:3979182" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100750822+cge:100759002+cge:100762374+cge:100763175+cge:100765588+cge:100766032+cge:100766805+cge:100768142+cge:100771461+cge:100774773+cge:3979182">
+        <graphics name="100750822..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="828" y="326" width="46" height="17"/>
+    </entry>
+    <entry id="43" name="cge:100752739 cge:100754287 cge:100754380 cge:100755733 cge:100756936 cge:100760824 cge:100762406 cge:100763024 cge:100766108 cge:100770018 cge:100770431 cge:100771114 cge:100771541 cge:100772366 cge:100774535 cge:103162776 cge:113831166 cge:3979187 cge:3979188" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100752739+cge:100754287+cge:100754380+cge:100755733+cge:100756936+cge:100760824+cge:100762406+cge:100763024+cge:100766108+cge:100770018+cge:100770431+cge:100771114+cge:100771541+cge:100772366+cge:100774535+cge:103162776+cge:113831166+cge:3979187+cge:3979188">
+        <graphics name="Atp5mc1..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="828" y="384" width="46" height="17"/>
+    </entry>
+    <entry id="44" name="cge:100755207 cge:100756118 cge:100756540 cge:100757022 cge:100757101 cge:100759281 cge:100760019 cge:100762701 cge:100764001 cge:100764866 cge:100765757 cge:100766809 cge:100767292 cge:100767351 cge:100768321 cge:100768457 cge:100770670 cge:100772782 cge:100774785 cge:103158861 cge:103161269 cge:113834565 cge:113837268 cge:113837643 cge:3979185 cge:3979186 cge:3979189" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100755207+cge:100756118+cge:100756540+cge:100757022+cge:100757101+cge:100759281+cge:100760019+cge:100762701+cge:100764001+cge:100764866+cge:100765757+cge:100766809+cge:100767292+cge:100767351+cge:100768321+cge:100768457+cge:100770670+cge:100772782+cge:100774785+cge:103158861+cge:103161269+cge:113834565+cge:113837268+cge:113837643+cge:3979185+cge:3979186+cge:3979189">
+        <graphics name="100755207..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="828" y="356" width="46" height="17"/>
+    </entry>
+    <entry id="45" name="cge:100751569" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751569">
+        <graphics name="Ryr3" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="716" y="680" width="46" height="17"/>
+    </entry>
+    <entry id="46" name="cge:100751775 cge:100758965 cge:100764450" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751775+cge:100758965+cge:100764450">
+        <graphics name="100751775..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="716" y="710" width="46" height="17"/>
+    </entry>
+    <entry id="47" name="cge:100751820 cge:100756356 cge:100763714" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751820+cge:100756356+cge:100763714">
+        <graphics name="Atp2a2..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="872" y="651" width="46" height="17"/>
+    </entry>
+    <entry id="48" name="cge:100752237 cge:100770550" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100752237+cge:100770550">
+        <graphics name="Psen2..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="808" y="651" width="46" height="17"/>
+    </entry>
+    <entry id="49" name="cge:100753955 cge:100755522 cge:100763614 cge:100773423" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100753955+cge:100755522+cge:100763614+cge:100773423">
+        <graphics name="Chrm3..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="407" y="593" width="46" height="17"/>
+    </entry>
+    <entry id="50" name="cge:100689066" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689066">
+        <graphics name="Gnaq" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="479" y="593" width="46" height="17"/>
+    </entry>
+    <entry id="51" name="cge:100751979 cge:100760134 cge:100760731 cge:100770957" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751979+cge:100760134+cge:100760731+cge:100770957">
+        <graphics name="Plcb1..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="551" y="593" width="46" height="17"/>
+    </entry>
+    <entry id="52" name="cpd:C01245" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C01245">
+        <graphics name="C01245" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="554" y="635" width="8" height="8"/>
+    </entry>
+    <entry id="57" name="cge:100750615 cge:100758804 cge:100764315 cge:100770880 cge:118239276" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100750615+cge:100758804+cge:100764315+cge:100770880+cge:118239276">
+        <graphics name="Grin2d..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="407" y="692" width="46" height="17"/>
+    </entry>
+    <entry id="58" name="cge:100754788 cge:100757994 cge:100765508 cge:100772497" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100754788+cge:100757994+cge:100765508+cge:100772497">
+        <graphics name="Cacna1c..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="407" y="727" width="46" height="17"/>
+    </entry>
+    <entry id="59" name="cpd:C00076" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C00076">
+        <graphics name="C00076" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="537" y="690" width="8" height="8"/>
+    </entry>
+    <entry id="61" name="cge:100757689" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100757689">
+        <graphics name="Hsd17b10" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="901" y="398" width="46" height="17"/>
+    </entry>
+    <entry id="62" name="cpd:C00076" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C00076">
+        <graphics name="C00076" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="873" y="609" width="8" height="8"/>
+    </entry>
+    <entry id="67" name="cge:100758636 cge:100771239" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100758636+cge:100771239">
+        <graphics name="Capn1..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="527" y="962" width="46" height="17"/>
+    </entry>
+    <entry id="68" name="cge:100773660" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100773660">
+        <graphics name="Cdk5r1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="527" y="1013" width="46" height="17"/>
+    </entry>
+    <entry id="69" name="cge:100773660" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100773660">
+        <graphics name="Cdk5r1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="616" y="1013" width="46" height="17"/>
+    </entry>
+    <entry id="70" name="cge:100762907" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100762907">
+        <graphics name="Cdk5" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="616" y="1053" width="46" height="17"/>
+    </entry>
+    <entry id="71" name="cge:100765120" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100765120">
+        <graphics name="100765120" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="729" y="1033" width="46" height="17"/>
+    </entry>
+    <entry id="85" name="cge:100762537 cge:100765017" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100762537+cge:100765017">
+        <graphics name="Fas..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="407" y="527" width="46" height="17"/>
+    </entry>
+    <entry id="86" name="cge:100774599" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100774599">
+        <graphics name="Fadd" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="479" y="527" width="46" height="17"/>
+    </entry>
+    <entry id="87" name="cge:100689369" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689369">
+        <graphics name="Casp8" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="551" y="527" width="46" height="17"/>
+    </entry>
+    <entry id="88" name="cge:100754606" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100754606">
+        <graphics name="Bid" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="623" y="527" width="46" height="17"/>
+    </entry>
+    <entry id="96" name="cge:100753149 cge:100759514" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100753149+cge:100759514">
+        <graphics name="Mapk3..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="718" y="597" width="46" height="17"/>
+    </entry>
+    <entry id="101" name="path:cge00190" type="map"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge00190">
+        <graphics name="Oxidative phosphorylation" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="roundrectangle" x="738" y="207" width="113" height="34"/>
+    </entry>
+    <entry id="102" name="path:cge04210" type="map"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge04210">
+        <graphics name="Apoptosis" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="roundrectangle" x="1204" y="496" width="113" height="25"/>
+    </entry>
+    <entry id="103" name="path:cge04020" type="map"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge04020">
+        <graphics name="Calcium signaling pathway" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="roundrectangle" x="656" y="744" width="113" height="34"/>
+    </entry>
+    <entry id="107" name="cge:100758127" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100758127">
+        <graphics name="Nos1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="699" y="880" width="46" height="17"/>
+    </entry>
+    <entry id="109" name="cpd:C00533" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C00533">
+        <graphics name="C00533" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="752" y="925" width="8" height="8"/>
+    </entry>
+    <entry id="111" name="cpd:C16845" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C16845">
+        <graphics name="C16845" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="824" y="925" width="8" height="8"/>
+    </entry>
+    <entry id="118" name="cge:100765343" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100765343">
+        <graphics name="Eif2ak3" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="788" y="735" width="46" height="17"/>
+    </entry>
+    <entry id="119" name="cge:100750680" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100750680">
+        <graphics name="Ern1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="843" y="735" width="46" height="17"/>
+    </entry>
+    <entry id="120" name="cge:100772173" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100772173">
+        <graphics name="Atf6" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="897" y="735" width="46" height="17"/>
+    </entry>
+    <entry id="129" name="cge:100773810 cge:113837959" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100773810+cge:113837959">
+        <graphics name="Apoe..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="327" y="496" width="46" height="17"/>
+    </entry>
+    <entry id="133" name="cge:100751814 cge:100757500 cge:100762749 cge:100765281 cge:100766751 cge:100767046 cge:100771772" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751814+cge:100757500+cge:100762749+cge:100765281+cge:100766751+cge:100767046+cge:100771772">
+        <graphics name="100751814..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="869" y="554" width="46" height="17"/>
+    </entry>
+    <entry id="134" name="cge:100751412 cge:100752571 cge:100754314 cge:100764987 cge:100773706" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751412+cge:100752571+cge:100754314+cge:100764987+cge:100773706">
+        <graphics name="Ppp3cc..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="940" y="553" width="46" height="17"/>
+    </entry>
+    <entry id="135" name="cge:100760426" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100760426">
+        <graphics name="Bad" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="964" y="517" width="46" height="17"/>
+    </entry>
+    <entry id="139" name="cge:100763752" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100763752">
+        <graphics name="Ide" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="201" y="421" width="46" height="17"/>
+    </entry>
+    <entry id="140" name="cge:100756999" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100756999">
+        <graphics name="Mme" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="201" y="457" width="46" height="17"/>
+    </entry>
+    <entry id="143" name="cge:100760848" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100760848">
+        <graphics name="Apbb1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="485" y="270" width="46" height="17"/>
+    </entry>
+    <entry id="147" name="cge:100754427" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100754427">
+        <graphics name="Lrp1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="407" y="487" width="46" height="17"/>
+    </entry>
+    <entry id="148" name="cge:100689191" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689191">
+        <graphics name="Lpl" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="327" y="479" width="46" height="17"/>
+    </entry>
+    <entry id="154" name="cge:100736557 cge:100756490 cge:100757828 cge:100759100 cge:100766073 cge:100772354 cge:113837666" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100736557+cge:100756490+cge:100757828+cge:100759100+cge:100766073+cge:100772354+cge:113837666">
+        <graphics name="Gapdh..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="485" y="296" width="46" height="17"/>
+    </entry>
+    <entry id="157" name="cge:103163014" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:103163014">
+        <graphics name="Nae1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="485" y="244" width="46" height="17"/>
+    </entry>
+    <entry id="159" name="cge:100689061" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689061">
+        <graphics name="Casp3" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="778" y="968" width="46" height="17"/>
+    </entry>
+    <entry id="160" name="cge:100766857" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100766857">
+        <graphics name="Casp7" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="778" y="991" width="46" height="17"/>
+    </entry>
+    <entry id="163" name="cge:100760865" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100760865">
+        <graphics name="Gsk3b" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="693" y="960" width="46" height="17"/>
+    </entry>
+    <entry id="164" name="cge:100774767" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100774767">
+        <graphics name="Snca" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="157" y="711" width="46" height="17"/>
+    </entry>
+    <entry id="168" name="cge:100775079" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100775079">
+        <graphics name="Il1b" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="257" y="1343" width="46" height="17"/>
+    </entry>
+    <entry id="174" name="cpd:C00076" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C00076">
+        <graphics name="C00076" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="810" y="608" width="8" height="8"/>
+    </entry>
+    <entry id="179" name="cpd:C00027" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C00027">
+        <graphics name="C00027" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="296" y="1298" width="8" height="8"/>
+    </entry>
+    <entry id="180" name="cpd:C00070" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C00070">
+        <graphics name="C00070" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="263" y="1242" width="8" height="8"/>
+    </entry>
+    <entry id="181" name="cpd:C14818" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C14818">
+        <graphics name="C14818" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="263" y="1272" width="8" height="8"/>
+    </entry>
+    <entry id="186" name="cge:100752666 cge:100764263" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100752666+cge:100764263">
+        <graphics name="100752666..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="592" y="347" width="46" height="17"/>
+    </entry>
+    <entry id="191" name="cge:100765120" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100765120">
+        <graphics name="100765120" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="676" y="269" width="46" height="17"/>
+    </entry>
+    <entry id="197" name="cge:100762099" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100762099">
+        <graphics name="Traf2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="841" y="832" width="46" height="17"/>
+    </entry>
+    <entry id="198" name="cge:100752376" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100752376">
+        <graphics name="Map3k5" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="924" y="832" width="46" height="17"/>
+    </entry>
+    <entry id="199" name="cge:100754361 cge:100764964 cge:100771734" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100754361+cge:100764964+cge:100771734">
+        <graphics name="100754361..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1091" y="832" width="46" height="17"/>
+    </entry>
+    <entry id="200" name="path:cge04141" type="map"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge04141">
+        <graphics name="Protein processing in endoplasmic reticulum" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="roundrectangle" x="1069" y="727" width="151" height="34"/>
+    </entry>
+    <entry id="203" name="cpd:C04549" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C04549">
+        <graphics name="C04549" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="1207" y="1396" width="8" height="8"/>
+    </entry>
+    <entry id="209" name="cge:100755421" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100755421">
+        <graphics name="Mtor" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="785" y="1362" width="46" height="17"/>
+    </entry>
+    <entry id="210" name="cge:100759097 cge:100772932" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100759097+cge:100772932">
+        <graphics name="Ulk2..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="880" y="1362" width="46" height="17"/>
+    </entry>
+    <entry id="211" name="cge:100753698" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100753698">
+        <graphics name="Atg13" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="880" y="1379" width="46" height="17"/>
+    </entry>
+    <entry id="212" name="cge:100763340" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100763340">
+        <graphics name="Rb1cc1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="926" y="1379" width="46" height="17"/>
+    </entry>
+    <entry id="213" name="cge:100763923" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100763923">
+        <graphics name="Atg101" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="926" y="1362" width="46" height="17"/>
+    </entry>
+    <entry id="214" name="cge:100758391 cge:100760198" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100758391+cge:100760198">
+        <graphics name="Atg2a..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1278" y="1362" width="46" height="17"/>
+    </entry>
+    <entry id="215" name="cge:100750963 cge:100759282" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100750963+cge:100759282">
+        <graphics name="Wipi1..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1278" y="1397" width="46" height="17"/>
+    </entry>
+    <entry id="216" name="cge:100753101" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100753101">
+        <graphics name="Ambra1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1004" y="1327" width="46" height="17"/>
+    </entry>
+    <entry id="217" name="cge:100751252 cge:100762045" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751252+cge:100762045">
+        <graphics name="Becn2..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1089" y="1380" width="46" height="17"/>
+    </entry>
+    <entry id="218" name="cge:100769548" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100769548">
+        <graphics name="Pik3r4" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1089" y="1397" width="46" height="17"/>
+    </entry>
+    <entry id="219" name="cge:100765741" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100765741">
+        <graphics name="Pik3c3" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1135" y="1397" width="46" height="17"/>
+    </entry>
+    <entry id="220" name="cge:100753411" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100753411">
+        <graphics name="Atg14" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1135" y="1363" width="46" height="17"/>
+    </entry>
+    <entry id="222" name="path:cge04140" type="map"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge04140">
+        <graphics name="Autophagy - animal" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="roundrectangle" x="905" y="1311" width="89" height="25"/>
+    </entry>
+    <entry id="235" name="cge:100754421" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100754421">
+        <graphics name="Map2k7" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1006" y="832" width="46" height="17"/>
+    </entry>
+    <entry id="240" name="cge:100761915" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100761915">
+        <graphics name="Eif2s1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="789" y="875" width="46" height="17"/>
+    </entry>
+    <entry id="241" name="cge:100689386" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689386">
+        <graphics name="Atf4" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="924" y="875" width="46" height="17"/>
+    </entry>
+    <entry id="247" name="cge:100751412 cge:100752571 cge:100754314 cge:100764987 cge:100773706" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751412+cge:100752571+cge:100754314+cge:100764987+cge:100773706">
+        <graphics name="Ppp3cc..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="635" y="880" width="46" height="17"/>
+    </entry>
+    <entry id="257" name="cge:100689219 cge:100763800 cge:100764190 cge:100773258 cge:100774173 cge:100774201 cge:113837287 cge:113837894" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689219+cge:100763800+cge:100764190+cge:100773258+cge:100774173+cge:100774201+cge:113837287+cge:113837894">
+        <graphics name="Klc1..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1104" y="1148" width="46" height="17"/>
+    </entry>
+    <entry id="260" name="cge:100682526 cge:100682527 cge:100682528 cge:100753526 cge:100755907 cge:100762888 cge:100765599 cge:100767630 cge:100767686 cge:113832602" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100682526+cge:100682527+cge:100682528+cge:100753526+cge:100755907+cge:100762888+cge:100765599+cge:100767630+cge:100767686+cge:113832602">
+        <graphics name="Tuba1c..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1015" y="1169" width="46" height="17"/>
+    </entry>
+    <entry id="261" name="cge:100689089 cge:100689091 cge:100689363 cge:100758633 cge:100760055 cge:100761889 cge:100763390 cge:100772797" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689089+cge:100689091+cge:100689363+cge:100758633+cge:100760055+cge:100761889+cge:100763390+cge:100772797">
+        <graphics name="Tubb4b..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1061" y="1169" width="46" height="17"/>
+    </entry>
+    <entry id="264" name="cge:100773882" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100773882">
+        <graphics name="Nrbf2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1135" y="1380" width="46" height="17"/>
+    </entry>
+    <entry id="265" name="cge:100758298" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100758298">
+        <graphics name="Csnk1a1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="778" y="1125" width="46" height="17"/>
+    </entry>
+    <entry id="266" name="cge:100750382 cge:100758169" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100750382+cge:100758169">
+        <graphics name="Axin2..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="672" y="1125" width="46" height="17"/>
+    </entry>
+    <entry id="267" name="cge:100750563 cge:100767273" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100750563+cge:100767273">
+        <graphics name="Apc..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="718" y="1125" width="46" height="17"/>
+    </entry>
+    <entry id="268" name="cge:100773307" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100773307">
+        <graphics name="Ctnnb1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="748" y="1108" width="46" height="17"/>
+    </entry>
+    <entry id="269" name="cge:100760865" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100760865">
+        <graphics name="Gsk3b" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="641" y="1108" width="46" height="17"/>
+    </entry>
+    <entry id="270" name="cge:100758062 cge:100761548 cge:100764150 cge:103160455 cge:103163256 cge:113834828 cge:113838049 cge:113838894 cge:113838895" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100758062+cge:100761548+cge:100764150+cge:103160455+cge:103163256+cge:113834828+cge:113838049+cge:113838894+cge:113838895">
+        <graphics name="100758062..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="579" y="1095" width="46" height="17"/>
+    </entry>
+    <entry id="271" name="cge:100762587 cge:100770288 cge:100773535" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100762587+cge:100770288+cge:100773535">
+        <graphics name="Dvl2..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="533" y="1108" width="46" height="17"/>
+    </entry>
+    <entry id="272" name="cge:100759365 cge:100763034 cge:100763424" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100759365+cge:100763034+cge:100763424">
+        <graphics name="Csnk2a1..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="585" y="1131" width="46" height="17"/>
+    </entry>
+    <entry id="273" name="cge:100766643" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100766643">
+        <graphics name="100766643" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="497" y="1091" width="46" height="17"/>
+    </entry>
+    <entry id="274" name="cge:100763041 cge:100772150" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100763041+cge:100772150">
+        <graphics name="Lrp5..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="407" y="1125" width="46" height="17"/>
+    </entry>
+    <entry id="275" name="cge:100751712 cge:100755785 cge:100756296 cge:100761155 cge:100762351 cge:100763109 cge:100766658 cge:100770917 cge:100774509 cge:113834637" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751712+cge:100755785+cge:100756296+cge:100761155+cge:100762351+cge:100763109+cge:100766658+cge:100770917+cge:100774509+cge:113834637">
+        <graphics name="Fzd3..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="407" y="1108" width="46" height="17"/>
+    </entry>
+    <entry id="276" name="cge:100751289 cge:100752722 cge:100752907 cge:100753017 cge:100753089 cge:100755799 cge:100761413 cge:100764115 cge:100764164 cge:100764466 cge:100766046 cge:100766088 cge:100766340 cge:100769003 cge:100770174 cge:100772978 cge:100774690 cge:100774849 cge:100775075" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751289+cge:100752722+cge:100752907+cge:100753017+cge:100753089+cge:100755799+cge:100761413+cge:100764115+cge:100764164+cge:100764466+cge:100766046+cge:100766088+cge:100766340+cge:100769003+cge:100770174+cge:100772978+cge:100774690+cge:100774849+cge:100775075">
+        <graphics name="Wnt6..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="333" y="1117" width="46" height="17"/>
+    </entry>
+    <entry id="283" name="cge:100769380 cge:100774676 cge:100774823" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100769380+cge:100774676+cge:100774823">
+        <graphics name="Dkk1..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="334" y="1072" width="46" height="17"/>
+    </entry>
+    <entry id="290" name="cge:100757624" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100757624">
+        <graphics name="Ager" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="407" y="1196" width="46" height="17"/>
+    </entry>
+    <entry id="291" name="cge:100757614 cge:100763178 cge:100771078 cge:100773737 cge:113837633 cge:113837935 cge:113837956 cge:113837960 cge:113838098 cge:113838146 cge:113838228 cge:113838326 cge:113838417 cge:113838488 cge:113838583 cge:113838653 cge:113838676 cge:113838679 cge:113838692 cge:113838722 cge:113838746 cge:113838796 cge:113838818 cge:113838871 cge:113838872 cge:113838876 cge:113838892 cge:113838898 cge:113838914 cge:113838921 cge:113838942 cge:113838943 cge:113839007 cge:113839011 cge:113839127 cge:118239746 cge:118239767 cge:118239768 cge:118239770 cge:118239801 cge:118239825" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100757614+cge:100763178+cge:100771078+cge:100773737+cge:113837633+cge:113837935+cge:113837956+cge:113837960+cge:113838098+cge:113838146+cge:113838228+cge:113838326+cge:113838417+cge:113838488+cge:113838583+cge:113838653+cge:113838676+cge:113838679+cge:113838692+cge:113838722+cge:113838746+cge:113838796+cge:113838818+cge:113838871+cge:113838872+cge:113838876+cge:113838892+cge:113838898+cge:113838914+cge:113838921+cge:113838942+cge:113838943+cge:113839007+cge:113839011+cge:113839127+cge:118239746+cge:118239767+cge:118239768+cge:118239770+cge:118239801+cge:118239825">
+        <graphics name="Nras..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="479" y="1196" width="46" height="17"/>
+    </entry>
+    <entry id="292" name="cge:100754626 cge:100760802 cge:100770704" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100754626+cge:100760802+cge:100770704">
+        <graphics name="Nox4..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="407" y="1243" width="46" height="17"/>
+    </entry>
+    <entry id="293" name="cge:100763542 cge:100770607" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100763542+cge:100770607">
+        <graphics name="Rela..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="753" y="1218" width="46" height="17"/>
+    </entry>
+    <entry id="294" name="cge:100764780" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100764780">
+        <graphics name="Tnf" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="861" y="1218" width="46" height="17"/>
+    </entry>
+    <entry id="295" name="cge:100689186" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689186">
+        <graphics name="Il6" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="913" y="1218" width="46" height="17"/>
+    </entry>
+    <entry id="296" name="cge:100769260 cge:100775079" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100769260+cge:100775079">
+        <graphics name="Il1a..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="861" y="1241" width="46" height="17"/>
+    </entry>
+    <entry id="297" name="cge:100760062" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100760062">
+        <graphics name="Nos2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="861" y="1194" width="46" height="17"/>
+    </entry>
+    <entry id="298" name="cge:100751220" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751220">
+        <graphics name="Ptgs2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="913" y="1194" width="46" height="17"/>
+    </entry>
+    <entry id="299" name="cge:100767142" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100767142">
+        <graphics name="Csf1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="913" y="1241" width="46" height="17"/>
+    </entry>
+    <entry id="304" name="path:cge04310" type="map"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge04310">
+        <graphics name="Wnt signaling pathway" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="roundrectangle" x="696" y="1156" width="113" height="34"/>
+    </entry>
+    <entry id="305" name="cpd:C00704" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C00704">
+        <graphics name="C00704" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="483" y="1244" width="8" height="8"/>
+    </entry>
+    <entry id="306" name="cpd:C21011 cpd:C21012 cpd:C21013 cpd:C21014" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C21011+C21012+C21013+C21014">
+        <graphics name="C21011..." fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="348" y="1221" width="8" height="8"/>
+    </entry>
+    <entry id="307" name="path:cge04933" type="map"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge04933">
+        <graphics name="AGE-RAGE signaling pathway in diabetic complications" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="roundrectangle" x="644" y="1261" width="188" height="34"/>
+    </entry>
+    <entry id="310" name="cge:100765017" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100765017">
+        <graphics name="Tnfrsf1a" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="407" y="1378" width="46" height="17"/>
+    </entry>
+    <entry id="312" name="cge:100760716" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100760716">
+        <graphics name="Ins" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="335" y="1461" width="46" height="17"/>
+    </entry>
+    <entry id="313" name="cge:100766818" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100766818">
+        <graphics name="Insr" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="407" y="1461" width="46" height="17"/>
+    </entry>
+    <entry id="314" name="cge:100752454 cge:100768351 cge:100769460" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100752454+cge:100768351+cge:100769460">
+        <graphics name="Akt3..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="736" y="1461" width="46" height="17"/>
+    </entry>
+    <entry id="315" name="cge:100689251 cge:100689252 cge:100750761 cge:100769225 cge:100771181 cge:100774067" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689251+cge:100689252+cge:100750761+cge:100769225+cge:100771181+cge:100774067">
+        <graphics name="Pik3ca..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="591" y="1461" width="46" height="17"/>
+    </entry>
+    <entry id="317" name="cge:100751390 cge:100755710 cge:100771848 cge:100773159" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751390+cge:100755710+cge:100771848+cge:100773159">
+        <graphics name="100751390..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="499" y="1461" width="46" height="17"/>
+    </entry>
+    <entry id="318" name="cpd:C05981" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C05981">
+        <graphics name="C05981" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="663" y="1461" width="8" height="8"/>
+    </entry>
+    <entry id="321" name="path:cge04910" type="map"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge04910">
+        <graphics name="Insulin signaling pathway" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="roundrectangle" x="832" y="1460" width="113" height="34"/>
+    </entry>
+    <entry id="326" name="cge:100757909" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100757909">
+        <graphics name="Eif2ak2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="484" y="1361" width="46" height="17"/>
+    </entry>
+    <entry id="327" name="cge:100754361 cge:100764964 cge:100771734" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100754361+cge:100764964+cge:100771734">
+        <graphics name="100754361..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="484" y="1382" width="46" height="17"/>
+    </entry>
+    <entry id="328" name="cge:100750488 cge:100754432 cge:100759762" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100750488+cge:100754432+cge:100759762">
+        <graphics name="Ikbkb..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="484" y="1403" width="46" height="17"/>
+    </entry>
+    <entry id="335" name="cge:100751432 cge:100769018 cge:100771486" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751432+cge:100769018+cge:100771486">
+        <graphics name="Araf..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="551" y="1196" width="46" height="17"/>
+    </entry>
+    <entry id="336" name="cge:100689403 cge:100774204 cge:103158537 cge:113835540" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689403+cge:100774204+cge:103158537+cge:113835540">
+        <graphics name="Map2k1..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="623" y="1196" width="46" height="17"/>
+    </entry>
+    <entry id="337" name="cge:100753149 cge:100759514" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100753149+cge:100759514">
+        <graphics name="Mapk3..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="695" y="1196" width="46" height="17"/>
+    </entry>
+    <entry id="342" name="cge:100762628" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100762628">
+        <graphics name="Mcu" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="821" y="451" width="46" height="17"/>
+    </entry>
+    <entry id="343" name="cge:100750613 cge:100751779 cge:100752432 cge:100761654 cge:100761812 cge:100765792 cge:100769087 cge:100773145 cge:100774187 cge:103162714" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100750613+cge:100751779+cge:100752432+cge:100761654+cge:100761812+cge:100765792+cge:100769087+cge:100773145+cge:100774187+cge:103162714">
+        <graphics name="100750613..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="939" y="475" width="46" height="17"/>
+    </entry>
+    <entry id="344" name="cge:100752921 cge:100755641" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100752921+cge:100755641">
+        <graphics name="100752921..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="901" y="421" width="46" height="17"/>
+    </entry>
+    <entry id="348" name="cge:100760319" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100760319">
+        <graphics name="100760319" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="407" y="764" width="46" height="17"/>
+    </entry>
+    <entry id="365" name="cge:100689062" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689062">
+        <graphics name="Xbp1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="924" y="804" width="46" height="17"/>
+    </entry>
+    <entry id="367" name="cge:100770550" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100770550">
+        <graphics name="Psen1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="991" y="1092" width="46" height="17"/>
+    </entry>
+    <entry id="368" name="cge:100760865" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100760865">
+        <graphics name="Gsk3b" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1039" y="1126" width="46" height="17"/>
+    </entry>
+    <entry id="372" name="cge:100689062" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689062">
+        <graphics name="Xbp1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1079" y="776" width="46" height="17"/>
+    </entry>
+    <entry id="373" name="cge:100763514" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100763514">
+        <graphics name="Ddit3" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1131" y="776" width="46" height="17"/>
+    </entry>
+    <entry id="374" name="cge:100763514" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100763514">
+        <graphics name="Ddit3" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1079" y="897" width="46" height="17"/>
+    </entry>
+    <entry id="375" name="cpd:C16514 cpd:C16515" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C16514+C16515">
+        <graphics name="C16514..." fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="268" y="655" width="8" height="8"/>
+    </entry>
+    <entry id="376" name="cpd:C16514 cpd:C16515" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C16514+C16515">
+        <graphics name="C16514..." fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="705" y="459" width="8" height="8"/>
+    </entry>
+    <entry id="377" name="cpd:C16514 cpd:C16515" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C16514+C16515">
+        <graphics name="C16514..." fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="879" y="860" width="8" height="8"/>
+    </entry>
+    <entry id="379" name="path:cge03050" type="map"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge03050">
+        <graphics name="Proteasome" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="roundrectangle" x="1138" y="656" width="89" height="25"/>
+    </entry>
+    <entry id="380" name="cge:100750876 cge:100751285 cge:100754440 cge:100756232 cge:100756711 cge:100758978 cge:100767174 cge:100769350 cge:100769387 cge:100769450 cge:100769586 cge:100771179 cge:100771916 cge:100773907 cge:100774039" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100750876+cge:100751285+cge:100754440+cge:100756232+cge:100756711+cge:100758978+cge:100767174+cge:100769350+cge:100769387+cge:100769450+cge:100769586+cge:100771179+cge:100771916+cge:100773907+cge:100774039">
+        <graphics name="Psma2..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1047" y="621" width="46" height="17"/>
+    </entry>
+    <entry id="381" name="cge:100689203 cge:100750425 cge:100751274 cge:100753658 cge:100754801 cge:100757596 cge:100759692 cge:100760261 cge:100761962 cge:100762558 cge:100764392 cge:100764857 cge:100766608 cge:100767177 cge:100768499 cge:100770051 cge:100771099 cge:100772429 cge:100773369 cge:103161668" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689203+cge:100750425+cge:100751274+cge:100753658+cge:100754801+cge:100757596+cge:100759692+cge:100760261+cge:100761962+cge:100762558+cge:100764392+cge:100764857+cge:100766608+cge:100767177+cge:100768499+cge:100770051+cge:100771099+cge:100772429+cge:100773369+cge:103161668">
+        <graphics name="Psmc3..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="1047" y="638" width="46" height="17"/>
+    </entry>
+    <entry id="384" name="cpd:C16514 cpd:C16515" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C16514+C16515">
+        <graphics name="C16514..." fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="996" y="609" width="8" height="8"/>
+    </entry>
+    <entry id="783" name="cpd:C16514 cpd:C16515" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C16514+C16515">
+        <graphics name="C16514..." fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="308" y="441" width="8" height="8"/>
+    </entry>
+    <entry id="788" name="cpd:C19610" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C19610">
+        <graphics name="C19610" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="485" y="870" width="8" height="8"/>
+    </entry>
+    <entry id="789" name="cpd:C19610" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C19610">
+        <graphics name="C19610" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="746" y="297" width="8" height="8"/>
+    </entry>
+    <entry id="793" name="cpd:C01319" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C01319">
+        <graphics name="C01319" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="219" y="499" width="8" height="8"/>
+    </entry>
+    <entry id="795" name="cge:100751155 cge:100751461 cge:100752281 cge:100753680 cge:100754926 cge:100755397 cge:100758147 cge:100759674 cge:100764156 cge:100766982 cge:100767442 cge:100768099 cge:100774781 cge:103161516" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751155+cge:100751461+cge:100752281+cge:100753680+cge:100754926+cge:100755397+cge:100758147+cge:100759674+cge:100764156+cge:100766982+cge:100767442+cge:100768099+cge:100774781+cge:103161516">
+        <graphics name="Slc39a12..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="407" y="838" width="46" height="17"/>
+    </entry>
+    <entry id="796" name="cpd:C00038" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C00038">
+        <graphics name="C00038" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="485" y="834" width="8" height="8"/>
+    </entry>
+    <entry id="797" name="cpd:C14818" type="compound"
+        link="https://www.kegg.jp/dbget-bin/www_bget?C14818">
+        <graphics name="C14818" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="circle" x="486" y="904" width="8" height="8"/>
+    </entry>
+    <entry id="798" name="cge:100764508" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100764508">
+        <graphics name="Slc11a2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="407" y="904" width="46" height="17"/>
+    </entry>
+    <entry id="800" name="cge:100762907" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100762907">
+        <graphics name="Cdk5" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="616" y="960" width="46" height="17"/>
+    </entry>
+    <entry id="801" name="undefined" type="group">
+        <graphics fgcolor="#000000" bgcolor="#FFFFFF"
+             type="rectangle" x="327" y="487" width="46" height="34"/>
+        <component id="129"/>
+        <component id="148"/>
+    </entry>
+    <entry id="802" name="undefined" type="group">
+        <graphics fgcolor="#000000" bgcolor="#FFFFFF"
+             type="rectangle" x="407" y="1116" width="46" height="34"/>
+        <component id="274"/>
+        <component id="275"/>
+    </entry>
+    <entry id="803" name="undefined" type="group">
+        <graphics fgcolor="#000000" bgcolor="#FFFFFF"
+             type="rectangle" x="1112" y="1380" width="92" height="51"/>
+        <component id="217"/>
+        <component id="218"/>
+        <component id="219"/>
+        <component id="220"/>
+        <component id="264"/>
+    </entry>
+    <entry id="804" name="undefined" type="group">
+        <graphics fgcolor="#000000" bgcolor="#FFFFFF"
+             type="rectangle" x="903" y="1370" width="92" height="34"/>
+        <component id="210"/>
+        <component id="211"/>
+        <component id="212"/>
+        <component id="213"/>
+    </entry>
+    <entry id="805" name="undefined" type="group">
+        <graphics fgcolor="#000000" bgcolor="#FFFFFF"
+             type="rectangle" x="1047" y="629" width="46" height="34"/>
+        <component id="380"/>
+        <component id="381"/>
+    </entry>
+    <relation entry1="801" entry2="147" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="375" entry2="85" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="85" entry2="86" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="86" entry2="87" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="87" entry2="88" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="376" entry2="344" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="344" entry2="343" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="133" entry2="134" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="35" entry2="32" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="36" entry2="32" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="32" entry2="34" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="375" entry2="49" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="49" entry2="50" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="50" entry2="51" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="51" entry2="52" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="52" entry2="46" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="48" entry2="45" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="48" entry2="46" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="118" entry2="240" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="240" entry2="241" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="119" entry2="365" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="197" entry2="198" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="107" entry2="109" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="109" entry2="111" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="59" entry2="247" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="59" entry2="107" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="247" entry2="163" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="59" entry2="67" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="67" entry2="68" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="159" entry2="71" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="160" entry2="71" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="69" entry2="71" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="70" entry2="71" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="163" entry2="71" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="269" entry2="71" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="269" entry2="268" type="PPrel">
+        <subtype name="inhibition" value="--|"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="276" entry2="802" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="802" entry2="271" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="375" entry2="290" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="306" entry2="290" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="290" entry2="292" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="290" entry2="291" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="291" entry2="335" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="292" entry2="305" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="305" entry2="293" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="21" entry2="310" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="312" entry2="313" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="317" entry2="315" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="315" entry2="318" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="318" entry2="314" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="803" entry2="203" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="203" entry2="215" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="163" entry2="335" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="163" entry2="336" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="335" entry2="336" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="336" entry2="337" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="216" entry2="217" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="198" entry2="235" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="235" entry2="199" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="313" entry2="317" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="134" entry2="135" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+        <subtype name="dephosphorylation" value="-p"/>
+    </relation>
+    <relation entry1="26" entry2="157" type="PPrel">
+        <subtype name="binding/association" value="---"/>
+    </relation>
+    <relation entry1="26" entry2="143" type="PPrel">
+        <subtype name="binding/association" value="---"/>
+    </relation>
+    <relation entry1="119" entry2="197" type="PPrel">
+        <subtype name="binding/association" value="---"/>
+    </relation>
+    <relation entry1="214" entry2="215" type="PPrel">
+        <subtype name="binding/association" value="---"/>
+    </relation>
+    <relation entry1="26" entry2="154" type="PPrel">
+        <subtype name="inhibition" value="--|"/>
+    </relation>
+    <relation entry1="186" entry2="15" type="PPrel">
+        <subtype name="inhibition" value="--|"/>
+    </relation>
+    <relation entry1="191" entry2="40" type="PPrel">
+        <subtype name="inhibition" value="--|"/>
+    </relation>
+    <relation entry1="376" entry2="44" type="PCrel">
+        <subtype name="inhibition" value="--|"/>
+    </relation>
+    <relation entry1="376" entry2="61" type="PCrel">
+        <subtype name="inhibition" value="--|"/>
+    </relation>
+    <relation entry1="48" entry2="118" type="PPrel">
+        <subtype name="inhibition" value="--|"/>
+    </relation>
+    <relation entry1="48" entry2="119" type="PPrel">
+        <subtype name="inhibition" value="--|"/>
+    </relation>
+    <relation entry1="209" entry2="804" type="PPrel">
+        <subtype name="inhibition" value="--|"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="326" entry2="317" type="PPrel">
+        <subtype name="inhibition" value="--|"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="327" entry2="317" type="PPrel">
+        <subtype name="inhibition" value="--|"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="328" entry2="317" type="PPrel">
+        <subtype name="inhibition" value="--|"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="375" entry2="283" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+        <subtype name="indirect effect" value="..&gt;"/>
+    </relation>
+    <relation entry1="59" entry2="133" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="59" entry2="96" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+        <subtype name="indirect effect" value="..&gt;"/>
+    </relation>
+    <relation entry1="96" entry2="34" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="33" entry2="34" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="375" entry2="57" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="375" entry2="58" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="375" entry2="348" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="87" entry2="34" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="48" entry2="120" type="PPrel">
+        <subtype name="inhibition" value="--|"/>
+        <subtype name="indirect effect" value="..&gt;"/>
+    </relation>
+    <relation entry1="120" entry2="372" type="GErel">
+        <subtype name="expression" value="--&gt;"/>
+    </relation>
+    <relation entry1="120" entry2="373" type="GErel">
+        <subtype name="expression" value="--&gt;"/>
+    </relation>
+    <relation entry1="241" entry2="374" type="GErel">
+        <subtype name="expression" value="--&gt;"/>
+    </relation>
+    <relation entry1="293" entry2="297" type="GErel">
+        <subtype name="expression" value="--&gt;"/>
+    </relation>
+    <relation entry1="293" entry2="298" type="GErel">
+        <subtype name="expression" value="--&gt;"/>
+    </relation>
+    <relation entry1="293" entry2="294" type="GErel">
+        <subtype name="expression" value="--&gt;"/>
+    </relation>
+    <relation entry1="293" entry2="295" type="GErel">
+        <subtype name="expression" value="--&gt;"/>
+    </relation>
+    <relation entry1="293" entry2="296" type="GErel">
+        <subtype name="expression" value="--&gt;"/>
+    </relation>
+    <relation entry1="293" entry2="299" type="GErel">
+        <subtype name="expression" value="--&gt;"/>
+    </relation>
+    <relation entry1="367" entry2="368" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="368" entry2="257" type="PPrel">
+        <subtype name="inhibition" value="--|"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="71" entry2="260" type="PPrel">
+        <subtype name="inhibition" value="--|"/>
+    </relation>
+    <relation entry1="71" entry2="261" type="PPrel">
+        <subtype name="inhibition" value="--|"/>
+    </relation>
+    <relation entry1="377" entry2="198" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="271" entry2="269" type="PPrel">
+        <subtype name="inhibition" value="--|"/>
+    </relation>
+    <relation entry1="283" entry2="276" type="PPrel">
+        <subtype name="inhibition" value="--|"/>
+    </relation>
+    <relation entry1="384" entry2="805" type="PCrel">
+        <subtype name="inhibition" value="--|"/>
+    </relation>
+    <relation entry1="796" entry2="163" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="797" entry2="800" type="PCrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="800" entry2="163" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+    </relation>
+    <relation entry1="800" entry2="71" type="PPrel">
+        <subtype name="activation" value="--&gt;"/>
+        <subtype name="phosphorylation" value="+p"/>
+    </relation>
+    <relation entry1="789" entry2="41" type="PCrel">
+        <subtype name="inhibition" value="--|"/>
+    </relation>
+    <relation entry1="793" entry2="140" type="PCrel">
+        <subtype name="inhibition" value="--|"/>
+    </relation>
+</pathway>

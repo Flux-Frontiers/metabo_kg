@@ -9,6 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **CHO (*Cricetulus griseus*) pathway graph** (`data/cge_pathways/`) — 366 KGML pathway files downloaded from KEGG for the `cge` organism code (Chinese hamster, the species underlying CHO cell lines). Build yields 16,930 nodes (366 pathways, 2,099 reactions, 5,105 compounds, 9,360 enzymes) and 39,731 edges.
+
+- **Phase 3 enzyme name enrichment** (`src/metabokg/enrich.py`) — New `enrich_enzyme_names(store, data_dir)` function resolves bare KEGG gene IDs (pure integers) and KEGG ortholog IDs (`K\d{5}`) to gene symbols at build time. Detects organisms automatically from enzyme node IDs (`enz:kegg:{org}:{id}`), loads `data/{org}_gene_names.tsv`, and updates names in-place. Also handles truncated KGML names ending in `...` and `CDS` placeholders. `EnrichStats` gains `enzymes_from_tsv` field; `enrich()` runs Phase 3 automatically after Phase 2. Enables `--knockout Ldha` and `resolve_id("Ldha")` to work without manual SQL.
+
+- **`scripts/download_kegg_names.py --genes ORG ...`** — Extended with `download_gene_names()` function and `--genes` CLI argument. Downloads per-organism KEGG gene lists (`data/{org}_gene_names.tsv`) from `https://rest.kegg.jp/list/{org}`. Required before Phase 3 enrichment runs.
+
+- **`metabokg-simulate seed-cho` command** (`src/metabokg/cli/cmd_simulate.py`) — New CLI subcommand that seeds 35 CHO-specific kinetic parameters across 6 pathways (glycolysis, TCA, oxidative phosphorylation, glutaminolysis, amino acid metabolism, anaplerosis/PPP) at pH 7.2, 37°C from published CHO bioreactor literature (Ahn & Antoniewicz 2011; Zagari et al. 2013; Templeton et al. 2013). Writes 46 kinetic parameter rows and 15 regulatory interactions. Supports `--force` to overwrite.
+
+- **`scripts/fetch_sabio_cho_kinetics.py`** — New script to fetch all *Cricetulus griseus* kinetic law entries from SABIO-RK REST API. Returns SBML Level 3 XML; parser strips namespaces for version-agnostic parsing and resolves enzyme names from `listOfSpecies` via `ENZ_*` modifier references. Writes TSV with Km, kcat, Vmax, Ki values. Result: 91 entries → 268 measured parameters.
+
+- **`docs/cho_workflow.md`** — End-to-end CHO metabolic knowledge graph build workflow documenting all 5 steps: KEGG name download, pathway KGML download, graph build, kinetics seeding, simulation. Includes multi-corpus KGRAG convention and data gaps section.
+
+- **CHO simulation outputs** (`cho_glycolysis_fba.md`, `cho_ldh_knockout.md`) — FBA and LDH-knockout what-if results from the native `cge00010` CHO pathway graph (objective 191.043; lactate flux drops from −1000 to 0 on `Ldha` knockout).
+
+### Changed
+
+- **CLAUDE.md** — Added Multi-Corpus Convention section documenting separate `.sqlite` databases per organism for KGRAG federation (`metabokg-hsa`, `metabokg-cge`, `metabokg-icho`). Corrected `codekg` references to `pycodekg`.
+
+- **`outreach/betenbaugh_jhmi_outreach.md`** — Updated with real CHO graph statistics (16,930 nodes, 39,731 edges, 366 pathways, 9,360 enzymes), 35-reaction kinetics coverage, and SABIO-RK experimental data section (91 entries, 268 parameters).
+
+### Fixed
+
+- **SABIO-RK organism query** (`scripts/fetch_sabio_cho_kinetics.py`) — `"Chinese hamster"` returns 0 results; fixed to `'Organism:"Cricetulus griseus"'` (91 entries).
+
+- **SABIO-RK entry ID XML format** — API returns `<SabioEntryIDs><SabioEntryID>14351</SabioEntryID>...`; script now parses with regex instead of expecting newline-delimited plain text.
+
+- **SBML namespace stripping** — Parser previously hardcoded SBML Level 2 namespace; rewrote with `_strip_ns()` to handle any SBML level/version.
+
+- **Gene name TSV column** (`src/metabokg/enrich.py`) — KEGG 4-column gene list has `CDS` in column 1 and the gene symbol in the last column; parser now uses `row[-1]` instead of `row[1]`.
+
+### Added
+
 - **`metabokg install-hooks` command** (`src/metabokg/cli/cmd_hooks.py`) — New CLI command that installs a unified pre-commit git hook. The hook delegates to `.pre-commit-config.yaml` for quality checks (ruff, mypy, detect-secrets), rebuilds the CodeKG index, then captures snapshots for CodeKG, MetaboKG, and DocKG (the latter two only when their databases are present), staging all snapshot directories atomically. Skip with `CODEKG_SKIP_SNAPSHOT=1 git commit`.
 
 - **Snapshot auto-version detection** (`src/metabokg/snapshots.py`) — `SnapshotManager.capture()` now detects the installed package version via `importlib.metadata` when `version=None` is passed, eliminating the fragile `pyproject.toml` grep that was previously done in the hook script. `Snapshot.version` is backward-compatible (defaults to `""` for legacy snapshots).

@@ -1,9 +1,9 @@
 """
 enrich.py — Post-build name enrichment for the MetaKG knowledge graph.
 
-After ``metabokg-build`` has populated the SQLite database, compound and reaction
-nodes carry bare KEGG accessions as their ``name`` field (e.g. "C00031",
-"R00710").  This module replaces those with human-readable names sourced from:
+After ``metabokg-build`` has populated the SQLite database, compound, reaction,
+and enzyme nodes carry bare KEGG accessions as their ``name`` field.  This
+module replaces those with human-readable names in three phases:
 
 Phase 1 — no network required, uses data already in the graph:
     • Reaction nodes: labelled with the gene symbols of their catalysing enzyme,
@@ -15,18 +15,23 @@ Phase 2 — requires downloaded KEGG name TSV files (see download_kegg_names.py)
     • Reaction nodes: canonical KEGG reaction names from
       ``data/kegg_reaction_names.tsv``
       (e.g. "R00710" → "Acetaldehyde:NAD+ oxidoreductase").
-      Always replaces Phase 1 enzyme-labels with canonical names (if available),
-      ensuring structural KEGG names take priority over enriched gene symbols.
+      Always replaces Phase 1 enzyme-labels with canonical names (if available).
 
-Both phases are idempotent: running enrichment multiple times produces the
-same result. Phase 2 always prioritizes canonical KEGG names over Phase 1's
-gene symbol labels, ensuring stability.
+Phase 3 — requires per-organism gene name TSV files (see download_kegg_names.py):
+    • Enzyme nodes: gene IDs resolved to gene symbols from
+      ``data/{org}_gene_names.tsv`` (e.g. "100689064" → "Ldha").
+      Organisms are detected automatically from enzyme node IDs in the graph.
+      Enables ``--knockout ldha`` and ``resolve_id("ldha")`` at query time.
+
+All phases are idempotent. Phase 2 always prioritizes canonical KEGG names
+over Phase 1 gene-symbol labels.
 
 Public API
 ----------
     enrich(store, data_dir=None, *, quiet=False) -> EnrichStats
     enrich_reactions_from_graph(store, *, quiet=False) -> int
     enrich_from_tsv(store, tsv_path, kind, *, quiet=False) -> int
+    enrich_enzyme_names(store, data_dir, *, quiet=False) -> int
 
 Author: Eric G. Suchanek, PhD
 """
@@ -53,17 +58,20 @@ class EnrichStats:
     :param reactions_from_graph: Reaction names set from CATALYZES enzyme labels.
     :param compounds_from_tsv: Compound names set from KEGG compound TSV.
     :param reactions_from_tsv: Reaction names updated from KEGG reaction TSV.
+    :param enzymes_from_tsv: Enzyme names resolved from per-organism gene TSVs.
     """
 
     reactions_from_graph: int = 0
     compounds_from_tsv: int = 0
     reactions_from_tsv: int = 0
+    enzymes_from_tsv: int = 0
 
     def __str__(self) -> str:
         return (
             f"Enrichment: {self.reactions_from_graph} reaction names from graph, "
             f"{self.compounds_from_tsv} compound names from TSV, "
-            f"{self.reactions_from_tsv} reaction names from TSV"
+            f"{self.reactions_from_tsv} reaction names from TSV, "
+            f"{self.enzymes_from_tsv} enzyme names from gene TSV"
         )
 
 
@@ -240,6 +248,117 @@ def enrich_from_tsv(store, tsv_path: Path, kind: str, *, quiet: bool = False) ->
 
 
 # ---------------------------------------------------------------------------
+# Phase 3: enzyme names from per-organism gene TSV files
+# ---------------------------------------------------------------------------
+
+# KEGG /list/{org} lines: "{org}:{gene_id}\t{symbol}[, alias]; description"
+# A bare enzyme name is a pure integer gene ID or a KEGG ortholog ID (K\d{5}).
+_BARE_ENZYME = re.compile(r"^\d+$|^K\d{5}$")
+
+
+def _load_gene_names_tsv(tsv_path: Path) -> dict[str, str]:
+    """
+    Parse a KEGG ``/list/{org}`` TSV into a ``{gene_id: symbol}`` dict.
+
+    KEGG gene list lines have 2 or 4 columns::
+
+        # 2-column (older format):
+        hsa:672    BRCA1, RNF53; breast cancer 1 [KO:K10605]
+
+        # 4-column (current format):
+        cge:100689064    CDS    3:145001207..145009531    Ldha; L-lactate dehydrogenase A chain
+
+    The gene symbol is always in the last column, before the first ``,`` or ``;``.
+
+    :param tsv_path: Path to ``data/{org}_gene_names.tsv``.
+    :return: Dict mapping bare gene ID string to gene symbol.
+    """
+    mapping: dict[str, str] = {}
+    with tsv_path.open(encoding="utf-8") as fh:
+        reader = csv.reader(fh, delimiter="\t")
+        for row in reader:
+            if len(row) < 2:
+                continue
+            gene_id = row[0].split(":")[-1].strip()
+            # Symbol is always in the last column, before first comma or semicolon
+            symbol = re.split(r"[,;]", row[-1])[0].strip()
+            if gene_id and symbol and symbol != "CDS":
+                mapping[gene_id] = symbol
+    return mapping
+
+
+def enrich_enzyme_names(store, data_dir: Path, *, quiet: bool = False) -> int:
+    """
+    Resolve enzyme gene IDs to gene symbols using per-organism KEGG gene TSVs.
+
+    Detects which organisms are present in the graph from enzyme node IDs of
+    the form ``enz:kegg:{org}:{gene_id}``, then loads
+    ``data/{org}_gene_names.tsv`` for each and updates any enzyme whose name
+    is still a bare gene ID (pure digits) or KEGG ortholog ID (``K\\d{5}``).
+
+    Requires TSV files downloaded by ``download_kegg_names.py --genes``.
+
+    :param store: Open :class:`~metabokg.store.MetaStore` instance.
+    :param data_dir: Directory containing ``{org}_gene_names.tsv`` files.
+    :param quiet: Suppress progress output.
+    :return: Number of enzyme names updated.
+    """
+    conn = store._conn
+
+    # Detect organisms present: enz:kegg:{org}:{gene_id} where org != K (orthologs)
+    cur = conn.execute("SELECT id, name FROM meta_nodes WHERE kind = 'enzyme'")
+    enzyme_rows = [(r["id"], r["name"]) for r in cur]
+
+    orgs: set[str] = set()
+    for eid, _ in enzyme_rows:
+        parts = eid.split(":")
+        # enz:kegg:{org}:{gene_id} → parts[2] is organism code
+        if len(parts) == 4 and parts[0] == "enz" and parts[1] == "kegg":
+            org = parts[2]
+            if not org.startswith("K"):  # skip ortholog stubs
+                orgs.add(org)
+
+    if not orgs:
+        return 0
+
+    # Load gene name maps for all detected organisms
+    gene_map: dict[str, str] = {}
+    for org in sorted(orgs):
+        tsv = data_dir / f"{org}_gene_names.tsv"
+        if tsv.exists():
+            org_map = _load_gene_names_tsv(tsv)
+            gene_map.update(org_map)
+            if not quiet:
+                print(f"    loaded {len(org_map)} gene names for {org}")
+        else:
+            if not quiet:
+                print(f"    SKIP {tsv.name} not found — run download_kegg_names.py --genes {org}")
+
+    if not gene_map:
+        return 0
+
+    updated = 0
+    cur2 = conn.cursor()
+    for eid, name in enzyme_rows:
+        parts = eid.split(":")
+        if len(parts) != 4:
+            continue
+        gene_id = parts[3]
+        symbol = gene_map.get(gene_id)
+        if not symbol:
+            continue
+        # Update if: bare gene ID, KEGG ortholog, truncated KGML name (ends in
+        # "..."), generic "CDS" placeholder, or name doesn't yet equal symbol.
+        bare = not name or _BARE_ENZYME.match(name) or name.endswith("...") or name == "CDS"
+        if bare or name != symbol:
+            cur2.execute("UPDATE meta_nodes SET name = ? WHERE id = ?", (symbol, eid))
+            updated += 1
+
+    conn.commit()
+    return updated
+
+
+# ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
 
@@ -285,5 +404,12 @@ def enrich(store, data_dir: Path | str | None = None, *, quiet: bool = False) ->
     stats.reactions_from_tsv = enrich_from_tsv(store, rxn_tsv, "reaction", quiet=quiet)
     if not quiet:
         print(f"    → {stats.reactions_from_tsv} reaction names updated")
+
+    # Phase 3 — enzyme gene IDs → gene symbols from per-organism TSVs
+    if not quiet:
+        print("  Enriching enzyme names from gene TSVs...", flush=True)
+    stats.enzymes_from_tsv = enrich_enzyme_names(store, data_root, quiet=quiet)
+    if not quiet:
+        print(f"    → {stats.enzymes_from_tsv} enzyme names updated")
 
     return stats
