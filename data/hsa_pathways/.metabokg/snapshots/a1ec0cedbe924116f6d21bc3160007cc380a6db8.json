@@ -1,0 +1,103 @@
+{
+  "key": "a1ec0cedbe924116f6d21bc3160007cc380a6db8",
+  "branch": "main",
+  "timestamp": "2026-04-17T17:35:14.457303+00:00",
+  "version": "0.4.1",
+  "metrics": {
+    "total_nodes": 17050,
+    "total_edges": 40166,
+    "node_counts": {
+      "compound": 5115,
+      "enzyme": 9427,
+      "pathway": 369,
+      "reaction": 2139
+    },
+    "edge_counts": {
+      "CATALYZES": 2394,
+      "CONTAINS": 32689,
+      "PRODUCT_OF": 2532,
+      "SUBSTRATE_OF": 2551
+    },
+    "kinetic_params": 32,
+    "pathway_count": 369,
+    "dead_end_count": 0,
+    "category_counts": {
+      "cellular_process": 39,
+      "genetic_info_processing": 29,
+      "human_disease": 84,
+      "metabolic": 99,
+      "organismal_system": 98,
+      "signaling": 19,
+      "transport": 1
+    }
+  },
+  "hub_metabolites": [
+    {
+      "id": "cpd:kegg:C00024",
+      "name": "C00024",
+      "formula": null,
+      "reaction_count": 20
+    },
+    {
+      "id": "cpd:kegg:C00037",
+      "name": "C00037",
+      "formula": null,
+      "reaction_count": 16
+    },
+    {
+      "id": "cpd:kegg:C00049",
+      "name": "C00049",
+      "formula": null,
+      "reaction_count": 15
+    },
+    {
+      "id": "cpd:kegg:C00219",
+      "name": "C00219",
+      "formula": null,
+      "reaction_count": 13
+    },
+    {
+      "id": "cpd:kegg:C00101",
+      "name": "C00101",
+      "formula": null,
+      "reaction_count": 13
+    },
+    {
+      "id": "cpd:kegg:C00350",
+      "name": "C00350",
+      "formula": null,
+      "reaction_count": 12
+    },
+    {
+      "id": "cpd:kegg:C00065",
+      "name": "C00065",
+      "formula": null,
+      "reaction_count": 12
+    },
+    {
+      "id": "cpd:kegg:C00026",
+      "name": "C00026",
+      "formula": null,
+      "reaction_count": 12
+    },
+    {
+      "id": "cpd:kegg:C01209",
+      "name": "C01209",
+      "formula": null,
+      "reaction_count": 11
+    },
+    {
+      "id": "cpd:kegg:C00195",
+      "name": "C00195",
+      "formula": null,
+      "reaction_count": 11
+    }
+  ],
+  "vs_previous": null,
+  "vs_baseline": {
+    "nodes": 0,
+    "edges": 0,
+    "kinetic_params_delta": 0,
+    "pathway_delta": 0
+  }
+}

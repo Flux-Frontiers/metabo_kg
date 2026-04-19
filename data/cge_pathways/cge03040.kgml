@@ -1,0 +1,493 @@
+<?xml version="1.0"?>
+<!DOCTYPE pathway SYSTEM "https://www.kegg.jp/kegg/xml/KGML_v0.7.2_.dtd">
+<!-- Creation date: Nov 27, 2025 10:55:47 +0900 (GMT+9) -->
+<pathway name="path:cge03040" org="cge" number="03040"
+         title="Spliceosome"
+         image="https://www.kegg.jp/kegg/pathway/cge/cge03040.png"
+         link="https://www.kegg.jp/kegg-bin/show_pathway?cge03040">
+    <entry id="75" name="path:cge03040" type="map"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge03040">
+        <graphics name="TITLE:Spliceosome" fgcolor="#000000" bgcolor="#FFFFFF"
+             type="roundrectangle" x="101" y="58" width="122" height="25"/>
+    </entry>
+    <entry id="217" name="cge:100770370" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100770370">
+        <graphics name="Snrnp70" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="74" y="888" width="46" height="17"/>
+    </entry>
+    <entry id="218" name="cge:100764569" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100764569">
+        <graphics name="Snrpa" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="74" y="905" width="46" height="17"/>
+    </entry>
+    <entry id="219" name="cge:100759153" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100759153">
+        <graphics name="Snrpc" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="74" y="922" width="46" height="17"/>
+    </entry>
+    <entry id="220" name="cge:100766649 cge:100774137" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100766649+cge:100774137">
+        <graphics name="Prpf40b..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="128" y="848" width="46" height="17"/>
+    </entry>
+    <entry id="221" name="cge:100770267" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100770267">
+        <graphics name="Rbm25" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="128" y="868" width="46" height="17"/>
+    </entry>
+    <entry id="222" name="cge:100751537 cge:100757226 cge:100758168 cge:100763691 cge:100764953 cge:100768269 cge:100769251 cge:100774499 cge:100774879 cge:103159049 cge:107978645 cge:107978682 cge:107978922 cge:113836629" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751537+cge:100757226+cge:100758168+cge:100763691+cge:100764953+cge:100768269+cge:100769251+cge:100774499+cge:100774879+cge:103159049+cge:107978645+cge:107978682+cge:107978922+cge:113836629">
+        <graphics name="Snrpb..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="74" y="871" width="46" height="17"/>
+    </entry>
+    <entry id="223" name="cge:100768812" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100768812">
+        <graphics name="Ddx5" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="128" y="888" width="46" height="17"/>
+    </entry>
+    <entry id="224" name="cge:100763776" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100763776">
+        <graphics name="Tcerg1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="128" y="908" width="46" height="17"/>
+    </entry>
+    <entry id="225" name="cge:100751537 cge:100757226 cge:100758168 cge:100763691 cge:100764953 cge:100768269 cge:100769251 cge:100774499 cge:100774879 cge:103159049 cge:107978645 cge:107978682 cge:107978922 cge:113836629" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751537+cge:100757226+cge:100758168+cge:100763691+cge:100764953+cge:100768269+cge:100769251+cge:100774499+cge:100774879+cge:103159049+cge:107978645+cge:107978682+cge:107978922+cge:113836629">
+        <graphics name="Snrpb..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="198" y="870" width="46" height="17"/>
+    </entry>
+    <entry id="226" name="cge:100771086" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100771086">
+        <graphics name="Snrpa1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="198" y="887" width="46" height="17"/>
+    </entry>
+    <entry id="227" name="cge:100771707" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100771707">
+        <graphics name="Snrpb2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="198" y="904" width="46" height="17"/>
+    </entry>
+    <entry id="228" name="cge:100751561 cge:100754437 cge:100771292" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751561+cge:100754437+cge:100771292">
+        <graphics name="Sf3a3..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="198" y="920" width="46" height="17"/>
+    </entry>
+    <entry id="229" name="cge:100752512 cge:100756721 cge:100758913 cge:100759502 cge:100760669 cge:100764490 cge:100771386 cge:100772265" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100752512+cge:100756721+cge:100758913+cge:100759502+cge:100760669+cge:100764490+cge:100771386+cge:100772265">
+        <graphics name="Sf3b3..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="198" y="937" width="46" height="17"/>
+    </entry>
+    <entry id="230" name="cge:100763310 cge:100766015 cge:100769215 cge:113837364" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100763310+cge:100766015+cge:100769215+cge:113837364">
+        <graphics name="100763310..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="252" y="848" width="46" height="17"/>
+    </entry>
+    <entry id="231" name="cge:100758296" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100758296">
+        <graphics name="Puf60" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="252" y="868" width="46" height="17"/>
+    </entry>
+    <entry id="232" name="cge:100758118" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100758118">
+        <graphics name="Smndc1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="252" y="888" width="46" height="17"/>
+    </entry>
+    <entry id="233" name="cge:100764203" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100764203">
+        <graphics name="Rbm17" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="252" y="908" width="46" height="17"/>
+    </entry>
+    <entry id="234" name="cge:100755648" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100755648">
+        <graphics name="Cherp" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="252" y="928" width="46" height="17"/>
+    </entry>
+    <entry id="235" name="cge:100767131" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100767131">
+        <graphics name="U2surp" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="252" y="948" width="46" height="17"/>
+    </entry>
+    <entry id="236" name="cge:100764898" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100764898">
+        <graphics name="Dhx15" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="252" y="968" width="46" height="17"/>
+    </entry>
+    <entry id="237" name="cge:100750917 cge:100770427" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100750917+cge:100770427">
+        <graphics name="Ncbp2..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="765" y="847" width="46" height="17"/>
+    </entry>
+    <entry id="238" name="cge:100751290 cge:100753025 cge:100753958 cge:100757096 cge:100762511 cge:100762670 cge:100767942 cge:100769923 cge:100771216 cge:100772451" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751290+cge:100753025+cge:100753958+cge:100757096+cge:100762511+cge:100762670+cge:100767942+cge:100769923+cge:100771216+cge:100772451">
+        <graphics name="Hnrnpc..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="765" y="867" width="46" height="17"/>
+    </entry>
+    <entry id="239" name="cge:100689086 cge:100750467 cge:100753039 cge:100755678 cge:100756061 cge:100757287 cge:100758380 cge:100762302 cge:100763712 cge:100764681 cge:100770980 cge:100771875 cge:103161710" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689086+cge:100750467+cge:100753039+cge:100755678+cge:100756061+cge:100757287+cge:100758380+cge:100762302+cge:100763712+cge:100764681+cge:100770980+cge:100771875+cge:103161710">
+        <graphics name="Srsf1..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="765" y="887" width="46" height="17"/>
+    </entry>
+    <entry id="240" name="cge:100751402" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751402">
+        <graphics name="Prpf19" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="516" y="848" width="46" height="17"/>
+    </entry>
+    <entry id="241" name="cge:100756825" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100756825">
+        <graphics name="Cdc5l" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="516" y="865" width="46" height="17"/>
+    </entry>
+    <entry id="242" name="cge:100758667" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100758667">
+        <graphics name="Bcas2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="516" y="882" width="46" height="17"/>
+    </entry>
+    <entry id="243" name="cge:100773980" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100773980">
+        <graphics name="Plrg1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="516" y="899" width="46" height="17"/>
+    </entry>
+    <entry id="244" name="cge:100775065" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100775065">
+        <graphics name="Cwc15" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="516" y="916" width="46" height="17"/>
+    </entry>
+    <entry id="245" name="cge:100764320" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100764320">
+        <graphics name="Ctnnbl1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="516" y="933" width="46" height="17"/>
+    </entry>
+    <entry id="246" name="cge:100689472 cge:100759556 cge:100760218 cge:100760510 cge:100760804" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100689472+cge:100759556+cge:100760218+cge:100760510+cge:100760804">
+        <graphics name="Hspa8..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="516" y="950" width="46" height="17"/>
+    </entry>
+    <entry id="247" name="cge:100762531" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100762531">
+        <graphics name="Pqbp1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="516" y="974" width="46" height="17"/>
+    </entry>
+    <entry id="248" name="cge:100753464 cge:100767687 cge:100771455" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100753464+cge:100767687+cge:100771455">
+        <graphics name="Syf2..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="572" y="868" width="46" height="17"/>
+    </entry>
+    <entry id="249" name="cge:100754779" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100754779">
+        <graphics name="Wbp11" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="516" y="991" width="46" height="17"/>
+    </entry>
+    <entry id="250" name="cge:100759596" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100759596">
+        <graphics name="Snw1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="572" y="848" width="46" height="17"/>
+    </entry>
+    <entry id="251" name="cge:103161503" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:103161503">
+        <graphics name="Isy1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="572" y="888" width="46" height="17"/>
+    </entry>
+    <entry id="252" name="cge:100753635" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100753635">
+        <graphics name="Ppil1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="572" y="908" width="46" height="17"/>
+    </entry>
+    <entry id="253" name="cge:100773432" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100773432">
+        <graphics name="Ppie" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="572" y="928" width="46" height="17"/>
+    </entry>
+    <entry id="254" name="cge:100766224" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100766224">
+        <graphics name="Ccdc12" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="572" y="948" width="46" height="17"/>
+    </entry>
+    <entry id="255" name="cge:100767581" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100767581">
+        <graphics name="Rbm22" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="572" y="968" width="46" height="17"/>
+    </entry>
+    <entry id="256" name="cge:100766095" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100766095">
+        <graphics name="Aqr" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="572" y="1008" width="46" height="17"/>
+    </entry>
+    <entry id="257" name="cge:100756548 cge:100764270 cge:100765189 cge:100769701 cge:100769852 cge:100772252 cge:100773124" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100756548+cge:100764270+cge:100765189+cge:100769701+cge:100769852+cge:100772252+cge:100773124">
+        <graphics name="Lsm8..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="320" y="888" width="46" height="17"/>
+    </entry>
+    <entry id="258" name="cge:100751537 cge:100757226 cge:100758168 cge:100763691 cge:100764953 cge:100768269 cge:100769251 cge:100774499 cge:100774879 cge:103159049 cge:107978645 cge:107978682 cge:107978922 cge:113836629" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751537+cge:100757226+cge:100758168+cge:100763691+cge:100764953+cge:100768269+cge:100769251+cge:100774499+cge:100774879+cge:103159049+cge:107978645+cge:107978682+cge:107978922+cge:113836629">
+        <graphics name="Snrpb..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="320" y="905" width="46" height="17"/>
+    </entry>
+    <entry id="259" name="cge:100765568" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100765568">
+        <graphics name="Prpf31" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="320" y="971" width="46" height="17"/>
+    </entry>
+    <entry id="260" name="cge:100768669" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100768669">
+        <graphics name="Ppih" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="320" y="955" width="46" height="17"/>
+    </entry>
+    <entry id="261" name="cge:100753511" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100753511">
+        <graphics name="Prpf4" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="320" y="938" width="46" height="17"/>
+    </entry>
+    <entry id="262" name="cge:100762116" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100762116">
+        <graphics name="Prpf3" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="320" y="921" width="46" height="17"/>
+    </entry>
+    <entry id="263" name="cge:100771351 cge:100772188 cge:113834620" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100771351+cge:100772188+cge:113834620">
+        <graphics name="100771351..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="320" y="988" width="46" height="17"/>
+    </entry>
+    <entry id="264" name="cge:100751537 cge:100757226 cge:100758168 cge:100763691 cge:100764953 cge:100768269 cge:100769251 cge:100774499 cge:100774879 cge:103159049 cge:107978645 cge:107978682 cge:107978922 cge:113836629" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751537+cge:100757226+cge:100758168+cge:100763691+cge:100764953+cge:100768269+cge:100769251+cge:100774499+cge:100774879+cge:103159049+cge:107978645+cge:107978682+cge:107978922+cge:113836629">
+        <graphics name="Snrpb..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="379" y="869" width="46" height="17"/>
+    </entry>
+    <entry id="265" name="cge:100757897" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100757897">
+        <graphics name="Eftud2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="379" y="886" width="46" height="17"/>
+    </entry>
+    <entry id="266" name="cge:100758820" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100758820">
+        <graphics name="Snrnp200" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="379" y="903" width="46" height="17"/>
+    </entry>
+    <entry id="267" name="cge:100767706" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100767706">
+        <graphics name="100767706" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="379" y="920" width="46" height="17"/>
+    </entry>
+    <entry id="268" name="cge:107976990" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:107976990">
+        <graphics name="Prpf8" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="379" y="937" width="46" height="17"/>
+    </entry>
+    <entry id="269" name="cge:100761430" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100761430">
+        <graphics name="Snrnp40" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="379" y="954" width="46" height="17"/>
+    </entry>
+    <entry id="270" name="cge:100767790" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100767790">
+        <graphics name="Ddx23" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="379" y="971" width="46" height="17"/>
+    </entry>
+    <entry id="271" name="cge:100755704 cge:100760868 cge:100774108" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100755704+cge:100760868+cge:100774108">
+        <graphics name="100755704..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="379" y="988" width="46" height="17"/>
+    </entry>
+    <entry id="272" name="cge:100773920" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100773920">
+        <graphics name="Snrnp27" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="443" y="847" width="46" height="17"/>
+    </entry>
+    <entry id="273" name="cge:100773035" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100773035">
+        <graphics name="Usp39" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="443" y="864" width="46" height="17"/>
+    </entry>
+    <entry id="274" name="cge:100769602" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100769602">
+        <graphics name="Sart1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="443" y="881" width="46" height="17"/>
+    </entry>
+    <entry id="282" name="cge:100755600" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100755600">
+        <graphics name="Zmat2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="443" y="907" width="46" height="17"/>
+    </entry>
+    <entry id="283" name="cge:100752495 cge:100755230" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100752495+cge:100755230">
+        <graphics name="Prpf38b..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="443" y="927" width="46" height="17"/>
+    </entry>
+    <entry id="284" name="cge:100774223" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100774223">
+        <graphics name="Bud31" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="572" y="988" width="46" height="17"/>
+    </entry>
+    <entry id="285" name="cge:113830768 cge:113830813 cge:113830852 cge:113830988 cge:113831176 cge:113831187 cge:113831265 cge:113831291 cge:113831391 cge:113831399 cge:113831429 cge:113831538 cge:113831543 cge:113831579 cge:113831663 cge:113831668 cge:113831778 cge:113831800 cge:113831801 cge:113831802 cge:113831803 cge:113831812 cge:113831833 cge:113831839 cge:113831966 cge:113831967 cge:113831984 cge:113832048 cge:113832068 cge:113832079 cge:113832290 cge:113832380 cge:113832404 cge:113832418 cge:113832601 cge:113832642 cge:113832655 cge:113832738 cge:113832739 cge:113832809 cge:113832810 cge:113832859 cge:113832860 cge:113832861 cge:113832867 cge:113832869 cge:113832870 cge:113832904 cge:113832999 cge:113833015 cge:113833022 cge:113833023 cge:113833111 cge:113833130 cge:113833131 cge:113833141 cge:113833149 cge:113833150 cge:113833151 cge:113833209 cge:113833211 cge:113833213 cge:113833214 cge:113833215 cge:113833216 cge:113833217 cge:113833218 cge:113833230 cge:113833235 cge:113833236 cge:113833296 cge:113833298 cge:113833331 cge:113833332 cge:113833334 cge:113833407 cge:113833408 cge:113833422 cge:113833514 cge:113833515 cge:113833673 cge:113833699 cge:113833815 cge:113833817 cge:113833986 cge:113834012 cge:113834013 cge:113834036 cge:113834047 cge:113834074 cge:113834097 cge:113834100 cge:113834101 cge:113834114 cge:113834115 cge:113834224 cge:113834262 cge:113834265 cge:113834347 cge:113834368 cge:113834448 cge:113834449 cge:113834450 cge:113834454 cge:113834556 cge:113834625 cge:113834774 cge:113834786 cge:113834895 cge:113834896 cge:113835022 cge:113835109 cge:113835110 cge:113835162 cge:113835228 cge:113835230 cge:113835231 cge:113835253 cge:113835266 cge:113835279 cge:113835320 cge:113835415 cge:113835416 cge:113835417 cge:113835418 cge:113835419 cge:113835511 cge:113835512 cge:113835538 cge:113835569 cge:113835570 cge:113835699 cge:113835716 cge:113835720 cge:113835926 cge:113835968 cge:113835969 cge:113835970 cge:113836039 cge:113836126 cge:113836215 cge:113836221 cge:113836222 cge:113836223 cge:113836442 cge:113836443 cge:113836509 cge:113836570 cge:113836682 cge:113836733 cge:113836845 cge:113836846 cge:113836847 cge:113836848 cge:113836852 cge:113836926 cge:113836943 cge:113836964 cge:113837000 cge:113837080 cge:113837271 cge:113837308 cge:113837358 cge:113837440 cge:113837441 cge:113837442 cge:113837506 cge:113837590 cge:113837708 cge:113837710 cge:113837725 cge:113837726 cge:113837917 cge:113837918 cge:118237644" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:113830768+cge:113830813+cge:113830852+cge:113830988+cge:113831176+cge:113831187+cge:113831265+cge:113831291+cge:113831391+cge:113831399+cge:113831429+cge:113831538+cge:113831543+cge:113831579+cge:113831663+cge:113831668+cge:113831778+cge:113831800+cge:113831801+cge:113831802+cge:113831803+cge:113831812+cge:113831833+cge:113831839+cge:113831966+cge:113831967+cge:113831984+cge:113832048+cge:113832068+cge:113832079+cge:113832290+cge:113832380+cge:113832404+cge:113832418+cge:113832601+cge:113832642+cge:113832655+cge:113832738+cge:113832739+cge:113832809+cge:113832810+cge:113832859+cge:113832860+cge:113832861+cge:113832867+cge:113832869+cge:113832870+cge:113832904+cge:113832999+cge:113833015+cge:113833022+cge:113833023+cge:113833111+cge:113833130+cge:113833131+cge:113833141+cge:113833149+cge:113833150+cge:113833151+cge:113833209+cge:113833211+cge:113833213+cge:113833214+cge:113833215+cge:113833216+cge:113833217+cge:113833218+cge:113833230+cge:113833235+cge:113833236+cge:113833296+cge:113833298+cge:113833331+cge:113833332+cge:113833334+cge:113833407+cge:113833408+cge:113833422+cge:113833514+cge:113833515+cge:113833673+cge:113833699+cge:113833815+cge:113833817+cge:113833986+cge:113834012+cge:113834013+cge:113834036+cge:113834047+cge:113834074+cge:113834097+cge:113834100+cge:113834101+cge:113834114+cge:113834115+cge:113834224+cge:113834262+cge:113834265+cge:113834347+cge:113834368+cge:113834448+cge:113834449+cge:113834450+cge:113834454+cge:113834556+cge:113834625+cge:113834774+cge:113834786+cge:113834895+cge:113834896+cge:113835022+cge:113835109+cge:113835110+cge:113835162+cge:113835228+cge:113835230+cge:113835231+cge:113835253+cge:113835266+cge:113835279+cge:113835320+cge:113835415+cge:113835416+cge:113835417+cge:113835418+cge:113835419+cge:113835511+cge:113835512+cge:113835538+cge:113835569+cge:113835570+cge:113835699+cge:113835716+cge:113835720+cge:113835926+cge:113835968+cge:113835969+cge:113835970+cge:113836039+cge:113836126+cge:113836215+cge:113836221+cge:113836222+cge:113836223+cge:113836442+cge:113836443+cge:113836509+cge:113836570+cge:113836682+cge:113836733+cge:113836845+cge:113836846+cge:113836847+cge:113836848+cge:113836852+cge:113836926+cge:113836943+cge:113836964+cge:113837000+cge:113837080+cge:113837271+cge:113837308+cge:113837358+cge:113837440+cge:113837441+cge:113837442+cge:113837506+cge:113837590+cge:113837708+cge:113837710+cge:113837725+cge:113837726+cge:113837917+cge:113837918+cge:118237644">
+        <graphics name="113830768..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="74" y="848" width="46" height="17"/>
+    </entry>
+    <entry id="286" name="cge:113831025 cge:113831095 cge:113831217 cge:113831588 cge:113831972 cge:113832294 cge:113832332 cge:113832348 cge:113832811 cge:113833280 cge:113833639 cge:113833640 cge:113833641 cge:113833642 cge:113833737 cge:113833962 cge:113834929 cge:113835682 cge:113835954 cge:113835973 cge:113836116 cge:113836197 cge:113836574 cge:113836853 cge:113836854 cge:113836914 cge:113836915 cge:113836916 cge:113836950 cge:113837371" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:113831025+cge:113831095+cge:113831217+cge:113831588+cge:113831972+cge:113832294+cge:113832332+cge:113832348+cge:113832811+cge:113833280+cge:113833639+cge:113833640+cge:113833641+cge:113833642+cge:113833737+cge:113833962+cge:113834929+cge:113835682+cge:113835954+cge:113835973+cge:113836116+cge:113836197+cge:113836574+cge:113836853+cge:113836854+cge:113836914+cge:113836915+cge:113836916+cge:113836950+cge:113837371">
+        <graphics name="113831025..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="198" y="847" width="46" height="17"/>
+    </entry>
+    <entry id="287" name="cge:113833001 cge:113833004 cge:113833017 cge:113833020 cge:113835234 cge:113835235 cge:113835822 cge:113836034 cge:113836118" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:113833001+cge:113833004+cge:113833017+cge:113833020+cge:113835234+cge:113835235+cge:113835822+cge:113836034+cge:113836118">
+        <graphics name="113833001..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="379" y="846" width="46" height="17"/>
+    </entry>
+    <entry id="288" name="cge:113830849 cge:113830960 cge:113831435 cge:113834200 cge:113834491 cge:113835426 cge:113835498 cge:113835513" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:113830849+cge:113830960+cge:113831435+cge:113834200+cge:113834491+cge:113835426+cge:113835498+cge:113835513">
+        <graphics name="113830849..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="320" y="848" width="46" height="17"/>
+    </entry>
+    <entry id="289" name="cge:113830762 cge:113830764 cge:113830765 cge:113830769 cge:113830790 cge:113830804 cge:113830805 cge:113830807 cge:113830808 cge:113830819 cge:113830824 cge:113830830 cge:113830831 cge:113830835 cge:113830848 cge:113830855 cge:113830863 cge:113830867 cge:113830873 cge:113830875 cge:113830886 cge:113830889 cge:113830897 cge:113830901 cge:113830902 cge:113830905 cge:113830910 cge:113830916 cge:113830923 cge:113830953 cge:113830985 cge:113830987 cge:113830990 cge:113830995 cge:113830997 cge:113830998 cge:113831033 cge:113831035 cge:113831039 cge:113831042 cge:113831043 cge:113831048 cge:113831051 cge:113831052 cge:113831053 cge:113831062 cge:113831065 cge:113831068 cge:113831093 cge:113831099 cge:113831102 cge:113831116 cge:113831145 cge:113831151 cge:113831155 cge:113831160 cge:113831171 cge:113831172 cge:113831179 cge:113831184 cge:113831193 cge:113831195 cge:113831212 cge:113831230 cge:113831242 cge:113831244 cge:113831268 cge:113831270 cge:113831274 cge:113831275 cge:113831289 cge:113831367 cge:113831369 cge:113831371 cge:113831381 cge:113831397 cge:113831406 cge:113831415 cge:113831428 cge:113831438 cge:113831440 cge:113831443 cge:113831452 cge:113831454 cge:113831481 cge:113831489 cge:113831512 cge:113831516 cge:113831519 cge:113831542 cge:113831545 cge:113831554 cge:113831558 cge:113831560 cge:113831563 cge:113831573 cge:113831589 cge:113831618 cge:113831633 cge:113831645 cge:113831651 cge:113831652 cge:113831673 cge:113831679 cge:113831682 cge:113831683 cge:113831694 cge:113831707 cge:113831720 cge:113831727 cge:113831731 cge:113831740 cge:113831754 cge:113831762 cge:113831763 cge:113831768 cge:113831828 cge:113831837 cge:113831857 cge:113831875 cge:113831883 cge:113831925 cge:113831927 cge:113831931 cge:113831969 cge:113831983 cge:113831999 cge:113832019 cge:113832033 cge:113832046 cge:113832082 cge:113832108 cge:113832119 cge:113832133 cge:113832153 cge:113832191 cge:113832207 cge:113832211 cge:113832212 cge:113832213 cge:113832297 cge:113832298 cge:113832299 cge:113832300 cge:113832301 cge:113832312 cge:113832319 cge:113832381 cge:113832382 cge:113832405 cge:113832406 cge:113832407 cge:113832408 cge:113832409 cge:113832431 cge:113832432 cge:113832433 cge:113832436 cge:113832437 cge:113832493 cge:113832511 cge:113832522 cge:113832531 cge:113832535 cge:113832543 cge:113832544 cge:113832545 cge:113832551 cge:113832582 cge:113832583 cge:113832584 cge:113832585 cge:113832586 cge:113832587 cge:113832588 cge:113832591 cge:113832626 cge:113832630 cge:113832644 cge:113832645 cge:113832646 cge:113832647 cge:113832648 cge:113832649 cge:113832650 cge:113832724 cge:113832725 cge:113832726 cge:113832727 cge:113832728 cge:113832729 cge:113832769 cge:113832775 cge:113832776 cge:113832801 cge:113832802 cge:113832803 cge:113832804 cge:113832838 cge:113832839 cge:113832841 cge:113832863 cge:113832865 cge:113832905 cge:113832907 cge:113833007 cge:113833027 cge:113833028 cge:113833029 cge:113833030 cge:113833031 cge:113833032 cge:113833033 cge:113833034 cge:113833035 cge:113833036 cge:113833037 cge:113833040 cge:113833041 cge:113833042 cge:113833045 cge:113833046 cge:113833062 cge:113833113 cge:113833132 cge:113833133 cge:113833134 cge:113833135 cge:113833136 cge:113833138 cge:113833139 cge:113833140 cge:113833168 cge:113833171 cge:113833172 cge:113833210 cge:113833221 cge:113833222 cge:113833223 cge:113833286 cge:113833287 cge:113833288 cge:113833289 cge:113833312 cge:113833313 cge:113833366 cge:113833409 cge:113833424 cge:113833425 cge:113833436 cge:113833453 cge:113833465 cge:113833469 cge:113833470 cge:113833471 cge:113833472 cge:113833516 cge:113833569 cge:113833590 cge:113833594 cge:113833646 cge:113833647 cge:113833648 cge:113833649 cge:113833650 cge:113833651 cge:113833652 cge:113833653 cge:113833654 cge:113833655 cge:113833678 cge:113833679 cge:113833700 cge:113833717 cge:113833728 cge:113833747 cge:113833748 cge:113833802 cge:113833803 cge:113833804 cge:113833805 cge:113833806 cge:113833808 cge:113833809 cge:113833846 cge:113833847 cge:113833849 cge:113833859 cge:113833897 cge:113833898 cge:113833899 cge:113833900 cge:113833901 cge:113833902 cge:113833903 cge:113833904 cge:113833905 cge:113833907 cge:113833958 cge:113833959 cge:113833960 cge:113833980 cge:113833981 cge:113833982 cge:113833983 cge:113833988 cge:113833994 cge:113834007 cge:113834009 cge:113834037 cge:113834038 cge:113834039 cge:113834051 cge:113834052 cge:113834075 cge:113834103 cge:113834104 cge:113834105 cge:113834106 cge:113834201 cge:113834202 cge:113834203 cge:113834204 cge:113834206 cge:113834207 cge:113834208 cge:113834209 cge:113834255 cge:113834256 cge:113834267 cge:113834281 cge:113834291 cge:113834292 cge:113834317 cge:113834318 cge:113834319 cge:113834320 cge:113834343 cge:113834344 cge:113834348 cge:113834364 cge:113834369 cge:113834373 cge:113834391 cge:113834392 cge:113834445 cge:113834458 cge:113834459 cge:113834460 cge:113834461 cge:113834462 cge:113834463 cge:113834466 cge:113834468 cge:113834522 cge:113834523 cge:113834524 cge:113834550 cge:113834567 cge:113834582 cge:113834583 cge:113834644 cge:113834645 cge:113834647 cge:113834648 cge:113834649 cge:113834651 cge:113834659 cge:113834695 cge:113834696 cge:113834697 cge:113834698 cge:113834699 cge:113834700 cge:113834702 cge:113834703 cge:113834705 cge:113834707 cge:113834724 cge:113834758 cge:113834788 cge:113834789 cge:113834790 cge:113834791 cge:113834792 cge:113834806 cge:113834845 cge:113834892 cge:113834933 cge:113834934 cge:113834978 cge:113834979 cge:113834980 cge:113834982 cge:113834985 cge:113834996 cge:113834997 cge:113835078 cge:113835093 cge:113835094 cge:113835095 cge:113835096 cge:113835128 cge:113835129 cge:113835236 cge:113835237 cge:113835238 cge:113835239 cge:113835240 cge:113835241 cge:113835242 cge:113835243 cge:113835244 cge:113835245 cge:113835247 cge:113835271 cge:113835272 cge:113835280 cge:113835281 cge:113835282 cge:113835312 cge:113835313 cge:113835314 cge:113835427 cge:113835428 cge:113835429 cge:113835430 cge:113835431 cge:113835432 cge:113835433 cge:113835434 cge:113835435 cge:113835437 cge:113835439 cge:113835440 cge:113835441 cge:113835442 cge:113835480 cge:113835499 cge:113835500 cge:113835501 cge:113835502 cge:113835504 cge:113835534 cge:113835539 cge:113835558 cge:113835559 cge:113835560 cge:113835561 cge:113835571 cge:113835604 cge:113835622 cge:113835623 cge:113835624 cge:113835631 cge:113835632 cge:113835659 cge:113835679 cge:113835700 cge:113835704 cge:113835705 cge:113835718 cge:113835768 cge:113835776 cge:113835836 cge:113835837 cge:113835860 cge:113835876 cge:113835928 cge:113835975 cge:113835976 cge:113835977 cge:113835978 cge:113835979 cge:113835980 cge:113835981 cge:113835984 cge:113835985 cge:113835991 cge:113836001 cge:113836004 cge:113836035 cge:113836037 cge:113836119 cge:113836120 cge:113836121 cge:113836122 cge:113836189 cge:113836190 cge:113836191 cge:113836198 cge:113836216 cge:113836217 cge:113836236 cge:113836252 cge:113836253 cge:113836254 cge:113836289 cge:113836290 cge:113836291 cge:113836447 cge:113836449 cge:113836451 cge:113836452 cge:113836453 cge:113836475 cge:113836511 cge:113836530 cge:113836531 cge:113836571 cge:113836576 cge:113836613 cge:113836662 cge:113836668 cge:113836669 cge:113836684 cge:113836686 cge:113836713 cge:113836859 cge:113836860 cge:113836861 cge:113836862 cge:113836863 cge:113836864 cge:113836865 cge:113836866 cge:113836867 cge:113836868 cge:113836869 cge:113836871 cge:113836872 cge:113836919 cge:113836951 cge:113836953 cge:113836965 cge:113836989 cge:113836990 cge:113837019 cge:113837032 cge:113837058 cge:113837059 cge:113837061 cge:113837082 cge:113837100 cge:113837103 cge:113837172 cge:113837173 cge:113837188 cge:113837231 cge:113837354 cge:113837517 cge:113837519 cge:113837520 cge:113837532 cge:113837546 cge:113837547 cge:113837548 cge:113837553 cge:113837554 cge:113837595 cge:113837596 cge:113837613 cge:113837670 cge:113837671 cge:113837673 cge:113837712 cge:113837713 cge:113837714 cge:113837715 cge:113837717 cge:113837718 cge:113837763 cge:113837764 cge:113837765 cge:113837772 cge:113837773 cge:113837798 cge:113837799 cge:113837800 cge:113837820 cge:113837834 cge:113837933 cge:113837943 cge:113838004" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:113830762+cge:113830764+cge:113830765+cge:113830769+cge:113830790+cge:113830804+cge:113830805+cge:113830807+cge:113830808+cge:113830819+cge:113830824+cge:113830830+cge:113830831+cge:113830835+cge:113830848+cge:113830855+cge:113830863+cge:113830867+cge:113830873+cge:113830875+cge:113830886+cge:113830889+cge:113830897+cge:113830901+cge:113830902+cge:113830905+cge:113830910+cge:113830916+cge:113830923+cge:113830953+cge:113830985+cge:113830987+cge:113830990+cge:113830995+cge:113830997+cge:113830998+cge:113831033+cge:113831035+cge:113831039+cge:113831042+cge:113831043+cge:113831048+cge:113831051+cge:113831052+cge:113831053+cge:113831062+cge:113831065+cge:113831068+cge:113831093+cge:113831099+cge:113831102+cge:113831116+cge:113831145+cge:113831151+cge:113831155+cge:113831160+cge:113831171+cge:113831172+cge:113831179+cge:113831184+cge:113831193+cge:113831195+cge:113831212+cge:113831230+cge:113831242+cge:113831244+cge:113831268+cge:113831270+cge:113831274+cge:113831275+cge:113831289+cge:113831367+cge:113831369+cge:113831371+cge:113831381+cge:113831397+cge:113831406+cge:113831415+cge:113831428+cge:113831438+cge:113831440+cge:113831443+cge:113831452+cge:113831454+cge:113831481+cge:113831489+cge:113831512+cge:113831516+cge:113831519+cge:113831542+cge:113831545+cge:113831554+cge:113831558+cge:113831560+cge:113831563+cge:113831573+cge:113831589+cge:113831618+cge:113831633+cge:113831645+cge:113831651+cge:113831652+cge:113831673+cge:113831679+cge:113831682+cge:113831683+cge:113831694+cge:113831707+cge:113831720+cge:113831727+cge:113831731+cge:113831740+cge:113831754+cge:113831762+cge:113831763+cge:113831768+cge:113831828+cge:113831837+cge:113831857+cge:113831875+cge:113831883+cge:113831925+cge:113831927+cge:113831931+cge:113831969+cge:113831983+cge:113831999+cge:113832019+cge:113832033+cge:113832046+cge:113832082+cge:113832108+cge:113832119+cge:113832133+cge:113832153+cge:113832191+cge:113832207+cge:113832211+cge:113832212+cge:113832213+cge:113832297+cge:113832298+cge:113832299+cge:113832300+cge:113832301+cge:113832312+cge:113832319+cge:113832381+cge:113832382+cge:113832405+cge:113832406+cge:113832407+cge:113832408+cge:113832409+cge:113832431+cge:113832432+cge:113832433+cge:113832436+cge:113832437+cge:113832493+cge:113832511+cge:113832522+cge:113832531+cge:113832535+cge:113832543+cge:113832544+cge:113832545+cge:113832551+cge:113832582+cge:113832583+cge:113832584+cge:113832585+cge:113832586+cge:113832587+cge:113832588+cge:113832591+cge:113832626+cge:113832630+cge:113832644+cge:113832645+cge:113832646+cge:113832647+cge:113832648+cge:113832649+cge:113832650+cge:113832724+cge:113832725+cge:113832726+cge:113832727+cge:113832728+cge:113832729+cge:113832769+cge:113832775+cge:113832776+cge:113832801+cge:113832802+cge:113832803+cge:113832804+cge:113832838+cge:113832839+cge:113832841+cge:113832863+cge:113832865+cge:113832905+cge:113832907+cge:113833007+cge:113833027+cge:113833028+cge:113833029+cge:113833030+cge:113833031+cge:113833032+cge:113833033+cge:113833034+cge:113833035+cge:113833036+cge:113833037+cge:113833040+cge:113833041+cge:113833042+cge:113833045+cge:113833046+cge:113833062+cge:113833113+cge:113833132+cge:113833133+cge:113833134+cge:113833135+cge:113833136+cge:113833138+cge:113833139+cge:113833140+cge:113833168+cge:113833171+cge:113833172+cge:113833210+cge:113833221+cge:113833222+cge:113833223+cge:113833286+cge:113833287+cge:113833288+cge:113833289+cge:113833312+cge:113833313+cge:113833366+cge:113833409+cge:113833424+cge:113833425+cge:113833436+cge:113833453+cge:113833465+cge:113833469+cge:113833470+cge:113833471+cge:113833472+cge:113833516+cge:113833569+cge:113833590+cge:113833594+cge:113833646+cge:113833647+cge:113833648+cge:113833649+cge:113833650+cge:113833651+cge:113833652+cge:113833653+cge:113833654+cge:113833655+cge:113833678+cge:113833679+cge:113833700+cge:113833717+cge:113833728+cge:113833747+cge:113833748+cge:113833802+cge:113833803+cge:113833804+cge:113833805+cge:113833806+cge:113833808+cge:113833809+cge:113833846+cge:113833847+cge:113833849+cge:113833859+cge:113833897+cge:113833898+cge:113833899+cge:113833900+cge:113833901+cge:113833902+cge:113833903+cge:113833904+cge:113833905+cge:113833907+cge:113833958+cge:113833959+cge:113833960+cge:113833980+cge:113833981+cge:113833982+cge:113833983+cge:113833988+cge:113833994+cge:113834007+cge:113834009+cge:113834037+cge:113834038+cge:113834039+cge:113834051+cge:113834052+cge:113834075+cge:113834103+cge:113834104+cge:113834105+cge:113834106+cge:113834201+cge:113834202+cge:113834203+cge:113834204+cge:113834206+cge:113834207+cge:113834208+cge:113834209+cge:113834255+cge:113834256+cge:113834267+cge:113834281+cge:113834291+cge:113834292+cge:113834317+cge:113834318+cge:113834319+cge:113834320+cge:113834343+cge:113834344+cge:113834348+cge:113834364+cge:113834369+cge:113834373+cge:113834391+cge:113834392+cge:113834445+cge:113834458+cge:113834459+cge:113834460+cge:113834461+cge:113834462+cge:113834463+cge:113834466+cge:113834468+cge:113834522+cge:113834523+cge:113834524+cge:113834550+cge:113834567+cge:113834582+cge:113834583+cge:113834644+cge:113834645+cge:113834647+cge:113834648+cge:113834649+cge:113834651+cge:113834659+cge:113834695+cge:113834696+cge:113834697+cge:113834698+cge:113834699+cge:113834700+cge:113834702+cge:113834703+cge:113834705+cge:113834707+cge:113834724+cge:113834758+cge:113834788+cge:113834789+cge:113834790+cge:113834791+cge:113834792+cge:113834806+cge:113834845+cge:113834892+cge:113834933+cge:113834934+cge:113834978+cge:113834979+cge:113834980+cge:113834982+cge:113834985+cge:113834996+cge:113834997+cge:113835078+cge:113835093+cge:113835094+cge:113835095+cge:113835096+cge:113835128+cge:113835129+cge:113835236+cge:113835237+cge:113835238+cge:113835239+cge:113835240+cge:113835241+cge:113835242+cge:113835243+cge:113835244+cge:113835245+cge:113835247+cge:113835271+cge:113835272+cge:113835280+cge:113835281+cge:113835282+cge:113835312+cge:113835313+cge:113835314+cge:113835427+cge:113835428+cge:113835429+cge:113835430+cge:113835431+cge:113835432+cge:113835433+cge:113835434+cge:113835435+cge:113835437+cge:113835439+cge:113835440+cge:113835441+cge:113835442+cge:113835480+cge:113835499+cge:113835500+cge:113835501+cge:113835502+cge:113835504+cge:113835534+cge:113835539+cge:113835558+cge:113835559+cge:113835560+cge:113835561+cge:113835571+cge:113835604+cge:113835622+cge:113835623+cge:113835624+cge:113835631+cge:113835632+cge:113835659+cge:113835679+cge:113835700+cge:113835704+cge:113835705+cge:113835718+cge:113835768+cge:113835776+cge:113835836+cge:113835837+cge:113835860+cge:113835876+cge:113835928+cge:113835975+cge:113835976+cge:113835977+cge:113835978+cge:113835979+cge:113835980+cge:113835981+cge:113835984+cge:113835985+cge:113835991+cge:113836001+cge:113836004+cge:113836035+cge:113836037+cge:113836119+cge:113836120+cge:113836121+cge:113836122+cge:113836189+cge:113836190+cge:113836191+cge:113836198+cge:113836216+cge:113836217+cge:113836236+cge:113836252+cge:113836253+cge:113836254+cge:113836289+cge:113836290+cge:113836291+cge:113836447+cge:113836449+cge:113836451+cge:113836452+cge:113836453+cge:113836475+cge:113836511+cge:113836530+cge:113836531+cge:113836571+cge:113836576+cge:113836613+cge:113836662+cge:113836668+cge:113836669+cge:113836684+cge:113836686+cge:113836713+cge:113836859+cge:113836860+cge:113836861+cge:113836862+cge:113836863+cge:113836864+cge:113836865+cge:113836866+cge:113836867+cge:113836868+cge:113836869+cge:113836871+cge:113836872+cge:113836919+cge:113836951+cge:113836953+cge:113836965+cge:113836989+cge:113836990+cge:113837019+cge:113837032+cge:113837058+cge:113837059+cge:113837061+cge:113837082+cge:113837100+cge:113837103+cge:113837172+cge:113837173+cge:113837188+cge:113837231+cge:113837354+cge:113837517+cge:113837519+cge:113837520+cge:113837532+cge:113837546+cge:113837547+cge:113837548+cge:113837553+cge:113837554+cge:113837595+cge:113837596+cge:113837613+cge:113837670+cge:113837671+cge:113837673+cge:113837712+cge:113837713+cge:113837714+cge:113837715+cge:113837717+cge:113837718+cge:113837763+cge:113837764+cge:113837765+cge:113837772+cge:113837773+cge:113837798+cge:113837799+cge:113837800+cge:113837820+cge:113837834+cge:113837933+cge:113837943+cge:113838004">
+        <graphics name="113830762..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="320" y="864" width="46" height="17"/>
+    </entry>
+    <entry id="290" name="cge:100768648" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100768648">
+        <graphics name="Rp9" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="252" y="988" width="46" height="17"/>
+    </entry>
+    <entry id="291" name="cge:100768648" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100768648">
+        <graphics name="Rp9" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="443" y="947" width="46" height="17"/>
+    </entry>
+    <entry id="292" name="cge:100756868" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100756868">
+        <graphics name="Fus" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="128" y="928" width="46" height="17"/>
+    </entry>
+    <entry id="323" name="cge:100763282" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100763282">
+        <graphics name="Ddx46" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="104" y="256" width="46" height="17"/>
+    </entry>
+    <entry id="324" name="cge:100752504 cge:100773161" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100752504+cge:100773161">
+        <graphics name="100752504..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="104" y="276" width="46" height="17"/>
+    </entry>
+    <entry id="325" name="cge:100757897" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100757897">
+        <graphics name="Eftud2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="223" y="694" width="46" height="17"/>
+    </entry>
+    <entry id="326" name="cge:100758820" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100758820">
+        <graphics name="Snrnp200" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="223" y="674" width="46" height="17"/>
+    </entry>
+    <entry id="327" name="cge:100767790" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100767790">
+        <graphics name="Ddx23" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="110" y="551" width="46" height="17"/>
+    </entry>
+    <entry id="329" name="cge:100756749" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100756749">
+        <graphics name="Dhx16" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="422" y="719" width="46" height="17"/>
+    </entry>
+    <entry id="330" name="cge:100757501" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100757501">
+        <graphics name="Dhx38" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="697" y="534" width="46" height="17"/>
+    </entry>
+    <entry id="331" name="cge:100772994" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100772994">
+        <graphics name="Cdc40" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="697" y="554" width="46" height="17"/>
+    </entry>
+    <entry id="332" name="cge:103158905" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:103158905">
+        <graphics name="103158905" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="682" y="264" width="46" height="17"/>
+    </entry>
+    <entry id="333" name="cge:100754137 cge:100765338" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100754137+cge:100765338">
+        <graphics name="100754137..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="746" y="554" width="46" height="17"/>
+    </entry>
+    <entry id="334" name="cge:100750534" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100750534">
+        <graphics name="Prpf18" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="746" y="534" width="46" height="17"/>
+    </entry>
+    <entry id="336" name="cge:100764898" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100764898">
+        <graphics name="Dhx15" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="556" y="139" width="46" height="17"/>
+    </entry>
+    <entry id="337" name="cge:100760817" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100760817">
+        <graphics name="Sf1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="327" y="188" width="46" height="17"/>
+    </entry>
+    <entry id="338" name="cge:100763310 cge:100766015 cge:100769215 cge:113837364" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100763310+cge:100766015+cge:100769215+cge:113837364">
+        <graphics name="100763310..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="327" y="208" width="46" height="17"/>
+    </entry>
+    <entry id="339" name="cge:100759434" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100759434">
+        <graphics name="Gpkow" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="422" y="740" width="46" height="17"/>
+    </entry>
+    <entry id="340" name="cge:100755173" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100755173">
+        <graphics name="Yju2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="593" y="686" width="46" height="17"/>
+    </entry>
+    <entry id="341" name="cge:100756522" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100756522">
+        <graphics name="Cwc25" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="593" y="665" width="46" height="17"/>
+    </entry>
+    <entry id="348" name="cge:100773647" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100773647">
+        <graphics name="Bud13" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="637" y="846" width="46" height="17"/>
+    </entry>
+    <entry id="349" name="cge:100773395" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100773395">
+        <graphics name="Rbmx2" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="637" y="866" width="46" height="17"/>
+    </entry>
+    <entry id="350" name="cge:100755086" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100755086">
+        <graphics name="Snip1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="637" y="886" width="46" height="17"/>
+    </entry>
+    <entry id="365" name="cge:100769875" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100769875">
+        <graphics name="Acin1" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="701" y="846" width="46" height="17"/>
+    </entry>
+    <entry id="366" name="cge:100753355 cge:100757133" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100753355+cge:100757133">
+        <graphics name="100753355..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="701" y="863" width="46" height="17"/>
+    </entry>
+    <entry id="367" name="cge:100754959 cge:100766423" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100754959+cge:100766423">
+        <graphics name="Rbm8a..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="701" y="897" width="46" height="17"/>
+    </entry>
+    <entry id="368" name="cge:100766467 cge:100772672" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100766467+cge:100772672">
+        <graphics name="Magoh..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="701" y="914" width="46" height="17"/>
+    </entry>
+    <entry id="370" name="cge:100751816 cge:100753038 cge:100755241 cge:100756310 cge:100758451 cge:100759697 cge:100767984 cge:100770844 cge:100772483 cge:100773616" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100751816+cge:100753038+cge:100755241+cge:100756310+cge:100758451+cge:100759697+cge:100767984+cge:100770844+cge:100772483+cge:100773616">
+        <graphics name="Thoc3..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="701" y="948" width="46" height="17"/>
+    </entry>
+    <entry id="371" name="cge:100773741" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100773741">
+        <graphics name="Casc3" fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="701" y="880" width="46" height="17"/>
+    </entry>
+    <entry id="372" name="cge:100752504 cge:100773161" type="gene"
+        link="https://www.kegg.jp/dbget-bin/www_bget?cge:100752504+cge:100773161">
+        <graphics name="100752504..." fgcolor="#000000" bgcolor="#BFFFBF"
+             type="rectangle" x="701" y="931" width="46" height="17"/>
+    </entry>
+</pathway>

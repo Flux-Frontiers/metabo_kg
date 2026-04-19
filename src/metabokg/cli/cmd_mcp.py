@@ -12,7 +12,13 @@ from pathlib import Path
 import click
 
 from metabokg.cli.main import cli
-from metabokg.cli.options import db_option, lancedb_option, model_option
+from metabokg.cli.options import (
+    db_option,
+    lancedb_option,
+    model_option,
+    resolve_db,
+    resolve_lancedb,
+)
 
 
 @cli.command("mcp")
@@ -26,12 +32,13 @@ from metabokg.cli.options import db_option, lancedb_option, model_option
     type=click.Choice(["stdio", "sse"]),
     help="MCP transport: stdio or sse (HTTP).",
 )
-def mcp(db: str, lancedb: str, model: str, transport: str) -> None:
+def mcp(db: str | None, lancedb: str | None, model: str, transport: str) -> None:
     """Start the MetaKG MCP server."""
     from metabokg import MetaKG
     from metabokg.mcp_tools import create_server
 
-    db_path = Path(db)
+    db_path = Path(resolve_db(db))
+    lancedb = resolve_lancedb(lancedb)
     if not db_path.exists():
         click.echo(
             f"WARNING: database not found at '{db_path}'.\nRun 'metabokg build' first.",

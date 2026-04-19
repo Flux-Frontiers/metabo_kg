@@ -17,11 +17,11 @@ Run metabolic pathway simulations using the MetaboKG database. Supports four mod
 
 1. Verify the database exists:
    ```bash
-   ls -lh .metabokg/meta.sqlite
+   ls -lh .metabokg/hsa.sqlite
    ```
 2. For ODE/what-if, confirm kinetics are seeded:
    ```bash
-   sqlite3 .metabokg/meta.sqlite "SELECT COUNT(*) FROM kinetic_parameters;"
+   sqlite3 .metabokg/hsa.sqlite "SELECT COUNT(*) FROM kinetic_parameters;"
    ```
    If 0, run `metabokg-simulate seed` first.
 
@@ -110,7 +110,7 @@ result = kg.simulate_whatif("pwy:kegg:hsa00010", json.dumps(scenario), mode="fba
 ## Finding Pathway IDs
 
 ```bash
-sqlite3 .metabokg/meta.sqlite "SELECT node_id, name FROM meta_nodes WHERE kind='pathway' LIMIT 20;"
+sqlite3 .metabokg/hsa.sqlite "SELECT node_id, name FROM meta_nodes WHERE kind='pathway' LIMIT 20;"
 ```
 
 ---

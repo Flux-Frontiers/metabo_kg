@@ -1,7 +1,7 @@
 > **Analysis Report Metadata**
 > - **Generated:** 2026-03-18 04:26 UTC
 > - **Version:** MetaKG 0.3.0
-> - **Database:** `.metabokg/meta.sqlite`
+> - **Database:** `.metabokg/hsa.sqlite`
 
 
 # MetaKG Metabolic Pathway Analysis Report

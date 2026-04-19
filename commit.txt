@@ -1,15 +1,23 @@
-feat(cli): add install-hooks command and align build/snapshot defaults
+refactor(storage): colocate per-corpus artifacts inside data dirs
 
-- New `metabokg install-hooks` command installs a unified pre-commit hook
-  that runs quality checks, rebuilds CodeKG, and captures snapshots for
-  CodeKG, MetaboKG, and DocKG atomically before each commit.
-- `metabokg build` default flipped: `--wipe` is now opt-in (keep existing
-  data by default), aligning with `codekg build` behavior.
-- Snapshot version auto-detected via `importlib.metadata` — hooks no
-  longer need to grep pyproject.toml for the version string.
-- `.pre-commit-config.yaml` made portable (relative poetry paths) with
-  broader hidden-dir excludes (`^\.[^/]+/`) for detect-secrets and
-  check-added-large-files.
-- Add MetaboKG analysis report and pre-commit refactor notes.
+Each metabokg-build now places its SQLite db, LanceDB index, and
+snapshots inside <data-dir>/.metabokg/ rather than the project root.
+The db filename is derived from the data directory prefix:
+  hsa_pathways → hsa.sqlite
+  cge_pathways → cge.sqlite
+
+This eliminates ambiguity when building multiple organisms in the same
+repo and mirrors the gutenberg_kg per-book storage pattern.
+
+Key changes:
+- options.py: db/lancedb defaults → None; resolve_db()/resolve_lancedb()
+  helpers fall back via METABOKG_DB/METABOKG_LANCEDB env vars → CWD
+- cmd_build.py: _colocate_defaults() derives db name from data dir prefix
+- All CLI commands (analyze, simulate, snapshot, viz, mcp) call resolve_db()
+- .gitignore: replaced blanket .metabokg/ with specific artifact ignores
+  so snapshots/ is tracked
+- Renamed legacy meta.sqlite → hsa.sqlite everywhere; removed project-root
+  .metabokg/; rebuilt hsa and cge corpora into their data dirs
+- pre-commit large-file exclude broadened to cover all data/*.tsv and *.kgml
 
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>

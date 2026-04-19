@@ -213,9 +213,7 @@ def main(argv: list[str] | None = None) -> int:
     # Filter by category if requested
     pathways = PATHWAYS
     if args.category:
-        pathways = [
-            (pid, name, cat) for pid, name, cat in PATHWAYS if cat == args.category
-        ]
+        pathways = [(pid, name, cat) for pid, name, cat in PATHWAYS if cat == args.category]
         if not pathways:
             print(f"No pathways found for category '{args.category}'", file=sys.stderr)
             return 1
@@ -254,7 +252,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print()
     print("Next step — build the knowledge graph:")
-    print(f"  metabokg-build --data {out_dir} --db .metabokg/meta.sqlite --wipe")
+    print(f"  metabokg-build --data {out_dir} --db .metabokg/hsa.sqlite --wipe")
     return 0
 
 

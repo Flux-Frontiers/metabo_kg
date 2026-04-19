@@ -1,34 +1,39 @@
 #!/usr/bin/env python3
 """
-download_kegg_names.py — Bulk-download KEGG compound and reaction name lists.
+download_kegg_names.py — Bulk-download KEGG compound, reaction, and gene name lists.
 
-Downloads two flat TSV files from the KEGG REST API and saves them to the
+Downloads flat TSV files from the KEGG REST API and saves them to the
 ``data/`` directory.  These are used by ``metabokg-enrich`` (and
 ``metabokg-build --enrich``) to replace bare KEGG accessions with human-readable
 names in the knowledge graph.
 
 Files written
 -------------
-data/kegg_compound_names.tsv   KEGG_ID<TAB>name  (e.g. C00031<TAB>D-Glucose)
-data/kegg_reaction_names.tsv   KEGG_ID<TAB>name  (e.g. R00710<TAB>Acetaldehyde:NAD+...)
+data/kegg_compound_names.tsv      KEGG_ID<TAB>name  (e.g. C00031<TAB>D-Glucose)
+data/kegg_reaction_names.tsv      KEGG_ID<TAB>name  (e.g. R00710<TAB>Acetaldehyde:NAD+...)
+data/{org}_gene_names.tsv         gene_ID<TAB>symbol; description  (per organism)
 
 KEGG REST endpoints used
 ------------------------
 https://rest.kegg.jp/list/compound   — ~18 000 rows
 https://rest.kegg.jp/list/reaction   — ~12 000 rows
+https://rest.kegg.jp/list/{org}      — per-organism gene list (e.g. hsa, cge)
 
-Both are served as plain text, one entry per line, with no authentication
-requirement.  KEGG asks that automated tools sleep 1 s between requests.
+All are served as plain text with no authentication. KEGG asks that automated
+tools sleep 1 s between requests.
 
 Usage
 -----
     python scripts/download_kegg_names.py [--data DIR]
+    python scripts/download_kegg_names.py --genes hsa cge
+    python scripts/download_kegg_names.py --genes hsa cge --force
 
 Options
 -------
---data DIR   Directory to write TSV files (default: data/)
---force      Overwrite existing files even if they are already present
---quiet      Suppress progress output
+--data DIR        Directory to write TSV files (default: data/)
+--genes ORG ...   Organism codes to download gene name lists for (e.g. hsa cge)
+--force           Overwrite existing files even if they are already present
+--quiet           Suppress progress output
 
 Author: Eric G. Suchanek, PhD
 """
@@ -117,6 +122,57 @@ def download_kegg_names(
     return written
 
 
+def download_gene_names(
+    organisms: list[str],
+    data_dir: Path = _DEFAULT_DATA,
+    *,
+    force: bool = False,
+    quiet: bool = False,
+) -> dict[str, Path]:
+    """
+    Download per-organism KEGG gene name lists into *data_dir*.
+
+    Each organism produces ``{org}_gene_names.tsv`` with lines::
+
+        {org}:{gene_id}\\t{symbol}[, alias]; description [KO:...] [EC:...]
+
+    Used by Phase 3 of ``metabokg-enrich`` to resolve bare gene IDs to symbols.
+
+    :param organisms: List of KEGG organism codes (e.g. ``["hsa", "cge"]``).
+    :param data_dir: Directory to write TSV files.
+    :param force: Overwrite existing files.
+    :param quiet: Suppress progress output.
+    :return: Dict mapping organism code → Path of the written file.
+    """
+    data_dir.mkdir(parents=True, exist_ok=True)
+    written: dict[str, Path] = {}
+
+    for org in organisms:
+        filename = f"{org}_gene_names.tsv"
+        dest = data_dir / filename
+        if dest.exists() and not force:
+            if not quiet:
+                n = _count_lines(dest)
+                print(
+                    f"  SKIP  {dest}  ({n} rows already present, use --force to re-download)",
+                    file=sys.stderr,
+                )
+            written[org] = dest
+            continue
+
+        url = f"https://rest.kegg.jp/list/{org}"
+        text = _fetch(url, quiet=quiet)
+        dest.write_text(text, encoding="utf-8")
+        n = _count_lines(dest)
+        if not quiet:
+            print(f"  OK    {dest}  ({n} entries)", file=sys.stderr)
+        written[org] = dest
+
+        time.sleep(1)
+
+    return written
+
+
 def main(argv: list[str] | None = None) -> int:
     """
     CLI entry point.
@@ -126,13 +182,20 @@ def main(argv: list[str] | None = None) -> int:
     """
     p = argparse.ArgumentParser(
         prog="download_kegg_names",
-        description="Bulk-download KEGG compound and reaction name lists to data/.",
+        description="Bulk-download KEGG compound, reaction, and gene name lists to data/.",
     )
     p.add_argument(
         "--data",
         default=str(_DEFAULT_DATA),
         metavar="DIR",
         help=f"Output directory (default: {_DEFAULT_DATA})",
+    )
+    p.add_argument(
+        "--genes",
+        nargs="+",
+        metavar="ORG",
+        default=[],
+        help="Organism codes to download gene name lists for (e.g. --genes hsa cge)",
     )
     p.add_argument(
         "--force",
@@ -151,6 +214,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Downloading KEGG name lists to {data_dir}/", file=sys.stderr)
 
     download_kegg_names(data_dir, force=args.force, quiet=args.quiet)
+
+    if args.genes:
+        if not args.quiet:
+            print(f"Downloading gene name lists for: {', '.join(args.genes)}", file=sys.stderr)
+        download_gene_names(args.genes, data_dir, force=args.force, quiet=args.quiet)
 
     if not args.quiet:
         print("Done.", file=sys.stderr)

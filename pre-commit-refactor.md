@@ -12,7 +12,7 @@ Created from scratch, following `code_kg`'s pattern.
 1. Delegates to `.pre-commit-config.yaml` via the venv `pre-commit` binary (ruff, mypy, detect-secrets, etc.)
 2. Rebuilds CodeKG index with `--wipe`
 3. Snapshots CodeKG → stages `.codekg/snapshots/`
-4. Snapshots MetaboKG (if `.metabokg/meta.sqlite` exists) → stages `.metabokg/snapshots/`
+4. Snapshots MetaboKG (if `.metabokg/hsa.sqlite` exists) → stages `.metabokg/snapshots/`
 5. Snapshots DocKG (if `.dockg/` exists) → stages `.dockg/snapshots/`
 
 Skip hook entirely with `CODEKG_SKIP_SNAPSHOT=1 git commit`.

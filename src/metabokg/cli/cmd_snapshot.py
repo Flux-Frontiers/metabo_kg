@@ -15,7 +15,7 @@ from pathlib import Path
 import click
 
 from metabokg.cli.main import cli
-from metabokg.cli.options import db_option
+from metabokg.cli.options import db_option, resolve_db
 from metabokg.snapshots import SnapshotManager
 from metabokg.store import MetaStore
 
@@ -53,7 +53,7 @@ def snapshot() -> None:
 )
 def save_snapshot(
     version: str,
-    db: str,
+    db: str | None,
     snapshots_dir: str | None,
     branch: str | None,
     tree_hash: str,
@@ -71,7 +71,7 @@ def save_snapshot(
         metabokg snapshot save 1.2.0
         metabokg snapshot save          # uses installed package version
     """
-    db_path = Path(db)
+    db_path = Path(resolve_db(db))
     if not db_path.exists():
         click.echo(
             f"ERROR: database not found at '{db_path}'. Run 'metabokg-build' first.", err=True

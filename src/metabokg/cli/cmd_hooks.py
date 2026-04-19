@@ -54,7 +54,7 @@ BRANCH=$(git rev-parse --abbrev-ref HEAD)
 git add .codekg/snapshots/ 2>/dev/null || true
 
 # --- MetaboKG: metabolic pathway knowledge graph ---
-if [ -f ".metabokg/meta.sqlite" ]; then
+if [ -f ".metabokg/hsa.sqlite" ]; then
     "$REPO_ROOT/.venv/bin/metabokg" snapshot save \\
         --tree-hash "$TREE_HASH" \\
         --branch "$BRANCH" \\

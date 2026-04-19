@@ -38,7 +38,7 @@ poetry install --all-extras  # Full install with viz, viz3d, mcp
 | `metabokg-mcp` | MCP server for Claude |
 
 **Common options:**
-- `--db PATH`: SQLite db (default: `.metabokg/meta.sqlite`)
+- `--db PATH`: SQLite db (default: `.metabokg/hsa.sqlite`)
 - `--lancedb PATH`: Vector index (default: `.metabokg/lancedb`)
 - `--wipe`: Wipe existing data before building (default: keep existing)
 - `--no-index`: Skip LanceDB (SQLite only)
@@ -131,6 +131,29 @@ kg.simulate_whatif("pwy:kegg:hsa00010", json.dumps(scenario), mode="fba")
 # Load kinetics from literature
 kg.seed_kinetics()
 ```
+
+---
+
+## Multi-Corpus Convention (KGRAG)
+
+Each organism or model builds into its own named db and registers as a separate
+KGRAG corpus, enabling federated cross-organism queries.
+
+| Corpus | DB path | Content |
+|--------|---------|---------|
+| `metabokg-hsa` | `.metabokg/hsa.sqlite` *(default)* | 369 human pathways |
+| `metabokg-cge` | `.metabokg/cge.sqlite` | 366 CHO (*C. griseus*) pathways |
+| `metabokg-icho` | `.metabokg/icho.sqlite` | iCHO2441 GEM, 6,663 reactions |
+
+```bash
+metabokg-build --data data/hsa_pathways                          # human (default db)
+metabokg-build --data data/cge_pathways --db .metabokg/cge.sqlite
+metabokg-build --data data/icho_model   --db .metabokg/icho.sqlite
+```
+
+- **Enzyme name resolution** requires `data/{org}_gene_names.tsv` — download once with
+  `python scripts/download_kegg_names.py --genes cge hsa`
+- After Phase 3 enrichment, `--knockout Ldha` works directly (no node ID lookup needed)
 
 ---
 

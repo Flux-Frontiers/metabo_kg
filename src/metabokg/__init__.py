@@ -8,7 +8,7 @@ Quick start::
 
     from metabokg import MetaKG
 
-    kg = MetaKG(db_path=".metabokg/meta.sqlite")
+    kg = MetaKG(db_path=".metabokg/hsa.sqlite")
     stats = kg.build(data_dir="./pathway_files", wipe=True)
     print(stats)
 

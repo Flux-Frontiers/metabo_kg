@@ -14,7 +14,7 @@ import click
 
 from metabokg.cli._utils import _timestamped_filename
 from metabokg.cli.main import cli
-from metabokg.cli.options import db_option
+from metabokg.cli.options import db_option, resolve_db
 
 _OUTPUT_OPTION = click.option(
     "--output",
@@ -41,14 +41,14 @@ _PLAIN_OPTION = click.option("--plain", is_flag=True, help="Plain-text output in
 @_OUTPUT_OPTION
 @_TOP_OPTION
 @_PLAIN_OPTION
-def analyze(db: str, output: str | None, top: int, plain: bool) -> None:
+def analyze(db: str | None, output: str | None, top: int, plain: bool) -> None:
     """Thorough metabolic pathway analysis report.
 
     Identifies hub metabolites, complex reactions, cross-pathway connections,
     pathway coupling, dead-end metabolites, and top enzymes.
     Writes to a timestamped file by default (e.g. metabokg-analysis-2026-03-01-143022.md).
     """
-    db_path = Path(db)
+    db_path = Path(resolve_db(db))
     if not db_path.exists():
         raise click.ClickException(f"database not found: {db_path}\nRun 'metabokg build' first.")
 
@@ -71,12 +71,12 @@ def analyze(db: str, output: str | None, top: int, plain: bool) -> None:
 @_OUTPUT_OPTION
 @_TOP_OPTION
 @_PLAIN_OPTION
-def analyze_basic(db: str, output: str | None, top: int, plain: bool) -> None:
+def analyze_basic(db: str | None, output: str | None, top: int, plain: bool) -> None:
     """Basic structured analysis report: facts, ranked lists, minimal narrative.
 
     Writes to a timestamped file by default (e.g. metabokg-analysis-basic-2026-03-01-143022.md).
     """
-    db_path = Path(db)
+    db_path = Path(resolve_db(db))
     if not db_path.exists():
         raise click.ClickException(f"database not found: {db_path}\nRun 'metabokg build' first.")
 

@@ -24,14 +24,14 @@ data/hsa_pathways/*.kgml  (patched)
      ▼
 metabokg-build --data data/hsa_pathways/  ← wipes and rebuilds by default
      │  KGMLParser → MetaNode/MetaEdge
-     ├──► .metabokg/meta.sqlite   (SQLite knowledge graph)
+     ├──► .metabokg/hsa.sqlite   (SQLite knowledge graph)
      └──► .metabokg/lancedb/      (vector index for semantic search)
      │
      ▼
 metabokg-simulate seed           ← run once after build
      │  kinetics_fetch.py → kinetic_parameters + regulatory_interactions
      ▼
-.metabokg/meta.sqlite  (complete)
+.metabokg/hsa.sqlite  (complete)
      │
      ├── metabokg-analyze         → Markdown pathway analysis report
      ├── metabokg-simulate fba    → flux distribution
@@ -105,7 +105,7 @@ metabokg-build --data data/hsa_pathways/ --no-seed-kinetics
 
 # Custom paths or embedding model
 metabokg-build --data data/hsa_pathways/ \
-             --db .metabokg/meta.sqlite \
+             --db .metabokg/hsa.sqlite \
              --lancedb .metabokg/lancedb \
              --model all-MiniLM-L6-v2
 ```

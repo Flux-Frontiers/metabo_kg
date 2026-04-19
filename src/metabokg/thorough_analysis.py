@@ -10,7 +10,7 @@ Usage::
     from metabokg.analyze import PathwayAnalyzer
     from metabokg.thorough_analysis import render_thorough_report
 
-    with PathwayAnalyzer(".metabokg/meta.sqlite", top_n=20) as analyzer:
+    with PathwayAnalyzer(".metabokg/hsa.sqlite", top_n=20) as analyzer:
         report = analyzer.run()
 
     print(render_thorough_report(report))

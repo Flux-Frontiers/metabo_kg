@@ -6,6 +6,7 @@ Registers:
   metabokg simulate ode     — ODE kinetic simulation
   metabokg simulate whatif  — perturbation / what-if analysis
   metabokg simulate seed    — seed kinetic parameters from literature
+  metabokg simulate seed-cho — seed CHO-specific kinetics (Cricetulus griseus)
 """
 
 from __future__ import annotations
@@ -16,7 +17,7 @@ import click
 
 from metabokg.cli._utils import _parse_conc_args, _parse_factor_args, _write_output
 from metabokg.cli.main import cli
-from metabokg.cli.options import db_option
+from metabokg.cli.options import db_option, resolve_db
 
 
 @cli.group("simulate")
@@ -38,10 +39,10 @@ from metabokg.cli.options import db_option
     help="Maximum items to list in each table.",
 )
 @click.pass_context
-def simulate(ctx: click.Context, db: str, output: str | None, plain: bool, top: int) -> None:
+def simulate(ctx: click.Context, db: str | None, output: str | None, plain: bool, top: int) -> None:
     """Metabolic simulation: FBA, ODE kinetics, and what-if analysis."""
     ctx.ensure_object(dict)
-    ctx.obj.update({"db": db, "output": output, "plain": plain, "top": top})
+    ctx.obj.update({"db": resolve_db(db), "output": output, "plain": plain, "top": top})
 
 
 @simulate.command("fba")
@@ -241,6 +242,27 @@ def seed(obj: dict, force: bool) -> None:
         result = kg.seed_kinetics(force=force)
     n_kp = result["kinetic_params_written"]
     n_ri = result["regulatory_interactions_written"]
+    click.echo(
+        f"Done. Wrote {n_kp} kinetic parameter row(s) and {n_ri} regulatory interaction row(s).",
+        err=True,
+    )
+
+
+@simulate.command("seed-cho")
+@click.option("--force", is_flag=True, help="Overwrite existing kinetic parameter rows.")
+@click.pass_obj
+def seed_cho(obj: dict, force: bool) -> None:
+    """Seed CHO-specific kinetic parameters (Cricetulus griseus, 37°C, pH 7.2)."""
+    db_path = Path(obj["db"])
+    if not db_path.exists():
+        raise click.ClickException(f"database not found: {db_path}\nRun 'metabokg build' first.")
+
+    from metabokg.cho_kinetics import seed_cho_kinetics
+    from metabokg.store import MetaStore
+
+    click.echo(f"Seeding CHO kinetic parameters into {db_path}...", err=True)
+    with MetaStore(db_path) as store:
+        n_kp, n_ri = seed_cho_kinetics(store, force=force)
     click.echo(
         f"Done. Wrote {n_kp} kinetic parameter row(s) and {n_ri} regulatory interaction row(s).",
         err=True,

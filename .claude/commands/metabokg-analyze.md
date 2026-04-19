@@ -31,7 +31,7 @@ Analyzes the MetaboKG database and produces a polished, CodeKG-style report incl
 
 Make sure you have:
 1. ✓ Built the MetaboKG database: `metabokg-build --data pathways/ --wipe`
-2. ✓ Database exists at `.metabokg/meta.sqlite`
+2. ✓ Database exists at `.metabokg/hsa.sqlite`
 
 ## Output
 
@@ -51,7 +51,7 @@ Make sure you have:
 metabokg-analyze
 
 # Save Markdown report
-metabokg-analyze --db .metabokg/meta.sqlite --output Analysis_$(date +%Y%m%d).md
+metabokg-analyze --db .metabokg/hsa.sqlite --output Analysis_$(date +%Y%m%d).md
 
 # Full details with top 50 items
 metabokg-analyze --top 50 --output report.md

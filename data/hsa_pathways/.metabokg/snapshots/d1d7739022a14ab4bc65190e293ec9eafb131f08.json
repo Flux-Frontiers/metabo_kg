@@ -1,0 +1,98 @@
+{
+  "key": "d1d7739022a14ab4bc65190e293ec9eafb131f08",
+  "branch": "main",
+  "timestamp": "2026-03-18T04:25:47.686366+00:00",
+  "version": "v0.4.0",
+  "metrics": {
+    "total_nodes": 17050,
+    "total_edges": 40166,
+    "node_counts": {
+      "compound": 5115,
+      "enzyme": 9427,
+      "pathway": 369,
+      "reaction": 2139
+    },
+    "edge_counts": {
+      "CATALYZES": 2394,
+      "CONTAINS": 32689,
+      "PRODUCT_OF": 2532,
+      "SUBSTRATE_OF": 2551
+    },
+    "kinetic_params": 32,
+    "pathway_count": 369,
+    "dead_end_count": 0,
+    "category_counts": {
+      "cellular_process": 39,
+      "genetic_info_processing": 29,
+      "human_disease": 84,
+      "metabolic": 99,
+      "organismal_system": 98,
+      "signaling": 19,
+      "transport": 1
+    }
+  },
+  "hub_metabolites": [
+    {
+      "id": "cpd:kegg:C00024",
+      "name": "Acetyl-CoA",
+      "formula": null,
+      "reaction_count": 20
+    },
+    {
+      "id": "cpd:kegg:C00037",
+      "name": "Glycine",
+      "formula": null,
+      "reaction_count": 16
+    },
+    {
+      "id": "cpd:kegg:C00049",
+      "name": "L-Aspartate",
+      "formula": null,
+      "reaction_count": 15
+    },
+    {
+      "id": "cpd:kegg:C00219",
+      "name": "Arachidonate",
+      "formula": null,
+      "reaction_count": 13
+    },
+    {
+      "id": "cpd:kegg:C00101",
+      "name": "Tetrahydrofolate",
+      "formula": null,
+      "reaction_count": 13
+    },
+    {
+      "id": "cpd:kegg:C00350",
+      "name": "Phosphatidylethanolamine",
+      "formula": null,
+      "reaction_count": 12
+    },
+    {
+      "id": "cpd:kegg:C00065",
+      "name": "L-Serine",
+      "formula": null,
+      "reaction_count": 12
+    },
+    {
+      "id": "cpd:kegg:C00026",
+      "name": "2-Oxoglutarate",
+      "formula": null,
+      "reaction_count": 12
+    },
+    {
+      "id": "cpd:kegg:C01209",
+      "name": "Malonyl-[acyl-carrier protein]",
+      "formula": null,
+      "reaction_count": 11
+    },
+    {
+      "id": "cpd:kegg:C00195",
+      "name": "N-Acylsphingosine",
+      "formula": null,
+      "reaction_count": 11
+    }
+  ],
+  "vs_previous": null,
+  "vs_baseline": null
+}

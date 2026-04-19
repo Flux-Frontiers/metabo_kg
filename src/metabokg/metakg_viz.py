@@ -29,13 +29,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Launch the MetaKG Streamlit visualizer.")
     parser.add_argument(
         "--db",
-        default=".metabokg/meta.sqlite",
-        help="Path to the SQLite database (default: .metabokg/meta.sqlite)",
+        default=None,
+        help="Path to the SQLite database (default: METABOKG_DB env or .metabokg/hsa.sqlite)",
     )
     parser.add_argument(
         "--lancedb",
-        default=".metabokg/lancedb",
-        help="Path to the LanceDB directory (default: .metabokg/lancedb)",
+        default=None,
+        help="Path to the LanceDB directory (default: METABOKG_LANCEDB env or .metabokg/lancedb)",
     )
     parser.add_argument(
         "--port",
@@ -48,6 +48,11 @@ def main() -> None:
         help="Do not open a browser window automatically",
     )
     args = parser.parse_args()
+
+    import os
+
+    db = args.db or os.environ.get("METABOKG_DB", ".metabokg/hsa.sqlite")
+    lancedb = args.lancedb or os.environ.get("METABOKG_LANCEDB", ".metabokg/lancedb")
 
     # app.py is bundled alongside this module in the package directory
     app_path = Path(__file__).parent / "app.py"
@@ -69,17 +74,17 @@ def main() -> None:
         str(args.port),
         "--",
         "--db",
-        args.db,
+        db,
         "--lancedb",
-        args.lancedb,
+        lancedb,
     ]
     if args.no_browser:
         cmd[5:5] = ["--server.headless", "true"]
 
     print(f"Launching MetaKG Explorer on http://localhost:{args.port}")
     print(f"  app    : {app_path}")
-    print(f"  db     : {args.db}")
-    print(f"  lancedb: {args.lancedb}")
+    print(f"  db     : {db}")
+    print(f"  lancedb: {lancedb}")
     print("  Press Ctrl+C to stop.\n")
 
     try:
