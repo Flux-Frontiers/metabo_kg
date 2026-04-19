@@ -119,9 +119,17 @@ SKILL_DIRS=(
 
 # Global Claude Code command files to install to ~/.claude/commands/
 CLAUDE_COMMAND_FILES=(
-    "metabokg.md"
-    "metabokg-rebuild.md"
+    "metabokg-build.md"
+    "metabokg-analyze.md"
+    "metabokg-simulate.md"
+    "metabokg-viz.md"
     "setup-mcp.md"
+    "changelog-commit.md"
+    "continue.md"
+    "protocol.md"
+    "release.md"
+    "pycodekg.md"
+    "pycodekg-rebuild.md"
 )
 
 # ── Detect if we're running from inside the repo ─────────────────────────────
@@ -301,10 +309,25 @@ PYEOF
 }
 
 metabokg_BIN=""
-# Check if metabokg is already on PATH
-if command -v metabokg &>/dev/null; then
+
+# Probe for an existing installation in order of priority:
+#   1. Local .venv in the target repo (Poetry project that added metabokg)
+#   2. Local .venv in the metabo_kg source repo (running the script from the repo itself)
+#   3. Importable in the active Python environment
+#   4. On $PATH
+if [ -x "${TARGET_REPO}/.venv/bin/metabokg" ]; then
+    metabokg_BIN="${TARGET_REPO}/.venv/bin/metabokg"
+    echo "  ✓ Found metabokg in local venv: ${metabokg_BIN}"
+elif [ -n "${REPO_ROOT}" ] && [ -x "${REPO_ROOT}/.venv/bin/metabokg" ]; then
+    metabokg_BIN="${REPO_ROOT}/.venv/bin/metabokg"
+    echo "  ✓ Found metabokg in source venv: ${metabokg_BIN}"
+elif python3 -c "import metabo_kg" &>/dev/null 2>&1; then
+    metabokg_BIN="$(python3 -c "import sysconfig; print(sysconfig.get_path('scripts'))")/metabokg"
+    [ -x "$metabokg_BIN" ] || metabokg_BIN="metabokg"
+    echo "  ✓ Found metabo_kg in Python environment — metabokg: ${metabokg_BIN}"
+elif command -v metabokg &>/dev/null; then
     metabokg_BIN="$(command -v metabokg)"
-    echo "  ✓ Found metabokg at: ${metabokg_BIN}"
+    echo "  ✓ Found metabokg on PATH: ${metabokg_BIN}"
 fi
 
 if [ -z "$metabokg_BIN" ]; then
@@ -357,11 +380,12 @@ if [ "$DO_CLINE" = "1" ]; then
         echo "  [dry-run] would upsert metabokg-${REPO_NAME} in ${CLINE_SETTINGS}"
     else
         REPO_NAME="$(basename "${TARGET_REPO}")"
-        python3 - "$CLINE_SETTINGS" "$TARGET_REPO" "$REPO_NAME" <<'PYEOF'
+        python3 - "$CLINE_SETTINGS" "$TARGET_REPO" "$REPO_NAME" "$metabokg_BIN" <<'PYEOF'
 import json, sys
 cline_settings = sys.argv[1]
 target_repo    = sys.argv[2]
 repo_name      = sys.argv[3]
+metabokg_bin   = sys.argv[4]
 server_key     = f"metabokg-{repo_name}"
 
 with open(cline_settings, "r") as f:
@@ -370,7 +394,7 @@ if "mcpServers" not in data:
     data["mcpServers"] = {}
 
 data["mcpServers"][server_key] = {
-    "command": "metabokg",
+    "command": metabokg_bin,
     "args": ["mcp", "--repo", target_repo,
              "--db", f"{target_repo}/.metabokg/graph.sqlite"]
 }
@@ -450,8 +474,9 @@ elif [ ! -f "$MCP_JSON" ]; then
 {
   "mcpServers": {
     "metabokg": {
-      "command": "metabokg-mcp",
+      "command": "${metabokg_BIN}",
       "args": [
+        "mcp",
         "--repo", "${TARGET_REPO}"
       ]
     }
@@ -460,17 +485,18 @@ elif [ ! -f "$MCP_JSON" ]; then
 EOF
     echo "  ✓ Created ${MCP_JSON}"
 else
-    python3 - "$MCP_JSON" "$TARGET_REPO" <<'PYEOF'
+    python3 - "$MCP_JSON" "$TARGET_REPO" "$metabokg_BIN" <<'PYEOF'
 import json, sys
-mcp_json    = sys.argv[1]
-target_repo = sys.argv[2]
+mcp_json     = sys.argv[1]
+target_repo  = sys.argv[2]
+metabokg_bin = sys.argv[3]
 with open(mcp_json, "r") as f:
     data = json.load(f)
 if "mcpServers" not in data:
     data["mcpServers"] = {}
 data["mcpServers"]["metabokg"] = {
-    "command": "metabokg-mcp",
-    "args": ["--repo", target_repo]
+    "command": metabokg_bin,
+    "args": ["mcp", "--repo", target_repo]
 }
 with open(mcp_json, "w") as f:
     json.dump(data, f, indent=2)
@@ -516,17 +542,18 @@ else
 EOF
         echo "  ✓ Created ${VSCODE_MCP}"
     else
-        python3 - "$VSCODE_MCP" "$TARGET_REPO" <<'PYEOF'
+        python3 - "$VSCODE_MCP" "$TARGET_REPO" "$metabokg_BIN" <<'PYEOF'
 import json, sys
-vscode_mcp  = sys.argv[1]
-target_repo = sys.argv[2]
+vscode_mcp   = sys.argv[1]
+target_repo  = sys.argv[2]
+metabokg_bin = sys.argv[3]
 with open(vscode_mcp, "r") as f:
     data = json.load(f)
 if "servers" not in data:
     data["servers"] = {}
 data["servers"]["metabokg"] = {
     "type": "stdio",
-    "command": "metabokg",
+    "command": metabokg_bin,
     "args": ["mcp", "--repo", target_repo,
              "--db", f"{target_repo}/.metabokg/graph.sqlite"]
 }
@@ -555,14 +582,22 @@ echo "  SQLite:  ${SQLITE_DB}"
 echo "  LanceDB: ${LANCEDB_DIR}"
 echo ""
 echo "  Claude commands installed:"
-echo "    ✓ ~/.claude/commands/metabokg.md"
-echo "    ✓ ~/.claude/commands/metabokg-rebuild.md"
+echo "    ✓ ~/.claude/commands/metabokg-build.md"
+echo "    ✓ ~/.claude/commands/metabokg-analyze.md"
+echo "    ✓ ~/.claude/commands/metabokg-simulate.md"
+echo "    ✓ ~/.claude/commands/metabokg-viz.md"
 echo "    ✓ ~/.claude/commands/setup-mcp.md"
+echo "    ✓ ~/.claude/commands/changelog-commit.md"
+echo "    ✓ ~/.claude/commands/continue.md"
+echo "    ✓ ~/.claude/commands/protocol.md"
+echo "    ✓ ~/.claude/commands/release.md"
+echo "    ✓ ~/.claude/commands/pycodekg.md"
+echo "    ✓ ~/.claude/commands/pycodekg-rebuild.md"
 echo ""
 echo "  Providers configured:"
 ( [ "$DO_CLAUDE" = "1" ] || [ "$DO_KILO" = "1" ] ) && echo "    ✓ Claude Code + Kilo Code  (.mcp.json)"
 [ "$DO_COPILOT" = "1" ] && echo "    ✓ GitHub Copilot (.vscode/mcp.json)"
-[ "$DO_CLINE"   = "1" ] && echo "    ✓ Cline          (.claude/commands/metabokg.md + cline_mcp_settings.json)"
+[ "$DO_CLINE"   = "1" ] && echo "    ✓ Cline          (.claude/commands/metabokg-build.md + cline_mcp_settings.json)"
 echo ""
 echo "  ⚠ One manual step required:"
 echo "    Reload VS Code to activate the MCP servers:"
