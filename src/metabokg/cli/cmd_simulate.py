@@ -17,7 +17,7 @@ import click
 
 from metabokg.cli._utils import _parse_conc_args, _parse_factor_args, _write_output
 from metabokg.cli.main import cli
-from metabokg.cli.options import db_option
+from metabokg.cli.options import db_option, resolve_db
 
 
 @cli.group("simulate")
@@ -39,10 +39,10 @@ from metabokg.cli.options import db_option
     help="Maximum items to list in each table.",
 )
 @click.pass_context
-def simulate(ctx: click.Context, db: str, output: str | None, plain: bool, top: int) -> None:
+def simulate(ctx: click.Context, db: str | None, output: str | None, plain: bool, top: int) -> None:
     """Metabolic simulation: FBA, ODE kinetics, and what-if analysis."""
     ctx.ensure_object(dict)
-    ctx.obj.update({"db": db, "output": output, "plain": plain, "top": top})
+    ctx.obj.update({"db": resolve_db(db), "output": output, "plain": plain, "top": top})
 
 
 @simulate.command("fba")

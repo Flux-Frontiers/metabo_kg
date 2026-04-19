@@ -21,7 +21,7 @@ Typical usage::
     from metabokg.store import MetaStore
     from metabokg.simulate import MetabolicSimulator, SimulationConfig, WhatIfScenario
 
-    store = MetaStore(".metabokg/meta.sqlite")
+    store = MetaStore(".metabokg/hsa.sqlite")
     sim   = MetabolicSimulator(store)
 
     # --- FBA ---
@@ -836,8 +836,16 @@ def render_whatif_result(
     if result.mode == "fba":
         assert isinstance(result.baseline, FBAResult)
         assert isinstance(result.perturbed, FBAResult)
-        _base_obj = f"{result.baseline.objective_value:.6g}" if result.baseline.objective_value is not None else "N/A"
-        _pert_obj = f"{result.perturbed.objective_value:.6g}" if result.perturbed.objective_value is not None else "N/A"
+        _base_obj = (
+            f"{result.baseline.objective_value:.6g}"
+            if result.baseline.objective_value is not None
+            else "N/A"
+        )
+        _pert_obj = (
+            f"{result.perturbed.objective_value:.6g}"
+            if result.perturbed.objective_value is not None
+            else "N/A"
+        )
         lines.append(f"{bold[0]}Baseline objective:{bold[1]} {_base_obj}")
         lines.append(f"{bold[0]}Perturbed objective:{bold[1]} {_pert_obj}")
         lines.append("")

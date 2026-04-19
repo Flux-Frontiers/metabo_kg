@@ -22,6 +22,20 @@ from metabokg.cli.options import (
 )
 
 
+def _colocate_defaults(data_dir: Path, db: str | None, lancedb: str | None) -> tuple[str, str]:
+    """Derive db and lancedb paths from data_dir when not explicitly given.
+
+    The db name is derived from the data directory: 'hsa_pathways' → 'hsa.sqlite'.
+    """
+    dot_dir = data_dir / ".metabokg"
+    dot_dir.mkdir(parents=True, exist_ok=True)
+    if db is None:
+        org = data_dir.name.split("_")[0]
+        db = str(dot_dir / f"{org}.sqlite")
+    resolved_lancedb = lancedb or str(dot_dir / "lancedb")
+    return db, resolved_lancedb
+
+
 @cli.command("build")
 @data_option
 @db_option
@@ -63,6 +77,7 @@ def build(
     data_dir = Path(data).resolve()
     if not data_dir.exists():
         raise click.ClickException(f"data directory not found: {data_dir}")
+    db, lancedb = _colocate_defaults(data_dir, db, lancedb)
 
     from metabokg import MetaKG
 
@@ -159,6 +174,7 @@ def update(
     data_dir = Path(data).resolve()
     if not data_dir.exists():
         raise click.ClickException(f"data directory not found: {data_dir}")
+    db, lancedb = _colocate_defaults(data_dir, db, lancedb)
 
     from metabokg import MetaKG
 

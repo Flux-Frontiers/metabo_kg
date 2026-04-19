@@ -53,12 +53,12 @@ poetry run python scripts/download_human_kegg.py --output data/hsa_pathways --dr
 
 ```bash
 # Parse pathway files and build the KG (enrichment enabled by default)
-metabokg-build --data ./data/hsa_pathways --db .metabokg/meta.sqlite --lancedb .metabokg/lancedb
+metabokg-build --data ./data/hsa_pathways --db .metabokg/hsa.sqlite --lancedb .metabokg/lancedb
 
 # Output:
 # Building MetaboKG from ./data/hsa_pathways...
 # data_root   : ./data/hsa_pathways
-# db_path     : .metabokg/meta.sqlite
+# db_path     : .metabokg/hsa.sqlite
 # nodes       : 17050  {'compound': 5115, 'reaction': 2139, 'enzyme': 9427, 'pathway': 369}
 # edges       : 40166  {'SUBSTRATE_OF': 2551, 'PRODUCT_OF': 2532, 'CATALYZES': 2394, 'CONTAINS': 32689}
 # isolated    : 0
@@ -131,13 +131,13 @@ Parse pathway files and build the knowledge graph.
 
 ```bash
 metabokg-build --data ./pathways \
-             --db .metabokg/meta.sqlite \
+             --db .metabokg/hsa.sqlite \
              --lancedb .metabokg/lancedb \
              --model all-MiniLM-L6-v2
 
 Options:
   --data PATH              Directory containing pathway files (required)
-  --db PATH                SQLite database path (default: .metabokg/meta.sqlite)
+  --db PATH                SQLite database path (default: .metabokg/hsa.sqlite)
   --lancedb PATH           LanceDB directory (default: .metabokg/lancedb)
   --model NAME             Sentence-transformer model (default: all-MiniLM-L6-v2)
   --no-index               Skip building LanceDB vector index
@@ -157,7 +157,7 @@ metabokg-update --data ./new_pathways
 Launch interactive Streamlit web explorer.
 
 ```bash
-metabokg-viz --db .metabokg/meta.sqlite \
+metabokg-viz --db .metabokg/hsa.sqlite \
            --lancedb .metabokg/lancedb \
            --port 8500
 
@@ -178,7 +178,7 @@ Options:
 Launch interactive 3D PyVista metabolic pathway visualizer.
 
 ```bash
-metabokg-viz3d --db .metabokg/meta.sqlite \
+metabokg-viz3d --db .metabokg/hsa.sqlite \
              --layout allium \
              --width 1400 \
              --height 900
@@ -202,7 +202,7 @@ Options:
 Start MCP server to expose the knowledge graph to Claude and other AI assistants.
 
 ```bash
-metabokg-mcp --db .metabokg/meta.sqlite \
+metabokg-mcp --db .metabokg/hsa.sqlite \
            --lancedb .metabokg/lancedb \
            --transport stdio
 
@@ -220,7 +220,7 @@ Options:
 from metabokg import MetaKG
 
 # Build the knowledge graph
-kg = MetaKG(db_path=".metabokg/meta.sqlite", lancedb_dir=".metabokg/lancedb")
+kg = MetaKG(db_path=".metabokg/hsa.sqlite", lancedb_dir=".metabokg/lancedb")
 stats = kg.build(data_dir="./pathways", wipe=True, build_index=True)
 print(stats)
 
@@ -255,7 +255,7 @@ kg.close()
 ```python
 from metabokg import MetaKG
 
-kg = MetaKG(db_path=".metabokg/meta.sqlite", lancedb_dir=".metabokg/lancedb")
+kg = MetaKG(db_path=".metabokg/hsa.sqlite", lancedb_dir=".metabokg/lancedb")
 
 # Semantic similarity search
 results = kg.query_pathway("glucose metabolism", k=10)
@@ -271,7 +271,7 @@ kg.close()
 ```python
 from metabokg import MetaKG
 
-kg = MetaKG(db_path=".metabokg/meta.sqlite", lancedb_dir=".metabokg/lancedb")
+kg = MetaKG(db_path=".metabokg/hsa.sqlite", lancedb_dir=".metabokg/lancedb")
 
 # Run steady-state optimization
 result = kg.simulate_fba(
@@ -334,7 +334,7 @@ from metabokg.store import GraphStore
 from metabokg.layout3d import AlliumLayout, LayoutNode, LayoutEdge
 
 # Load graph
-store = GraphStore(".metabokg/meta.sqlite")
+store = GraphStore(".metabokg/hsa.sqlite")
 nodes_data = store.query_nodes()
 edges_data = store.query_edges()
 
@@ -404,20 +404,20 @@ poetry install --extras all
 
 ```bash
 # Visualization
-export METABOKG_DB=".metabokg/meta.sqlite"
+export METABOKG_DB=".metabokg/hsa.sqlite"
 export METABOKG_LANCEDB=".metabokg/lancedb"
 
 # Embedding model
 export METABOKG_MODEL="all-MiniLM-L6-v2"
 
 # Docker deployment
-export METABOKG_DB="/data/meta.sqlite"
+export METABOKG_DB="/data/hsa.sqlite"
 export METABOKG_LANCEDB="/data/lancedb"
 ```
 
 ### Database Defaults
 
-- **SQLite** — `.metabokg/meta.sqlite`
+- **SQLite** — `.metabokg/hsa.sqlite`
 - **LanceDB** — `.metabokg/lancedb`
 - **Embedding Model** — `all-MiniLM-L6-v2` (384-dimensional vectors)
 

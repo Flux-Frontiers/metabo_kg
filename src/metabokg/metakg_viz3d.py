@@ -11,7 +11,7 @@ Usage::
 Examples::
 
     # Open interactive window with Allium layout (default)
-    metabokg-viz3d --db .metabokg/meta.sqlite
+    metabokg-viz3d --db .metabokg/hsa.sqlite
 
     # Layer-cake layout showing metabolic relationships
     metabokg-viz3d --layout cake
@@ -44,15 +44,15 @@ def main() -> None:
     )
     parser.add_argument(
         "--db",
-        default=".metabokg/meta.sqlite",
+        default=None,
         metavar="PATH",
-        help="Path to the SQLite database (default: .metabokg/meta.sqlite)",
+        help="Path to the SQLite database (default: METABOKG_DB env or .metabokg/hsa.sqlite)",
     )
     parser.add_argument(
         "--lancedb",
-        default=".metabokg/lancedb",
+        default=None,
         metavar="PATH",
-        help="Path to the LanceDB directory (default: .metabokg/lancedb)",
+        help="Path to the LanceDB directory (default: METABOKG_LANCEDB env or .metabokg/lancedb)",
     )
     parser.add_argument(
         "--layout",
@@ -89,7 +89,12 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    db = Path(args.db)
+    import os
+
+    db_str = args.db or os.environ.get("METABOKG_DB", ".metabokg/hsa.sqlite")
+    lancedb_str = args.lancedb or os.environ.get("METABOKG_LANCEDB", ".metabokg/lancedb")
+
+    db = Path(db_str)
     if not db.exists():
         parser.error(
             f"Database not found: {db}\n"
@@ -100,7 +105,7 @@ def main() -> None:
 
     launch(
         db_path=str(db),
-        lancedb_dir=args.lancedb,
+        lancedb_dir=lancedb_str,
         layout_name=args.layout,
         width=args.width,
         height=args.height,

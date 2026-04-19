@@ -27,9 +27,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
+from pyvis.network import Network
+
 from metabokg.simulate import FBAResult, MetabolicSimulator, ODEResult, SimulationConfig
 from metabokg.store import GraphStore
-from pyvis.network import Network
 
 # ---------------------------------------------------------------------------
 # Constants — colours, shapes, and display strings
@@ -67,7 +68,7 @@ _REL_COLOR: dict[str, str] = {
 }
 
 # Honour the METAKG_DB env var for Docker deployment
-_DEFAULT_DB = os.environ.get("METAKG_DB", ".metabokg/meta.sqlite")
+_DEFAULT_DB = os.environ.get("METABOKG_DB", os.environ.get("METAKG_DB", ".metabokg/hsa.sqlite"))
 _DEFAULT_LANCEDB = os.environ.get("METAKG_LANCEDB", ".metabokg/lancedb")
 
 # ---------------------------------------------------------------------------
@@ -431,9 +432,7 @@ def _tab_graph(cfg: dict[str, Any]) -> None:
         filtered_nodes = filtered_nodes[: cfg["max_nodes"]]
         node_ids = {n["id"] for n in filtered_nodes}
         filtered_edges = [
-            e
-            for e in filtered_edges
-            if e.get("src") in node_ids and e.get("dst") in node_ids
+            e for e in filtered_edges if e.get("src") in node_ids and e.get("dst") in node_ids
         ]
 
     st.caption(f"Showing {len(filtered_nodes)} nodes and {len(filtered_edges)} edges")
@@ -450,9 +449,7 @@ def _tab_graph(cfg: dict[str, Any]) -> None:
                     "ID": n["id"],
                     "Kind": n.get("kind", ""),
                     "Name": n.get("name", ""),
-                    "Description": (n.get("description", "") or "")[
-                        :_DESCRIPTION_BRIEF_LEN
-                    ],
+                    "Description": (n.get("description", "") or "")[:_DESCRIPTION_BRIEF_LEN],
                 }
                 for n in filtered_nodes
             ]
@@ -591,11 +588,7 @@ def _tab_details(cfg: dict[str, Any]) -> None:
                             st.markdown(f"**Outgoing ({len(outgoing_edges)})**")
                             for e in outgoing_edges:
                                 dst_node = store.get_node(e["dst"])
-                                dst_name = (
-                                    dst_node.get("name", e["dst"])
-                                    if dst_node
-                                    else e["dst"]
-                                )
+                                dst_name = dst_node.get("name", e["dst"]) if dst_node else e["dst"]
                                 color = _REL_COLOR.get(e["rel"], "#95A5A6")
                                 st.markdown(
                                     f'<span style="color:{color}">→</span> '
@@ -608,11 +601,7 @@ def _tab_details(cfg: dict[str, Any]) -> None:
                             st.markdown(f"**Incoming ({len(incoming_edges)})**")
                             for e in incoming_edges:
                                 src_node = store.get_node(e["src"])
-                                src_name = (
-                                    src_node.get("name", e["src"])
-                                    if src_node
-                                    else e["src"]
-                                )
+                                src_name = src_node.get("name", e["src"]) if src_node else e["src"]
                                 color = _REL_COLOR.get(e["rel"], "#95A5A6")
                                 st.markdown(
                                     f'<span style="color:{color}">←</span> '
@@ -663,9 +652,7 @@ def _tab_simulation(cfg: dict[str, Any]) -> None:
         sim_type = st.selectbox("Simulation type", options=["ODE", "FBA"])
 
         t_end = st.number_input("Stop time", min_value=1.0, value=100.0, step=10.0)
-        t_points = st.number_input(
-            "Points", min_value=10, max_value=2000, value=300, step=10
-        )
+        t_points = st.number_input("Points", min_value=10, max_value=2000, value=300, step=10)
 
         start = st.button("▶ Start", use_container_width=True)
         stop = st.button("⏹ Stop", use_container_width=True)
@@ -753,9 +740,7 @@ def _tab_simulation(cfg: dict[str, Any]) -> None:
             {
                 "Compound": [cpd_names[c] for c in selected_cpds],
                 "Compound ID": selected_cpds,
-                "Final concentration [mM]": [
-                    result.concentrations[c][-1] for c in selected_cpds
-                ],
+                "Final concentration [mM]": [result.concentrations[c][-1] for c in selected_cpds],
             }
         ).sort_values("Final concentration [mM]", ascending=False)
         st.dataframe(final_df, use_container_width=True, hide_index=True)

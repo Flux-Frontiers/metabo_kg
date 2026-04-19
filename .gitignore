@@ -1,5 +1,7 @@
-# MetaKG generated database and index (build artifacts)
-.metabokg/
+# MetaKG build artifacts (databases, vectors — regenerate with metabokg-build)
+# Snapshots are tracked; only ignore the regenerable artifacts.
+**/.metabokg/*.sqlite
+**/.metabokg/lancedb/
 
 # SQLite WAL-mode temp files (appear alongside any .sqlite file)
 *.sqlite-shm

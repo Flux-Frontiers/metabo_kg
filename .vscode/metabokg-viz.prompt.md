@@ -22,7 +22,7 @@ Launch the MetaboKG interactive network visualization. Choose between 2D (Stream
 
 1. Confirm the database exists:
    ```bash
-   ls -lh .metabokg/meta.sqlite
+   ls -lh .metabokg/hsa.sqlite
    ```
 2. If missing, build first: `metabokg-build --data data/hsa_pathways`
 
@@ -39,7 +39,7 @@ metabokg-viz
 Options:
 ```bash
 metabokg-viz --port 8500          # Custom port (default: 8500)
-metabokg-viz --db .metabokg/meta.sqlite
+metabokg-viz --db .metabokg/hsa.sqlite
 ```
 
 **Features in the UI:**
@@ -65,7 +65,7 @@ metabokg-viz3d --layout cake           # Concentric rings by topology
 Options:
 ```bash
 metabokg-viz3d --layout allium|cake
-metabokg-viz3d --db .metabokg/meta.sqlite
+metabokg-viz3d --db .metabokg/hsa.sqlite
 metabokg-viz3d --width 1400 --height 900
 ```
 

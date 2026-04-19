@@ -31,14 +31,14 @@ Usage::
 
     from metabokg.analyze import PathwayAnalyzer, render_report
 
-    analyzer = PathwayAnalyzer(".metabokg/meta.sqlite")
+    analyzer = PathwayAnalyzer(".metabokg/hsa.sqlite")
     report   = analyzer.run()
     print(render_report(report))
 
 Or via CLI::
 
-    metabokg-analyze --db .metabokg/meta.sqlite
-    metabokg-analyze --db .metabokg/meta.sqlite --output report.md
+    metabokg-analyze --db .metabokg/hsa.sqlite
+    metabokg-analyze --db .metabokg/hsa.sqlite --output report.md
 
 Author: Eric G. Suchanek, PhD
 Last Revision: 2026-02-28 20:55:28

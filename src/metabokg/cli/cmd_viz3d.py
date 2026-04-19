@@ -10,7 +10,7 @@ from __future__ import annotations
 import click
 
 from metabokg.cli.main import cli
-from metabokg.cli.options import db_option, lancedb_option
+from metabokg.cli.options import db_option, lancedb_option, resolve_db, resolve_lancedb
 
 
 @cli.command("viz3d")
@@ -54,8 +54,8 @@ from metabokg.cli.options import db_option, lancedb_option
     help="Export to PNG file instead of opening interactive window.",
 )
 def viz3d(
-    db: str,
-    lancedb: str,
+    db: str | None,
+    lancedb: str | None,
     layout: str,
     width: int,
     height: int,
@@ -65,7 +65,8 @@ def viz3d(
     """Launch the 3D PyVista metabolic knowledge-graph visualizer."""
     from pathlib import Path
 
-    db_path = Path(db)
+    db_path = Path(resolve_db(db))
+    lancedb = resolve_lancedb(lancedb)
     if not db_path.exists():
         raise click.ClickException(
             f"Database not found: {db_path}\n"

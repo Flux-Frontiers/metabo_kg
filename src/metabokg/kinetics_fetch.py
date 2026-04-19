@@ -23,7 +23,7 @@ Usage::
     from metabokg.store import MetaStore
     from metabokg.kinetics_fetch import seed_kinetics
 
-    with MetaStore(".metabokg/meta.sqlite") as store:
+    with MetaStore(".metabokg/hsa.sqlite") as store:
         n_kp, n_ri = seed_kinetics(store)
         print(f"Seeded {n_kp} kinetic params, {n_ri} regulatory interactions.")
 

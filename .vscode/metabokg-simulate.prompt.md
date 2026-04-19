@@ -22,11 +22,11 @@ Run metabolic pathway simulations using the MetaboKG database. Supports four mod
 
 1. Verify the database exists:
    ```bash
-   ls -lh .metabokg/meta.sqlite
+   ls -lh .metabokg/hsa.sqlite
    ```
 2. If kinetics are needed for ODE/what-if, confirm they are seeded:
    ```bash
-   sqlite3 .metabokg/meta.sqlite "SELECT COUNT(*) FROM kinetic_parameters;"
+   sqlite3 .metabokg/hsa.sqlite "SELECT COUNT(*) FROM kinetic_parameters;"
    ```
    If 0, run `metabokg-simulate seed` first.
 
@@ -149,7 +149,7 @@ for p in pathways[:10]:
 
 Or via SQL:
 ```bash
-sqlite3 .metabokg/meta.sqlite "SELECT node_id, name FROM meta_nodes WHERE kind='pathway' LIMIT 20;"
+sqlite3 .metabokg/hsa.sqlite "SELECT node_id, name FROM meta_nodes WHERE kind='pathway' LIMIT 20;"
 ```
 
 ---

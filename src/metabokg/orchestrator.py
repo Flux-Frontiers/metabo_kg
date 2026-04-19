@@ -180,7 +180,7 @@ class MetaKG:
 
     Typical usage::
 
-        kg = MetaKG(db_path=".metabokg/meta.sqlite")
+        kg = MetaKG(db_path=".metabokg/hsa.sqlite")
         stats = kg.build(data_dir="./pathway_files", wipe=True)
         print(stats)
 
@@ -207,7 +207,7 @@ class MetaKG:
         """
         Initialise MetaKG and resolve paths.
 
-        :param db_path: SQLite database path.  Defaults to ``.metabokg/meta.sqlite``.
+        :param db_path: SQLite database path.  Defaults to ``.metabokg/hsa.sqlite``.
         :param lancedb_dir: LanceDB directory.  Defaults to ``.metabokg/lancedb``.
         :param model: Sentence-transformer model name.
         :param table: LanceDB table name.
@@ -215,7 +215,7 @@ class MetaKG:
         from metabokg.embed import DEFAULT_MODEL
 
         base = Path.cwd() / ".metabokg"
-        self.db_path = Path(db_path) if db_path else base / "meta.sqlite"
+        self.db_path = Path(db_path) if db_path else base / "hsa.sqlite"
         self.lancedb_dir = Path(lancedb_dir) if lancedb_dir else base / "lancedb"
         self.model_name = model or DEFAULT_MODEL
         self.table_name = table

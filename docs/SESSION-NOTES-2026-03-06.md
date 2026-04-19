@@ -159,7 +159,7 @@ Low-coverage modules (`analyze.py`, `app.py`, `viz3d.py`, CLI) are UI/IO-heavy l
 ## Current Database State
 
 ```
-db_path  : .metabokg/meta.sqlite
+db_path  : .metabokg/hsa.sqlite
 nodes    : 17,050  {compound: 5115, enzyme: 9427, pathway: 369, reaction: 2139}
 edges    : 40,166  {CATALYZES: 2394, CONTAINS: 32689, PRODUCT_OF: 2532, SUBSTRATE_OF: 2551}
 xrefs    : 24,037

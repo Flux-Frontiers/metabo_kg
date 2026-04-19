@@ -4,7 +4,7 @@
 
 Complete workflow for building, parameterizing, and simulating a *Cricetulus
 griseus* (CHO) metabolic knowledge graph in MetaboKG. All commands use default
-paths (`.metabokg/meta.sqlite`, `.metabokg/lancedb`).
+paths (`.metabokg/hsa.sqlite`, `.metabokg/lancedb`).
 
 ---
 
@@ -137,14 +137,14 @@ Each organism or model builds into its own named db so it can be registered
 as a separate KGRAG corpus — enabling federated queries across organisms:
 
 ```bash
-metabokg-build --data data/hsa_pathways          # → .metabokg/meta.sqlite   (human)
+metabokg-build --data data/hsa_pathways          # → .metabokg/hsa.sqlite   (human)
 metabokg-build --data data/cge_pathways  --db .metabokg/cge.sqlite   (CHO)
 metabokg-build --data data/icho_model    --db .metabokg/icho.sqlite  (iCHO2441)
 ```
 
 | Corpus | DB | Coverage |
 |--------|-----|---------|
-| `metabokg-hsa` | `.metabokg/meta.sqlite` | 369 human pathways |
+| `metabokg-hsa` | `.metabokg/hsa.sqlite` | 369 human pathways |
 | `metabokg-cge` | `.metabokg/cge.sqlite` | 366 CHO pathways |
 | `metabokg-icho` | `.metabokg/icho.sqlite` | iCHO2441, 6,663 reactions |
 

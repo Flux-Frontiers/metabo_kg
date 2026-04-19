@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Per-corpus colocated storage** — `metabokg-build --data <dir>` now places its SQLite database, LanceDB index, and snapshots inside `<dir>/.metabokg/` rather than the project root. The database filename is derived from the data directory prefix (`hsa_pathways` → `hsa.sqlite`, `cge_pathways` → `cge.sqlite`), eliminating ambiguity when multiple organisms are built in the same repo. Mirrors the gutenberg_kg per-book pattern.
+
+- **`resolve_db()` / `resolve_lancedb()` helpers** (`src/metabokg/cli/options.py`) — New module-level functions resolve the effective database/lancedb path via: explicit `--db` arg → `METABOKG_DB` / `METABOKG_LANCEDB` env vars → CWD fallback (`.metabokg/hsa.sqlite`). All CLI commands now call these instead of relying on Click option defaults.
+
+### Changed
+
+- **Default database name changed** from legacy `meta.sqlite` (carryover from the old `meta_kg` module name) to organism-prefixed names (`hsa.sqlite`, `cge.sqlite`). All source, documentation, and configuration references updated. The project-root `.metabokg/` directory has been removed; corpora now live under their respective data directories.
+
+- **`.gitignore`** — Replaced blanket `.metabokg/` ignore with specific artifact ignores (`**/.metabokg/*.sqlite`, `**/.metabokg/lancedb/`) so that snapshot JSON files within `**/.metabokg/snapshots/` are tracked by git.
+
+- **`check-added-large-files` pre-commit exclude** — Extended pattern from `^data/kegg_.*\.tsv$` to `^data/.*\.(tsv|kgml)$`, covering organism gene name TSVs (`hsa_gene_names.tsv`, `cge_gene_names.tsv`) and all KGML pathway files which exceed the 1 MB limit.
+
+### Added
+
 - **CHO (*Cricetulus griseus*) pathway graph** (`data/cge_pathways/`) — 366 KGML pathway files downloaded from KEGG for the `cge` organism code (Chinese hamster, the species underlying CHO cell lines). Build yields 16,930 nodes (366 pathways, 2,099 reactions, 5,105 compounds, 9,360 enzymes) and 39,731 edges.
 
 - **Phase 3 enzyme name enrichment** (`src/metabokg/enrich.py`) — New `enrich_enzyme_names(store, data_dir)` function resolves bare KEGG gene IDs (pure integers) and KEGG ortholog IDs (`K\d{5}`) to gene symbols at build time. Detects organisms automatically from enzyme node IDs (`enz:kegg:{org}:{id}`), loads `data/{org}_gene_names.tsv`, and updates names in-place. Also handles truncated KGML names ending in `...` and `CDS` placeholders. `EnrichStats` gains `enzymes_from_tsv` field; `enrich()` runs Phase 3 automatically after Phase 2. Enables `--knockout Ldha` and `resolve_id("Ldha")` to work without manual SQL.

@@ -1,0 +1,142 @@
+{
+  "key": "3273c5a3459791288dc8ee51a85675765d1f2b94",
+  "branch": "claude/contact-jhmi-betenbaugh-PKjNo",
+  "timestamp": "2026-04-19T04:37:06.821818+00:00",
+  "version": "0.14.0",
+  "metrics": {
+    "db_path": ".pycodekg/graph.sqlite",
+    "total_nodes": 5306,
+    "meaningful_nodes": 368,
+    "total_edges": 4843,
+    "node_counts": {
+      "class": 47,
+      "function": 138,
+      "method": 145,
+      "module": 38,
+      "symbol": 4938
+    },
+    "edge_counts": {
+      "ATTR_ACCESS": 1666,
+      "CALLS": 1624,
+      "CONTAINS": 330,
+      "IMPORTS": 329,
+      "INHERITS": 11,
+      "RESOLVES_TO": 883
+    },
+    "docstring_coverage": 0.8420000000000001,
+    "critical_issues": 1,
+    "complexity_median": 5,
+    "module_node_counts": {
+      "src/metabokg/__init__.py": 3,
+      "src/metabokg/analyze.py": 309,
+      "src/metabokg/app.py": 315,
+      "src/metabokg/cho_kinetics.py": 47,
+      "src/metabokg/cli/__init__.py": 3,
+      "src/metabokg/cli/_utils.py": 23,
+      "src/metabokg/cli/cmd_analyze.py": 49,
+      "src/metabokg/cli/cmd_build.py": 76,
+      "src/metabokg/cli/cmd_hooks.py": 22,
+      "src/metabokg/cli/cmd_mcp.py": 19,
+      "src/metabokg/cli/cmd_simulate.py": 114,
+      "src/metabokg/cli/cmd_snapshot.py": 144,
+      "src/metabokg/cli/cmd_viz.py": 3,
+      "src/metabokg/cli/cmd_viz3d.py": 18,
+      "src/metabokg/cli/main.py": 2,
+      "src/metabokg/cli/options.py": 19,
+      "src/metabokg/embed.py": 42,
+      "src/metabokg/enrich.py": 142,
+      "src/metabokg/graph.py": 64,
+      "src/metabokg/index.py": 123,
+      "src/metabokg/kinetics_fetch.py": 43,
+      "src/metabokg/layout3d.py": 180,
+      "src/metabokg/mcp_tools.py": 279,
+      "src/metabokg/metakg_viz.py": 26,
+      "src/metabokg/metakg_viz3d.py": 26,
+      "src/metabokg/orchestrator.py": 280,
+      "src/metabokg/parsers/__init__.py": 2,
+      "src/metabokg/parsers/base.py": 9,
+      "src/metabokg/parsers/biopax.py": 130,
+      "src/metabokg/parsers/csv_tsv.py": 101,
+      "src/metabokg/parsers/kgml.py": 105,
+      "src/metabokg/parsers/sbml.py": 115,
+      "src/metabokg/primitives.py": 88,
+      "src/metabokg/simulate.py": 351,
+      "src/metabokg/snapshots.py": 264,
+      "src/metabokg/store.py": 386,
+      "src/metabokg/thorough_analysis.py": 94,
+      "src/metabokg/viz3d.py": 450
+    }
+  },
+  "hotspots": [
+    {
+      "name": "m:src/metabokg/store.py:MetaStore.node",
+      "callers": 18,
+      "callees": 3,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/orchestrator.py:MetaKG.store",
+      "callers": 9,
+      "callees": 1,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/analyze.py:PathwayAnalyzer.conn",
+      "callers": 9,
+      "callees": 1,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/analyze.py:PathwayAnalyzer.close",
+      "callers": 8,
+      "callees": 1,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/orchestrator.py:MetaKG.close",
+      "callers": 8,
+      "callees": 1,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/store.py:MetaStore.close",
+      "callers": 8,
+      "callees": 1,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/store.py:MetaStore.edges_of",
+      "callers": 7,
+      "callees": 3,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/snapshots.py:SnapshotManager.load_manifest",
+      "callers": 5,
+      "callees": 5,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/snapshots.py:SnapshotManager.load_snapshot",
+      "callers": 5,
+      "callees": 16,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/orchestrator.py:MetaKG.index",
+      "callers": 5,
+      "callees": 2,
+      "risk_level": "low"
+    }
+  ],
+  "issues": [
+    "[WARN] 1 orphaned functions found (`snapshot_diff`) -- consider archiving or documenting"
+  ],
+  "vs_previous": null,
+  "vs_baseline": {
+    "nodes": 162,
+    "edges": 168,
+    "coverage_delta": 0.0030000000000000027,
+    "critical_issues_delta": 0
+  }
+}

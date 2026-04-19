@@ -309,14 +309,14 @@ metabokg-build --data ./data/hsa_pathways
 ```
 
 This wipes any existing database and rebuilds from scratch using default paths:
-`.metabokg/meta.sqlite` for SQLite and `.metabokg/lancedb` for the vector index. Enrichment (human-readable names) is enabled by default.
+`.metabokg/hsa.sqlite` for SQLite and `.metabokg/lancedb` for the vector index. Enrichment (human-readable names) is enabled by default.
 
 ### Full build with all options
 
 ```bash
 metabokg-build \
   --data     ./data/hsa_pathways \
-  --db       .metabokg/meta.sqlite \
+  --db       .metabokg/hsa.sqlite \
   --lancedb  .metabokg/lancedb \
   --model    all-MiniLM-L6-v2
 ```
@@ -326,7 +326,7 @@ metabokg-build \
 | Flag | Default | Description |
 |---|---|---|
 | `--data PATH` | *(required)* | Directory containing pathway files |
-| `--db PATH` | `.metabokg/meta.sqlite` | SQLite output path |
+| `--db PATH` | `.metabokg/hsa.sqlite` | SQLite output path |
 | `--lancedb PATH` | `.metabokg/lancedb` | LanceDB vector index directory |
 | `--model NAME` | `all-MiniLM-L6-v2` | Sentence-transformer model for embeddings |
 | `--no-index` | off | Skip building the LanceDB vector index |
@@ -339,7 +339,7 @@ metabokg-build \
 ```
 Building MetaKG from ./data/hsa_pathways...
 data_root   : ./data/hsa_pathways
-db_path     : .metabokg/meta.sqlite
+db_path     : .metabokg/hsa.sqlite
 nodes       : 17050  {'compound': 5115, 'reaction': 2139, 'enzyme': 9427, 'pathway': 369}
 edges       : 40166  {'SUBSTRATE_OF': 2551, 'PRODUCT_OF': 2532, 'CATALYZES': 2394, 'CONTAINS': 32689}
 isolated    : 0
@@ -391,14 +391,14 @@ metabokg-build --data ./data/hsa_pathways --no-enrich
 If you want to enrich an existing database separately (e.g., after downloading new KEGG name files):
 
 ```bash
-metabokg-enrich --db .metabokg/meta.sqlite --data data/
+metabokg-enrich --db .metabokg/hsa.sqlite --data data/
 ```
 
 **Options:**
 
 | Flag | Default | Description |
 |---|---|---|
-| `--db PATH` | `.metabokg/meta.sqlite` | Database to update |
+| `--db PATH` | `.metabokg/hsa.sqlite` | Database to update |
 | `--data DIR` | `data/` | Directory containing KEGG TSV files |
 
 ### Download KEGG name lists (optional)
@@ -486,13 +486,13 @@ The simulation engine uses Michaelis-Menten kinetics. A curated library of liter
 Seed the database once after building:
 
 ```bash
-metabokg-simulate seed --db .metabokg/meta.sqlite
+metabokg-simulate seed --db .metabokg/hsa.sqlite
 ```
 
 Or with `--force` to overwrite existing values:
 
 ```bash
-metabokg-simulate seed --db .metabokg/meta.sqlite --force
+metabokg-simulate seed --db .metabokg/hsa.sqlite --force
 ```
 
 > **Requires:** `poetry install --extras simulate`
@@ -506,14 +506,14 @@ This writes ~34 kinetic parameter rows and ~18 regulatory interaction rows (allo
 The MCP server exposes the knowledge graph to Claude and other AI assistants via the Model Context Protocol.
 
 ```bash
-metabokg-mcp --db .metabokg/meta.sqlite --transport stdio
+metabokg-mcp --db .metabokg/hsa.sqlite --transport stdio
 ```
 
 **Options:**
 
 | Flag | Default | Description |
 |---|---|---|
-| `--db PATH` | `.metabokg/meta.sqlite` | SQLite database path |
+| `--db PATH` | `.metabokg/hsa.sqlite` | SQLite database path |
 | `--lancedb PATH` | `.metabokg/lancedb` | LanceDB vector index directory |
 | `--model NAME` | `all-MiniLM-L6-v2` | Embedding model |
 | `--transport` | `stdio` | `stdio` (Claude Desktop/Code) or `sse` (HTTP) |
@@ -528,7 +528,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
     "metabokg": {
       "command": "/path/to/venv/bin/metabokg-mcp",
       "args": [
-        "--db", "/absolute/path/to/metabo_kg/.metabokg/meta.sqlite",
+        "--db", "/absolute/path/to/metabo_kg/.metabokg/hsa.sqlite",
         "--lancedb", "/absolute/path/to/metabo_kg/.metabokg/lancedb"
       ]
     }
@@ -555,7 +555,7 @@ Create `.mcp.json` in the project root:
     "metabokg": {
       "command": "metabokg-mcp",
       "args": [
-        "--db", "/absolute/path/to/metabo_kg/.metabokg/meta.sqlite",
+        "--db", "/absolute/path/to/metabo_kg/.metabokg/hsa.sqlite",
         "--lancedb", "/absolute/path/to/metabo_kg/.metabokg/lancedb"
       ]
     }
@@ -574,7 +574,7 @@ The Streamlit web explorer provides an interactive browser-based interface for e
 > **Requires:** `poetry install --extras viz`
 
 ```bash
-metabokg-viz --db .metabokg/meta.sqlite --port 8500
+metabokg-viz --db .metabokg/hsa.sqlite --port 8500
 ```
 
 Opens automatically at `http://localhost:8500`.
@@ -583,7 +583,7 @@ Opens automatically at `http://localhost:8500`.
 
 | Flag | Default | Description |
 |---|---|---|
-| `--db PATH` | `.metabokg/meta.sqlite` | SQLite database path |
+| `--db PATH` | `.metabokg/hsa.sqlite` | SQLite database path |
 | `--lancedb PATH` | `.metabokg/lancedb` | LanceDB vector index directory |
 | `--port INT` | `8500` | Streamlit server port |
 | `--no-browser` | off | Don't open browser automatically |
@@ -602,14 +602,14 @@ The PyVista 3D viewer renders the knowledge graph as an interactive 3D scene.
 > **Requires:** `poetry install --extras viz3d`
 
 ```bash
-metabokg-viz3d --db .metabokg/meta.sqlite --layout allium
+metabokg-viz3d --db .metabokg/hsa.sqlite --layout allium
 ```
 
 **Options:**
 
 | Flag | Default | Description |
 |---|---|---|
-| `--db PATH` | `.metabokg/meta.sqlite` | SQLite database path |
+| `--db PATH` | `.metabokg/hsa.sqlite` | SQLite database path |
 | `--layout` | `allium` | Layout strategy: `allium` or `cake` |
 | `--width INT` | `1400` | Window width in pixels |
 | `--height INT` | `900` | Window height in pixels |
@@ -705,14 +705,14 @@ All CLI defaults can be overridden with environment variables:
 
 | Variable | Default | Description |
 |---|---|---|
-| `METABOKG_DB` | `.metabokg/meta.sqlite` | SQLite database path |
+| `METABOKG_DB` | `.metabokg/hsa.sqlite` | SQLite database path |
 | `METABOKG_LANCEDB` | `.metabokg/lancedb` | LanceDB vector index directory |
 | `METABOKG_MODEL` | `all-MiniLM-L6-v2` | Sentence-transformer model name |
 
 Example for a Docker deployment:
 
 ```bash
-export METABOKG_DB="/data/meta.sqlite"
+export METABOKG_DB="/data/hsa.sqlite"
 export METABOKG_LANCEDB="/data/lancedb"
 metabokg-mcp --transport sse
 ```
@@ -856,7 +856,7 @@ kg.simulate_ode(pathway_id="...", ode_method="BDF")
    ```
 2. Verify the database exists:
    ```bash
-   ls -la .metabokg/meta.sqlite
+   ls -la .metabokg/hsa.sqlite
    ```
 3. Restart Claude Desktop after editing `claude_desktop_config.json`.
 

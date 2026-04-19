@@ -47,7 +47,7 @@ metabokg-build --data "$DATA_DIR"
 - `--no-wipe` — Keep existing data, add only new files
 - `--no-enrich` — Skip compound/reaction name enrichment (faster)
 - `--no-index` — Skip LanceDB (SQLite only)
-- `--db PATH` — Custom SQLite path (default: `.metabokg/meta.sqlite`)
+- `--db PATH` — Custom SQLite path (default: `.metabokg/hsa.sqlite`)
 - `--lancedb PATH` — Custom LanceDB path (default: `.metabokg/lancedb`)
 
 Monitor output for:
@@ -63,7 +63,7 @@ Monitor output for:
 Run a quick stats check:
 
 ```bash
-sqlite3 .metabokg/meta.sqlite "
+sqlite3 .metabokg/hsa.sqlite "
 SELECT kind, COUNT(*) as n FROM meta_nodes GROUP BY kind;
 SELECT COUNT(*), category FROM meta_nodes WHERE kind='pathway' GROUP BY category;
 "
@@ -90,7 +90,7 @@ Present a summary:
 ✓ Total nodes:      <N>
 ✓ Total edges:      <N>
 ✓ Categories:       metabolic=X  signaling=X  disease=X  ...
-✓ Database:         .metabokg/meta.sqlite
+✓ Database:         .metabokg/hsa.sqlite
 ✓ Vector index:     .metabokg/lancedb
 ```
 

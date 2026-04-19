@@ -1,0 +1,182 @@
+{
+  "format": "1.0",
+  "last_update": "2026-04-19T03:06:01.972977+00:00",
+  "snapshots": [
+    {
+      "key": "d1d7739022a14ab4bc65190e293ec9eafb131f08",
+      "branch": "main",
+      "timestamp": "2026-03-18T04:25:47.686366+00:00",
+      "version": "v0.4.0",
+      "file": "d1d7739022a14ab4bc65190e293ec9eafb131f08.json",
+      "metrics": {
+        "total_nodes": 17050,
+        "total_edges": 40166,
+        "node_counts": {
+          "compound": 5115,
+          "enzyme": 9427,
+          "pathway": 369,
+          "reaction": 2139
+        },
+        "edge_counts": {
+          "CATALYZES": 2394,
+          "CONTAINS": 32689,
+          "PRODUCT_OF": 2532,
+          "SUBSTRATE_OF": 2551
+        },
+        "kinetic_params": 32,
+        "pathway_count": 369,
+        "dead_end_count": 0,
+        "category_counts": {
+          "cellular_process": 39,
+          "genetic_info_processing": 29,
+          "human_disease": 84,
+          "metabolic": 99,
+          "organismal_system": 98,
+          "signaling": 19,
+          "transport": 1
+        }
+      },
+      "deltas": {
+        "vs_previous": null,
+        "vs_baseline": null
+      }
+    },
+    {
+      "key": "a01dc300b7411af3fafd927af9c2e9a15466c136",
+      "branch": "main",
+      "timestamp": "2026-04-17T17:34:29.475151+00:00",
+      "version": "0.4.1",
+      "file": "a01dc300b7411af3fafd927af9c2e9a15466c136.json",
+      "metrics": {
+        "total_nodes": 17050,
+        "total_edges": 40166,
+        "node_counts": {
+          "compound": 5115,
+          "enzyme": 9427,
+          "pathway": 369,
+          "reaction": 2139
+        },
+        "edge_counts": {
+          "CATALYZES": 2394,
+          "CONTAINS": 32689,
+          "PRODUCT_OF": 2532,
+          "SUBSTRATE_OF": 2551
+        },
+        "kinetic_params": 32,
+        "pathway_count": 369,
+        "dead_end_count": 0,
+        "category_counts": {
+          "cellular_process": 39,
+          "genetic_info_processing": 29,
+          "human_disease": 84,
+          "metabolic": 99,
+          "organismal_system": 98,
+          "signaling": 19,
+          "transport": 1
+        }
+      },
+      "deltas": {
+        "vs_previous": null,
+        "vs_baseline": {
+          "nodes": 0,
+          "edges": 0,
+          "kinetic_params_delta": 0,
+          "pathway_delta": 0
+        }
+      }
+    },
+    {
+      "key": "a1ec0cedbe924116f6d21bc3160007cc380a6db8",
+      "branch": "main",
+      "timestamp": "2026-04-17T17:35:14.457303+00:00",
+      "version": "0.4.1",
+      "file": "a1ec0cedbe924116f6d21bc3160007cc380a6db8.json",
+      "metrics": {
+        "total_nodes": 17050,
+        "total_edges": 40166,
+        "node_counts": {
+          "compound": 5115,
+          "enzyme": 9427,
+          "pathway": 369,
+          "reaction": 2139
+        },
+        "edge_counts": {
+          "CATALYZES": 2394,
+          "CONTAINS": 32689,
+          "PRODUCT_OF": 2532,
+          "SUBSTRATE_OF": 2551
+        },
+        "kinetic_params": 32,
+        "pathway_count": 369,
+        "dead_end_count": 0,
+        "category_counts": {
+          "cellular_process": 39,
+          "genetic_info_processing": 29,
+          "human_disease": 84,
+          "metabolic": 99,
+          "organismal_system": 98,
+          "signaling": 19,
+          "transport": 1
+        }
+      },
+      "deltas": {
+        "vs_previous": null,
+        "vs_baseline": {
+          "nodes": 0,
+          "edges": 0,
+          "kinetic_params_delta": 0,
+          "pathway_delta": 0
+        }
+      }
+    },
+    {
+      "key": "63deced82ab77221c93d9b8e91651d34365f81ff",
+      "branch": "claude/contact-jhmi-betenbaugh-PKjNo",
+      "timestamp": "2026-04-19T03:06:01.969414+00:00",
+      "version": "0.4.1",
+      "file": "63deced82ab77221c93d9b8e91651d34365f81ff.json",
+      "metrics": {
+        "total_nodes": 17050,
+        "total_edges": 40166,
+        "node_counts": {
+          "compound": 5115,
+          "enzyme": 9427,
+          "pathway": 369,
+          "reaction": 2139
+        },
+        "edge_counts": {
+          "CATALYZES": 2394,
+          "CONTAINS": 32689,
+          "PRODUCT_OF": 2532,
+          "SUBSTRATE_OF": 2551
+        },
+        "kinetic_params": 65,
+        "pathway_count": 369,
+        "dead_end_count": 0,
+        "category_counts": {
+          "cellular_process": 39,
+          "genetic_info_processing": 29,
+          "human_disease": 84,
+          "metabolic": 99,
+          "organismal_system": 98,
+          "signaling": 19,
+          "transport": 1
+        }
+      },
+      "deltas": {
+        "vs_previous": {
+          "nodes": 0,
+          "edges": 0,
+          "kinetic_params_delta": 33,
+          "pathway_delta": 0
+        },
+        "vs_baseline": {
+          "nodes": 0,
+          "edges": 0,
+          "kinetic_params_delta": 33,
+          "pathway_delta": 0
+        }
+      }
+    }
+  ]
+}

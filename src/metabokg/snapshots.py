@@ -18,8 +18,8 @@ Usage
 -----
 >>> from metabokg.snapshots import SnapshotManager
 >>> from metabokg.store import MetaStore
->>> store = MetaStore(".metabokg/meta.sqlite")
->>> mgr = SnapshotManager(".metabokg/snapshots", db_path=".metabokg/meta.sqlite")
+>>> store = MetaStore(".metabokg/hsa.sqlite")
+>>> mgr = SnapshotManager(".metabokg/snapshots", db_path=".metabokg/hsa.sqlite")
 >>> snapshot = mgr.capture("v1.0.0", graph_stats_dict=store.stats())
 >>> mgr.save_snapshot(snapshot)
 >>> mgr.list_snapshots()

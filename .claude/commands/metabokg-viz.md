@@ -17,7 +17,7 @@ Launch the MetaboKG interactive network visualization.
 
 Confirm the database exists:
 ```bash
-ls -lh .metabokg/meta.sqlite
+ls -lh .metabokg/hsa.sqlite
 ```
 
 If missing, build first: `metabokg-build --data data/hsa_pathways`

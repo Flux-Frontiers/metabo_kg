@@ -27,7 +27,7 @@ def example_1_building():
     print("$ metabokg-build --data ./pathways --wipe")
     print("Building MetaKG from ./pathways...")
     print("data_root   : ./pathways")
-    print("db_path     : .metabokg/meta.sqlite")
+    print("db_path     : .metabokg/hsa.sqlite")
 
     # Get actual stats from database
     kg = MetaKG()

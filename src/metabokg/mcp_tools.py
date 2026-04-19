@@ -25,7 +25,7 @@ Register via::
     from metabokg import MetaKG
     from metabokg.mcp_tools import create_server
 
-    mcp = create_server(MetaKG(db_path=".metabokg/meta.sqlite"))
+    mcp = create_server(MetaKG(db_path=".metabokg/hsa.sqlite"))
     mcp.run()
 
 Or mount onto an existing FastMCP instance::

@@ -64,7 +64,7 @@
    └───────────────────────────────────────────┘
 ```
 
-MetaboKG keeps all graph data in a local **SQLite** file (`.metabokg/meta.sqlite`) and an optional **LanceDB** directory (`.metabokg/lancedb`) for vector-similarity search.  An optional enrichment pass replaces bare KEGG accessions with human-readable names stored directly in the database.  All components interact through a single stable API; the MCP server and CLI are thin wrappers.
+MetaboKG keeps all graph data in a local **SQLite** file (`.metabokg/hsa.sqlite`) and an optional **LanceDB** directory (`.metabokg/lancedb`) for vector-similarity search.  An optional enrichment pass replaces bare KEGG accessions with human-readable names stored directly in the database.  All components interact through a single stable API; the MCP server and CLI are thin wrappers.
 
 ---
 
@@ -227,7 +227,7 @@ Multiple substrates/products in one cell can be separated by `;` or `|`.  Rows s
 ```bash
 metabokg-build \
   --data     <DIR>                    # required: directory of pathway files
-  --db       .metabokg/meta.sqlite      # SQLite output path
+  --db       .metabokg/hsa.sqlite      # SQLite output path
   --lancedb  .metabokg/lancedb         # LanceDB vector index directory
   --model    all-MiniLM-L6-v2        # SentenceTransformer model
   --no-index                         # skip LanceDB index build
@@ -291,7 +291,7 @@ provided script, then re-run enrichment:
 python scripts/download_kegg_names.py
 
 # Apply to the database
-metabokg-enrich --db .metabokg/meta.sqlite
+metabokg-enrich --db .metabokg/hsa.sqlite
 ```
 
 Phase 2 updates:
@@ -323,7 +323,7 @@ R00710    Acetaldehyde:NAD+ oxidoreductase
 
 ```bash
 metabokg-enrich \
-  [--db   .metabokg/meta.sqlite]  # database to update
+  [--db   .metabokg/hsa.sqlite]  # database to update
   [--data DIR]                  # directory containing TSV files (default: data/)
 ```
 
@@ -344,7 +344,7 @@ metabokg-build --data ./pathways && metabokg-enrich
 from metabokg import MetaKG
 from metabokg.enrich import enrich, EnrichStats
 
-with MetaKG(db_path=".metabokg/meta.sqlite") as kg:
+with MetaKG(db_path=".metabokg/hsa.sqlite") as kg:
     # Integrated call via orchestrator
     stats: EnrichStats = kg.enrich(data_dir="data/")
     print(stats)
@@ -353,7 +353,7 @@ with MetaKG(db_path=".metabokg/meta.sqlite") as kg:
 # Or lower-level
 from metabokg.store import MetaStore
 from metabokg.enrich import enrich_reactions_from_graph, enrich_from_tsv
-store = MetaStore(".metabokg/meta.sqlite")
+store = MetaStore(".metabokg/hsa.sqlite")
 n = enrich_reactions_from_graph(store)
 n = enrich_from_tsv(store, Path("data/kegg_compound_names.tsv"), "compound")
 ```
@@ -388,7 +388,7 @@ substrate of the TCA cycle via pyruvate dehydrogenase.
 ```python
 from metabokg import MetaKG
 
-kg = MetaKG(db_path=".metabokg/meta.sqlite", lancedb_dir=".metabokg/lancedb")
+kg = MetaKG(db_path=".metabokg/hsa.sqlite", lancedb_dir=".metabokg/lancedb")
 
 # Semantic pathway search — returns top-k pathway nodes
 result = kg.query_pathway("glucose catabolism", k=5)
@@ -426,7 +426,7 @@ The simulation engine lives in `metabokg.simulate`.  It requires `scipy` (`pip i
 from metabokg.store import MetaStore
 from metabokg.simulate import MetabolicSimulator, SimulationConfig, WhatIfScenario
 
-store = MetaStore(".metabokg/meta.sqlite")
+store = MetaStore(".metabokg/hsa.sqlite")
 sim   = MetabolicSimulator(store)
 ```
 
@@ -522,7 +522,7 @@ result = sim.run_fba(config)
 **CLI:**
 
 ```bash
-metabokg-simulate fba --db .metabokg/meta.sqlite \
+metabokg-simulate fba --db .metabokg/hsa.sqlite \
     --pathway hsa00010 \
     --objective rxn:kegg:R00196 \
     --output fba_glycolysis.md
@@ -597,7 +597,7 @@ result = sim.run_ode(config)
 **CLI:**
 
 ```bash
-metabokg-simulate ode --db .metabokg/meta.sqlite \
+metabokg-simulate ode --db .metabokg/hsa.sqlite \
     --pathway hsa00010 \
     --time 200 --points 1000 \
     --conc cpd:kegg:C00031:5.0 \
@@ -652,7 +652,7 @@ result = sim.run_whatif(
 **CLI:**
 
 ```bash
-metabokg-simulate whatif --db .metabokg/meta.sqlite \
+metabokg-simulate whatif --db .metabokg/hsa.sqlite \
     --pathway hsa00010 \
     --mode fba \
     --knockout enz:kegg:hsa:5211 \
@@ -790,7 +790,7 @@ store.upsert_kinetic_param(kp)
 ## 9. Pathway Analysis — `metabokg-analyze`
 
 ```bash
-metabokg-analyze --db .metabokg/meta.sqlite \
+metabokg-analyze --db .metabokg/hsa.sqlite \
                --output analysis.md \
                --top 20 \
                [--plain]
@@ -825,7 +825,7 @@ The report closes with a narrative paragraph covering:
 ```python
 from metabokg.analyze import PathwayAnalyzer, render_report
 
-with PathwayAnalyzer(".metabokg/meta.sqlite", top_n=20) as analyzer:
+with PathwayAnalyzer(".metabokg/hsa.sqlite", top_n=20) as analyzer:
     report = analyzer.run()
 
 md = render_report(report, markdown=True)
@@ -837,7 +837,7 @@ print(md)
 ## 10. MCP Server & Tools — `metabokg-mcp`
 
 ```bash
-metabokg-mcp --db .metabokg/meta.sqlite \
+metabokg-mcp --db .metabokg/hsa.sqlite \
            --lancedb .metabokg/lancedb \
            --model all-MiniLM-L6-v2 \
            --transport stdio   # or sse
@@ -1008,7 +1008,7 @@ Populate the database with curated literature kinetic parameters.
 from metabokg import MetaKG
 from metabokg.mcp_tools import create_server, register_tools
 
-kg     = MetaKG(db_path=".metabokg/meta.sqlite")
+kg     = MetaKG(db_path=".metabokg/hsa.sqlite")
 server = create_server(kg, name="my-metabokg-server")
 server.run(transport="stdio")
 
@@ -1028,7 +1028,7 @@ All commands use [Click](https://click.palletsprojects.com/) and support `--help
 
 ```
 metabokg-build --data <DIR>
-             [--db   .metabokg/meta.sqlite]
+             [--db   .metabokg/hsa.sqlite]
              [--lancedb .metabokg/lancedb]
              [--model all-MiniLM-L6-v2]
              [--no-index]          skip LanceDB index
@@ -1043,7 +1043,7 @@ Incrementally merge new pathway files into an existing database without wiping.
 
 ```
 metabokg-update --data <DIR>
-              [--db   .metabokg/meta.sqlite]
+              [--db   .metabokg/hsa.sqlite]
               [--lancedb .metabokg/lancedb]
               [--model all-MiniLM-L6-v2]
               [--no-index]
@@ -1054,7 +1054,7 @@ metabokg-update --data <DIR>
 ### `metabokg-enrich`
 
 ```
-metabokg-enrich [--db   .metabokg/meta.sqlite]
+metabokg-enrich [--db   .metabokg/hsa.sqlite]
               [--data DIR]          directory with kegg_*_names.tsv files
 ```
 
@@ -1070,7 +1070,7 @@ python scripts/download_kegg_names.py [--data DIR] [--force] [--quiet]
 ### `metabokg-mcp`
 
 ```
-metabokg-mcp [--db   .metabokg/meta.sqlite]
+metabokg-mcp [--db   .metabokg/hsa.sqlite]
            [--lancedb .metabokg/lancedb]
            [--model all-MiniLM-L6-v2]
            [--transport stdio|sse]
@@ -1079,7 +1079,7 @@ metabokg-mcp [--db   .metabokg/meta.sqlite]
 ### `metabokg-analyze`
 
 ```
-metabokg-analyze [--db .metabokg/meta.sqlite]
+metabokg-analyze [--db .metabokg/hsa.sqlite]
                [--output FILE.md]
                [--top 20]
                [--plain]
@@ -1088,7 +1088,7 @@ metabokg-analyze [--db .metabokg/meta.sqlite]
 ### `metabokg-analyze-basic`
 
 ```
-metabokg-analyze-basic [--db .metabokg/meta.sqlite]
+metabokg-analyze-basic [--db .metabokg/hsa.sqlite]
                      [--output FILE.md]
                      [--top 20]
                      [--plain]
@@ -1098,7 +1098,7 @@ metabokg-analyze-basic [--db .metabokg/meta.sqlite]
 
 ```
 # Shared options (apply to all subcommands):
-metabokg-simulate [--db .metabokg/meta.sqlite]
+metabokg-simulate [--db .metabokg/hsa.sqlite]
                 [--output FILE.md] [--top 25] [--plain]
                 <subcommand>
 
@@ -1145,7 +1145,7 @@ Launches a **PyVista** 3D graph viewer (requires `pip install metabokg[viz3d]`).
 from metabokg import MetaKG
 
 kg = MetaKG(
-    db_path     = ".metabokg/meta.sqlite",
+    db_path     = ".metabokg/hsa.sqlite",
     lancedb_dir = ".metabokg/lancedb",
     model       = "all-MiniLM-L6-v2",
     table       = "metabokg_nodes",
@@ -1171,9 +1171,9 @@ kg.close()
 ```python
 from metabokg.store import MetaStore
 
-store = MetaStore(".metabokg/meta.sqlite")
+store = MetaStore(".metabokg/hsa.sqlite")
 # or:
-with MetaStore(".metabokg/meta.sqlite") as store: ...
+with MetaStore(".metabokg/hsa.sqlite") as store: ...
 
 # Write
 store.write(nodes, edges, wipe=False)
@@ -1375,30 +1375,30 @@ See [`docs/INSTALL.md`](INSTALL.md) for a full step-by-step installation guide.
 pip install metabokg[simulate,mcp]
 
 # 2. Build the graph from a directory of KGML / SBML / BioPAX / CSV files
-metabokg-build --data ./pathways --db .metabokg/meta.sqlite
+metabokg-build --data ./pathways --db .metabokg/hsa.sqlite
 
 # 3. Download KEGG name lists and enrich the graph with human-readable names
 python scripts/download_kegg_names.py
-metabokg-enrich --db .metabokg/meta.sqlite
+metabokg-enrich --db .metabokg/hsa.sqlite
 # (or combine steps 2–3: metabokg-build --data ./pathways --enrich)
 
 # 4. Seed kinetic parameters from curated literature values
-metabokg-simulate seed --db .metabokg/meta.sqlite
+metabokg-simulate seed --db .metabokg/hsa.sqlite
 
 # 5. Run steady-state FBA on glycolysis
-metabokg-simulate fba --db .metabokg/meta.sqlite --pathway hsa00010 -o fba.md
+metabokg-simulate fba --db .metabokg/hsa.sqlite --pathway hsa00010 -o fba.md
 
 # 6. Run ODE kinetic simulation for 200 time units (BDF solver, ~0.2s)
-metabokg-simulate ode --db .metabokg/meta.sqlite --pathway hsa00010 \
+metabokg-simulate ode --db .metabokg/hsa.sqlite --pathway hsa00010 \
     --time 200 --conc cpd:kegg:C00031:5.0 -o ode.md
 
 # 7. Knock out hexokinase and see the cascade
-metabokg-simulate whatif --db .metabokg/meta.sqlite --pathway hsa00010 \
+metabokg-simulate whatif --db .metabokg/hsa.sqlite --pathway hsa00010 \
     --mode fba --knockout enz:kegg:hsa:2538 --name HK_KO -o hk_ko.md
 
 # 8. Run thorough pathway analysis report
-metabokg-analyze --db .metabokg/meta.sqlite -o analysis.md
+metabokg-analyze --db .metabokg/hsa.sqlite -o analysis.md
 
 # 9. Start MCP server for Claude integration
-metabokg-mcp --db .metabokg/meta.sqlite --transport stdio
+metabokg-mcp --db .metabokg/hsa.sqlite --transport stdio
 ```

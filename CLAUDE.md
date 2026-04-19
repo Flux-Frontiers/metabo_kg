@@ -38,7 +38,7 @@ poetry install --all-extras  # Full install with viz, viz3d, mcp
 | `metabokg-mcp` | MCP server for Claude |
 
 **Common options:**
-- `--db PATH`: SQLite db (default: `.metabokg/meta.sqlite`)
+- `--db PATH`: SQLite db (default: `.metabokg/hsa.sqlite`)
 - `--lancedb PATH`: Vector index (default: `.metabokg/lancedb`)
 - `--wipe`: Wipe existing data before building (default: keep existing)
 - `--no-index`: Skip LanceDB (SQLite only)
@@ -141,7 +141,7 @@ KGRAG corpus, enabling federated cross-organism queries.
 
 | Corpus | DB path | Content |
 |--------|---------|---------|
-| `metabokg-hsa` | `.metabokg/meta.sqlite` *(default)* | 369 human pathways |
+| `metabokg-hsa` | `.metabokg/hsa.sqlite` *(default)* | 369 human pathways |
 | `metabokg-cge` | `.metabokg/cge.sqlite` | 366 CHO (*C. griseus*) pathways |
 | `metabokg-icho` | `.metabokg/icho.sqlite` | iCHO2441 GEM, 6,663 reactions |
 
