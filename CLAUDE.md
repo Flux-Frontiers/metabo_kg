@@ -11,7 +11,7 @@
 | `get_node(node_id)` | Fetch node by ID (fmt: `fn:module:qualname`) |
 | `callers(node_id)` | Find all callers of a function |
 | `graph_stats()` | Codebase metrics |
-| `/codekg-rebuild` | Rebuild after code changes |
+| `/pycodekg-rebuild` | Rebuild after code changes |
 
 **Workflow:** Query → read snippets → inspect node → find callers
 

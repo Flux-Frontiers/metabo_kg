@@ -144,7 +144,7 @@ SQLITE_DB="${TARGET_REPO}/.metabokg/graph.sqlite"
 LANCEDB_DIR="${TARGET_REPO}/.metabokg/lancedb"
 
 echo "╔══════════════════════════════════════════════════╗"
-echo "║       MetaKG Integration Installer               ║"
+echo "║       MetaboKG Integration Installer               ║"
 echo "╚══════════════════════════════════════════════════╝"
 echo ""
 [ -n "$DRY_RUN" ] && echo "  *** DRY RUN — no changes will be made ***"
@@ -271,9 +271,9 @@ else
     echo "  – Skipped (cline not selected)"
 fi
 
-# ── Step 4: Install code-kg if not already present ────────────────────────────
+# ── Step 4: Install pycode-kg if not already present ────────────────────────────
 echo ""
-echo "── Step 4: Checking code-kg installation ────────────"
+echo "── Step 4: Checking pycode-kg installation ────────────"
 echo ""
 
 # Resolve the latest GitHub release wheel URL (requires curl or wget + python3).

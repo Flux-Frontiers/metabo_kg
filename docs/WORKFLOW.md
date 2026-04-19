@@ -1,279 +1,284 @@
-# MetaboKG Workflow
+# MetaboKG Pipeline
 
-End-to-end guide from raw pathway data to running simulations and serving an MCP agent.
-
----
-
-## Overview
-
-```
-KEGG REST API
-     │
-     ▼
-collect_pathway_data.py        ← optional; data/hsa_pathways/ already available
-     │  downloads hsa*.kgml
-     ▼
-data/hsa_pathways/*.kgml  (KGML)
-     │
-     ▼
-wire_enzymes.py                ← one-time; already applied to data/hsa_pathways files
-     │  injects enzyme="N" into <reaction> elements
-     ▼
-data/hsa_pathways/*.kgml  (patched)
-     │
-     ▼
-metabokg-build --data data/hsa_pathways/  ← wipes and rebuilds by default
-     │  KGMLParser → MetaNode/MetaEdge
-     ├──► .metabokg/hsa.sqlite   (SQLite knowledge graph)
-     └──► .metabokg/lancedb/      (vector index for semantic search)
-     │
-     ▼
-metabokg-simulate seed           ← run once after build
-     │  kinetics_fetch.py → kinetic_parameters + regulatory_interactions
-     ▼
-.metabokg/hsa.sqlite  (complete)
-     │
-     ├── metabokg-analyze         → Markdown pathway analysis report
-     ├── metabokg-simulate fba    → flux distribution
-     ├── metabokg-simulate ode    → concentration time-courses
-     ├── metabokg-simulate whatif → perturbation analysis
-     ├── metabokg-mcp             → MCP server (for Claude)
-     └── metabokg-viz / viz3d     → interactive visualisers
-```
+End-to-end data flow from raw pathway sources to analysis, simulation, and AI-agent access.
 
 ---
 
-## Phase 1 — Get Pathway Data
+## Pipeline Overview
 
-The 369 KGML files in `data/hsa_pathways/` are **already available** in the repo.
-Skip this phase unless you want to expand the dataset or refresh from KEGG.
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         STAGE 0 — Reference Data                            │
+│  KEGG REST API → compound names · reaction names · reaction detail ·        │
+│                  gene symbols (per organism)                                 │
+└───────────────────────────────┬─────────────────────────────────────────────┘
+                                │ data/kegg_*.tsv
+                                ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         STAGE 1 — Pathway Acquisition                       │
+│  KEGG REST API → KGML files (one per pathway, per organism)                 │
+│  wire_kegg_enzymes.py → injects CATALYZES edges into KGML                   │
+└───────────────────────────────┬─────────────────────────────────────────────┘
+                                │ data/{org}_pathways/*.kgml
+                                ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         STAGE 2 — Graph Construction                        │
+│  KGMLParser → MetaNode / MetaEdge objects                                   │
+│  MetaStore   → SQLite WAL (nodes, edges, xref index)                        │
+│  MetaIndex   → LanceDB vector index (compound · enzyme · pathway nodes)     │
+└──────┬────────────────────────┬────────────────────────────────────────────┘
+       │ {org}.sqlite           │ lancedb/
+       ▼                        ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         STAGE 3 — Name Enrichment                           │
+│  Phase 1  — reaction names from CATALYZES edges (graph-local, no network)  │
+│  Phase 2a — compound names       ← kegg_compound_names.tsv                 │
+│  Phase 2b — reaction names       ← kegg_reaction_names.tsv  (overrides 1)  │
+│  Phase 2c — reaction names (fallback) ← kegg_reaction_detail.tsv           │
+│  Phase 3  — enzyme gene symbols  ← {org}_gene_names.tsv                    │
+└───────────────────────────────┬─────────────────────────────────────────────┘
+                                │ enriched {org}.sqlite
+                                ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         STAGE 4 — Kinetic Parameterisation                  │
+│  Literature curation (BRENDA · SABIO-RK · published models)                 │
+│  → kinetic_parameters table  (Km, Vmax, kcat, Ki, ΔG°', Keq)               │
+│  → regulatory_interactions table  (allosteric rules)                        │
+└───────────────────────────────┬─────────────────────────────────────────────┘
+                                │ parameterised {org}.sqlite
+                                ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                       STAGE 5 — Analysis & Simulation                        │
+│  ┌──────────────┐  ┌──────────────────┐  ┌──────────────────────────────┐   │
+│  │   Structural  │  │  FBA (steady-    │  │  ODE (time-course kinetics)  │   │
+│  │   Analysis    │  │  state flux)     │  │  What-If (perturbation)      │   │
+│  └──────────────┘  └──────────────────┘  └──────────────────────────────┘   │
+└───────────────────────────────┬─────────────────────────────────────────────┘
+                                │ Markdown / JSON reports
+                                ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         STAGE 6 — Access Interfaces                         │
+│  metabokg-viz / viz3d  — interactive graph explorer (Streamlit / PyVista)   │
+│  metabokg-mcp          — MCP server (9 tools for Claude and AI agents)      │
+│  Python API            — MetaKG class (build · query · simulate)            │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Stage 0 — Reference Data Download
+
+Fetch KEGG name reference files used during Stage 3 enrichment. Run once; re-run with `--force` to refresh.
+
+| Script | Output | Used by |
+|--------|--------|---------|
+| `scripts/download_kegg_names.py` | `data/kegg_compound_names.tsv` | Phase 2a |
+| `scripts/download_kegg_names.py` | `data/kegg_reaction_names.tsv` | Phase 2b |
+| `scripts/download_kegg_reactions.py --kgml-dir data/hsa_pathways` | `data/kegg_reaction_detail.tsv` | Phase 2c |
+| `scripts/download_kegg_names.py --genes hsa cge` | `data/{org}_gene_names.tsv` | Phase 3 |
 
 ```bash
-# See all 30 curated pathways without downloading
-python scripts/collect_pathway_data.py --list
-
-# Download all 30 pathways (1 s polite delay between KEGG API calls)
-python scripts/collect_pathway_data.py --out data/hsa_pathways/
-
-# Download only one metabolic category
-python scripts/collect_pathway_data.py --category energy
-python scripts/collect_pathway_data.py --category lipid
-python scripts/collect_pathway_data.py --category amino_acid
-
-# Force re-download even if files already exist
-python scripts/collect_pathway_data.py --force
-```
-
-**Available categories:** `energy`, `lipid`, `amino_acid`, `nucleotide`, `cofactor`, `carbohydrate`
-
-After downloading fresh KGML files, re-run the enzyme wiring step:
-
-```bash
-# Inject enzyme="N" attributes so the parser can emit CATALYZES edges
-python scripts/wire_kegg_enzymes.py
-
-# Dry-run to preview changes without writing
-python scripts/wire_kegg_enzymes.py --data data/hsa_pathways --dry-run
-```
-
-`wire_kegg_enzymes.py` is a one-time data-preparation tool.  It scans all
-KGML files and patches `<reaction>` elements that have no enzyme coverage by
-adding an `enzyme="N"` attribute pointing to the correct gene/ortholog entry
-ID, which lets the parser emit CATALYZES edges.  The patch has already been
-applied to all files currently in `data/hsa_pathways/` — only re-run it when
-ingesting newly downloaded or refreshed KGML files.
-
----
-
-## Phase 2 — Build Both Databases & Seed Kinetics
-
-```bash
-# Full rebuild — wipes existing data first (default behaviour)
-metabokg-build --data data/hsa_pathways/
-
-# Incremental update — merge new files without wiping
-metabokg-update --data data/hsa_pathways/
-
-# Keep existing data (equivalent to metabokg-update; explicit flag)
-metabokg-build --data data/hsa_pathways/ --no-wipe
-
-# Build without the LanceDB vector index (faster, no semantic search)
-metabokg-build --data data/hsa_pathways/ --no-index
-
-# Skip kinetic seeding (rarely needed)
-metabokg-build --data data/hsa_pathways/ --no-seed-kinetics
-
-# Custom paths or embedding model
-metabokg-build --data data/hsa_pathways/ \
-             --db .metabokg/hsa.sqlite \
-             --lancedb .metabokg/lancedb \
-             --model all-MiniLM-L6-v2
-```
-
-By default, `metabokg-build` automatically:
-1. Parses pathway KGML files → SQLite graph
-2. Builds xref index
-3. Builds LanceDB vector index (if `--no-index` not set)
-4. **Seeds kinetic parameters from literature** (if `--no-seed-kinetics` not set)
-
-The build prints a stat block on completion:
-
-```
-nodes: 342 (compound: 198, reaction: 87, enzyme: 41, pathway: 16)
-edges: 891 (SUBSTRATE_OF: 234, PRODUCT_OF: 234, CATALYZES: 87, CONTAINS: 336)
-xref_index: 621 rows
-lancedb: 255 rows indexed (dim=384)
-parse_errors: 0
-kinetic_parameters: 26 rows
-regulatory_interactions: 13 rows
+python scripts/download_kegg_names.py
+python scripts/download_kegg_reactions.py --kgml-dir data/hsa_pathways
+python scripts/download_kegg_names.py --genes hsa cge
 ```
 
 ---
 
-## Phase 3 — Manual Kinetic Parameter Updates (Optional)
+## Stage 1 — Pathway Acquisition
 
-If you need to re-seed or force-overwrite kinetic parameters:
+KGML files for human and CHO pathways are included in the repository (`data/hsa_pathways/`, `data/cge_pathways/`). Re-download only when refreshing from KEGG.
 
 ```bash
-# Overwrite existing rows (use after updating kinetics_fetch.py)
-metabokg-simulate seed --force
+python scripts/download_human_kegg.py --output data/hsa_pathways
+python scripts/download_kegg_names.py --genes hsa  # if refreshing
+python scripts/wire_kegg_enzymes.py                # re-inject CATALYZES edges after refresh
 ```
 
-Kinetics are automatically populated with 26 key reactions and 13 allosteric regulatory rules from curated literature sources (Mulquiney & Kuchel, BRENDA, eQuilibrator).
-
-| Table | Content |
-|-------|---------|
-| `kinetic_parameters` | Km, kcat, Vmax, Ki, ΔG°', Keq |
-| `regulatory_interactions` | Allosteric rules (PFK, PK, HK, CS, IDH, G6PD) |
+| Organism | KEGG code | KGML files | Pathways |
+|----------|-----------|-----------|----------|
+| *Homo sapiens* | `hsa` | `data/hsa_pathways/` | 369 |
+| *Cricetulus griseus* (CHO) | `cge` | `data/cge_pathways/` | 366 |
+| iCHO2441 GEM | — | `data/icho_model/` | 6,663 reactions |
 
 ---
 
-## Phase 4 — Analyse and Simulate
+## Stage 2 — Graph Construction
 
-### Structural pathway analysis
+**Input:** KGML pathway files
+**Process:** `KGMLParser` extracts pathway, compound, enzyme, and reaction nodes with typed edges; `MetaStore` writes to SQLite WAL; `MetaIndex` embeds compound/enzyme/pathway nodes into LanceDB
+**Output:** `{org}.sqlite` + `lancedb/` per corpus
 
 ```bash
-# Print Markdown report to stdout
-metabokg-analyze
-
-# Write to file
-metabokg-analyze --output analysis.md
-
-# Plain text, top 30 items per section
-metabokg-analyze --output analysis.txt --plain --top 30
+metabokg-build --data data/hsa_pathways                          # hsa (default db)
+metabokg-build --data data/cge_pathways --db .metabokg/cge.sqlite
+metabokg-build --data data/icho_model   --db .metabokg/icho.sqlite
 ```
 
-Covers: graph statistics, hub metabolites, complex reactions,
-cross-pathway hubs, pathway coupling, dead-end metabolites, top enzymes.
+**Node kinds:** `pathway · reaction · compound · enzyme`
+**Edge relations:** `CONTAINS · SUBSTRATE_OF · PRODUCT_OF · CATALYZES · INHIBITS · ACTIVATES · XREF`
+
+| Corpus | Nodes | Edges | Pathways |
+|--------|-------|-------|----------|
+| hsa | 17,050 | 40,166 | 369 |
+| cge | 16,930 | 39,731 | 366 |
 
 ---
+
+## Stage 3 — Name Enrichment
+
+Replaces bare KEGG accessions (`R00710`, `C00031`, `100689064`) with human-readable names. All phases are idempotent and run automatically during `metabokg-build`.
+
+| Phase | Input | Transformation | Example |
+|-------|-------|----------------|---------|
+| 1 | CATALYZES edges in graph | reaction ← catalysing enzyme gene symbols | `R00710` → `ADH1A / ADH1B` |
+| 2a | `kegg_compound_names.tsv` | compound ← canonical KEGG name | `C00031` → `D-Glucose` |
+| 2b | `kegg_reaction_names.tsv` | reaction ← canonical KEGG name (overrides Phase 1) | `R00710` → `Acetaldehyde:NAD+ oxidoreductase` |
+| 2c | `kegg_reaction_detail.tsv` | reaction ← detail name (fallback for remaining bare IDs) | `R02736` → `ATP:pyruvate 2-O-phosphotransferase` |
+| 3 | `{org}_gene_names.tsv` | enzyme ← gene symbol | `2539` → `ADH1C` |
+
+```bash
+# Run standalone on an existing database
+metabokg enrich --db .metabokg/hsa.sqlite
+
+# Or skip enrichment during build
+metabokg-build --data data/hsa_pathways --no-enrich
+```
+
+---
+
+## Stage 4 — Kinetic Parameterisation
+
+**Input:** Enriched SQLite database
+**Sources:** BRENDA, SABIO-RK, Mulquiney & Kuchel (1999), published CHO bioreactor models
+**Output:** `kinetic_parameters` and `regulatory_interactions` tables
+
+| Table | Fields | Rows (hsa) |
+|-------|--------|-----------|
+| `kinetic_parameters` | Km, Vmax, kcat, Ki, ΔG°', Keq | 65 |
+| `regulatory_interactions` | enzyme, effector, effect type, rule | 15 |
+
+```bash
+metabokg-simulate seed          # human pathways (default)
+metabokg-simulate seed-cho --db .metabokg/cge.sqlite   # CHO-specific parameters
+metabokg-simulate seed --force  # overwrite existing rows
+```
+
+---
+
+## Stage 5 — Analysis & Simulation
+
+### Structural Analysis
+
+**Input:** SQLite graph
+**Output:** Markdown report — hub metabolites, complex reactions, cross-pathway junctions, coupling patterns, network health
+
+```bash
+metabokg-analyze [--output FILE] [--db PATH]
+```
 
 ### Flux Balance Analysis (FBA)
 
+**Method:** Linear programming; maximises total forward flux (or a specified objective reaction)
+**Input:** Stoichiometry matrix from SQLite
+**Output:** Flux distribution per reaction
+
 ```bash
-# Maximise total forward flux across a pathway
-metabokg-simulate fba --pathway hsa00010
-
-# Optimise a specific reaction (e.g. pyruvate kinase)
-metabokg-simulate fba --pathway hsa00010 \
-    --objective rxn:kegg:R00196 \
-    --output fba_glycolysis.md
-
-# Minimise instead of maximise
-metabokg-simulate fba --pathway hsa00020 --minimize
-
-# All pathways in the graph (no --pathway filter)
-metabokg-simulate fba --output fba_all.md
+metabokg-simulate fba --pathway hsa00010 [--objective REACTION_ID] [--minimize]
 ```
-
----
 
 ### ODE Kinetic Simulation
 
-```bash
-# Default: 100 time units, 500 points, 1 mM initial concentration for all compounds
-metabokg-simulate ode --pathway hsa00010
+**Method:** Michaelis-Menten ODEs; BDF solver (stiff-optimised)
+**Input:** Kinetic parameters + initial concentrations
+**Output:** Concentration time-courses per compound
 
-# Custom time range and initial conditions
-metabokg-simulate ode --pathway hsa00010 \
-    --time 200 --points 1000 \
-    --conc cpd:kegg:C00031:5.0 \
-    --conc cpd:kegg:C00002:3.0 \
-    --default-conc 0.5 \
-    --output ode_glycolysis.md
+```bash
+metabokg-simulate ode --pathway hsa00010 [--time T] [--conc ID:mM ...]
 ```
 
-Uses Michaelis-Menten kinetics (seeded Km/Vmax values, or defaults of
-Km = 0.5 mM / Vmax = 1.0 mM/s when parameters are absent).
-
----
+> **Solver note:** Metabolic ODE systems are stiff. The default `BDF` method is required; `RK45` will hang.
 
 ### What-If Perturbation Analysis
 
+**Method:** FBA or ODE run under modified conditions (knockouts, inhibition factors, substrate pulses)
+**Output:** Delta flux (FBA) or delta final concentration (ODE), sorted by magnitude
+
 ```bash
-# Enzyme knockout via FBA
-metabokg-simulate whatif --pathway hsa00010 \
-    --mode fba \
-    --knockout enz:kegg:hsa:2538 \
-    --name HK_knockout \
-    --output whatif_hk.md
-
-# Partial inhibition (50%) of two enzymes via ODE
-metabokg-simulate whatif --pathway hsa00010 \
-    --mode ode \
-    --factor enz:kegg:hsa:5211:0.5 \
-    --factor enz:kegg:hsa:5213:0.5 \
-    --name PFK_inhibition \
-    --output whatif_pfk.md
-
-# Substrate pulse with FBA
-metabokg-simulate whatif --pathway hsa00010 \
-    --mode ode \
-    --conc cpd:kegg:C00031:10.0 \
-    --name glucose_pulse \
-    --output whatif_glucose.md
+metabokg-simulate whatif --pathway hsa00010 --mode fba --knockout ENZ_ID
+metabokg-simulate whatif --pathway hsa00010 --mode ode --factor ENZ_ID:0.5
 ```
-
-Reports the delta flux (FBA) or delta final concentration (ODE)
-for every affected reaction or compound, sorted by magnitude.
 
 ---
 
-## Phase 5 — Serve via MCP (for Claude)
+## Stage 6 — Access Interfaces
+
+### 2D Graph Explorer
 
 ```bash
-# stdio transport (Claude Desktop / Claude Code)
-metabokg-mcp
-
-# SSE transport (HTTP, for custom integrations)
-metabokg-mcp --transport sse
+metabokg-viz [--db PATH] [--lancedb PATH] [--port PORT]
 ```
 
-Exposes 9 tools to the connected agent:
+Interactive Streamlit browser with pathway filter, node kind and edge relation toggles, and semantic search.
 
-| Tool | Purpose |
-|------|---------|
-| `query_pathway` | Semantic search for pathways |
+### 3D Graph Visualiser
+
+```bash
+metabokg-viz3d [--db PATH] [--layout allium|cake]
+```
+
+PyVista renderer. `allium`: hub-spoke layout; `cake`: concentric rings by topological distance.
+
+### MCP Server (AI Agent Interface)
+
+```bash
+metabokg-mcp [--transport stdio|sse] [--db PATH]
+```
+
+| Tool | Description |
+|------|-------------|
+| `query_pathway` | Semantic pathway search |
 | `get_compound` | Compound detail + connected reactions |
-| `get_reaction` | Full stoichiometry + enzymes |
+| `get_reaction` | Stoichiometry + catalysing enzymes |
 | `find_path` | Shortest metabolic route between two compounds |
-| `seed_kinetics` | Populate kinetic parameters from literature |
-| `get_kinetic_params` | Retrieve Km/Vmax/regulatory data for a reaction |
+| `seed_kinetics` | Populate kinetic parameters |
+| `get_kinetic_params` | Retrieve Km/Vmax/regulatory data |
 | `simulate_fba` | Flux Balance Analysis |
 | `simulate_ode` | ODE kinetic time-course |
 | `simulate_whatif` | Perturbation analysis |
 
+### Python API
+
+```python
+from metabokg import MetaKG
+
+with MetaKG(db_path=".metabokg/hsa.sqlite") as kg:
+    kg.build(data_dir="data/hsa_pathways", wipe=True)
+    result = kg.query_pathway("glycolysis")
+    fba    = kg.simulate_fba("pwy:kegg:hsa00010")
+    ode    = kg.simulate_ode("pwy:kegg:hsa00010", t_end=100)
+```
+
 ---
 
-## Quick-Start (from scratch)
+## Quick-Start
 
 ```bash
-pip install metabokg[simulate,mcp]
+pip install metabokg[simulate,viz]
 
-# data/hsa_pathways/ already in repo — skip collect/wire if using available files
-metabokg-build --data data/hsa_pathways/
-# ✓ Kinetic parameters are now seeded automatically during build
+# Stage 0 — reference data
+python scripts/download_kegg_names.py
+python scripts/download_kegg_reactions.py --kgml-dir data/hsa_pathways
+python scripts/download_kegg_names.py --genes hsa
+
+# Stage 2–4 — build, enrich, seed (all automatic)
+metabokg-build --data data/hsa_pathways
+
+# Stage 5 — analyse
 metabokg-analyze --output analysis.md
-metabokg-simulate fba --pathway hsa00010 --output fba.md
+metabokg-simulate fba --pathway hsa00010
+
+# Stage 6 — explore
+metabokg-viz --db data/hsa_pathways/.metabokg/hsa.sqlite
 metabokg-mcp
 ```

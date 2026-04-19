@@ -64,6 +64,7 @@ class EnrichStats:
     reactions_from_graph: int = 0
     compounds_from_tsv: int = 0
     reactions_from_tsv: int = 0
+    reactions_from_detail: int = 0
     enzymes_from_tsv: int = 0
 
     def __str__(self) -> str:
@@ -71,6 +72,7 @@ class EnrichStats:
             f"Enrichment: {self.reactions_from_graph} reaction names from graph, "
             f"{self.compounds_from_tsv} compound names from TSV, "
             f"{self.reactions_from_tsv} reaction names from TSV, "
+            f"{self.reactions_from_detail} reaction names from detail TSV, "
             f"{self.enzymes_from_tsv} enzyme names from gene TSV"
         )
 
@@ -248,6 +250,58 @@ def enrich_from_tsv(store, tsv_path: Path, kind: str, *, quiet: bool = False) ->
 
 
 # ---------------------------------------------------------------------------
+# Phase 2c: reaction names from kegg_reaction_detail.tsv (fallback)
+# ---------------------------------------------------------------------------
+
+
+def enrich_reactions_from_detail(store, detail_tsv: Path, *, quiet: bool = False) -> int:
+    """
+    Fallback enrichment for reactions still carrying bare KEGG IDs after Phases 1 & 2b.
+
+    Reads ``kegg_reaction_detail.tsv`` (columns: reaction_id, name, ...) and
+    updates only reactions whose name is still a bare accession.
+
+    :param store: Open :class:`~metabokg.store.MetaStore` instance.
+    :param detail_tsv: Path to ``kegg_reaction_detail.tsv``.
+    :param quiet: Suppress progress output.
+    :return: Number of reaction names updated.
+    """
+    if not detail_tsv.exists():
+        if not quiet:
+            print(f"  SKIP  {detail_tsv.name} not found — run download_kegg_reactions.py first")
+        return 0
+
+    # Parse reaction_id → name from the detail TSV (tab-separated, first two columns)
+    detail_map: dict[str, str] = {}
+    with detail_tsv.open(encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith("reaction_id"):
+                continue
+            parts = line.split("\t")
+            if len(parts) >= 2 and parts[0] and parts[1]:
+                detail_map[parts[0]] = parts[1]
+
+    conn = store._conn
+    cur = conn.execute("SELECT id, name FROM meta_nodes WHERE kind = 'reaction'")
+    bare_rxns = [(r["id"], r["name"]) for r in cur if _is_bare_reaction(r["name"])]
+
+    updated = 0
+    cur2 = conn.cursor()
+    for node_id, _old_name in bare_rxns:
+        parts = node_id.split(":")
+        if len(parts) >= 3 and parts[1] == "kegg":
+            accession = parts[-1]
+            name = detail_map.get(accession)
+            if name:
+                cur2.execute("UPDATE meta_nodes SET name = ? WHERE id = ?", (name, node_id))
+                updated += 1
+
+    conn.commit()
+    return updated
+
+
+# ---------------------------------------------------------------------------
 # Phase 3: enzyme names from per-organism gene TSV files
 # ---------------------------------------------------------------------------
 
@@ -404,6 +458,14 @@ def enrich(store, data_dir: Path | str | None = None, *, quiet: bool = False) ->
     stats.reactions_from_tsv = enrich_from_tsv(store, rxn_tsv, "reaction", quiet=quiet)
     if not quiet:
         print(f"    → {stats.reactions_from_tsv} reaction names updated")
+
+    # Phase 2c — fallback for reactions still bare after 2b (uses detail TSV)
+    detail_tsv = data_root / "kegg_reaction_detail.tsv"
+    if not quiet:
+        print(f"  Enriching bare reactions from {detail_tsv.name}...", flush=True)
+    stats.reactions_from_detail = enrich_reactions_from_detail(store, detail_tsv, quiet=quiet)
+    if not quiet:
+        print(f"    → {stats.reactions_from_detail} reaction names updated from detail")
 
     # Phase 3 — enzyme gene IDs → gene symbols from per-organism TSVs
     if not quiet:

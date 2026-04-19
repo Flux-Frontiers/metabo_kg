@@ -4,12 +4,12 @@ A comprehensive, extendable knowledge graph system for metabolic pathways with s
 
 **MetaboKG** ingests pathway data from multiple formats (KGML, SBML, BioPAX, CSV), builds a unified semantic knowledge graph, and provides powerful querying and visualization tools for exploring metabolic relationships.
 
-**Sister Project:** [CodeKG](https://github.com/flux-frontiers/code_kg) — A codebase knowledge graph system for Python repositories. CodeKG provides the semantic analysis capabilities that make it possible to explore MetaboKG's own architecture and implementation.
+**Sister Project:** [PyCodeKG](https://github.com/flux-frontiers/pycode_kg) — A codebase knowledge graph system for Python repositories. PyCodeKG provides the semantic analysis capabilities that make it possible to explore MetaboKG's own architecture and implementation.
 
-[![Python 3.10 | 3.11 | 3.12](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.12 | 3.13](https://img.shields.io/badge/Python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/downloads/)
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic%202.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
-[![Version](https://img.shields.io/badge/Version-0.3.0-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
-[![Poetry](https://img.shields.io/badge/Poetry-1.8+-blue.svg)](https://python-poetry.org/)
+[![Version](https://img.shields.io/badge/Version-0.5.0-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
+[![Poetry](https://img.shields.io/badge/Poetry-2.0+-blue.svg)](https://python-poetry.org/)
 
 ## Features
 
@@ -31,22 +31,38 @@ A comprehensive, extendable knowledge graph system for metabolic pathways with s
 git clone https://github.com/flux-frontiers/metabo_kg.git
 cd metabo_kg
 
-# Create a Python 3.12 virtual environment
+# Create a Python 3.12+ virtual environment
 python3.12 -m venv .venv
 source .venv/bin/activate
 
-# Install the package with all features
+# Install with all public extras (viz, viz3d, simulate, biopax)
 poetry install --extras all
 ```
 
-### Download Human KEGG Pathways (Complete Metabolome)
+### Download Pathway Data
 
+**Human KEGG Pathways (369 pathways, ~19 MB):**
 ```bash
-# Download all 369 human KEGG pathways (~19 MB)
 poetry run python scripts/download_human_kegg.py --output data/hsa_pathways
 
-# To preview without downloading:
+# Preview without downloading:
 poetry run python scripts/download_human_kegg.py --output data/hsa_pathways --dry-run
+```
+
+**Chinese Hamster Ovary (CHO) KEGG Pathways (366 pathways, organism: `cge`):**
+```bash
+poetry run python scripts/download_cho_kegg.py --output data/cge_pathways
+
+# Preview without downloading:
+poetry run python scripts/download_cho_kegg.py --output data/cge_pathways --dry-run
+```
+
+**iCHO2441 Genome-Scale Metabolic Model (6,663 reactions, SBML):**
+```bash
+poetry run python scripts/download_icho_model.py --output data/icho_model
+
+# Preview without downloading:
+poetry run python scripts/download_icho_model.py --output data/icho_model --dry-run
 ```
 
 ### Build the Knowledge Graph
@@ -74,6 +90,28 @@ metabokg-viz --port 8500
 
 # Opens interactive browser at http://localhost:8500
 ```
+
+## Multi-Organism Support
+
+MetaboKG supports multiple organisms, each stored in its own database for federated cross-organism queries.
+
+| Organism | Script | Output | Pathways |
+|----------|--------|--------|----------|
+| Human (*Homo sapiens*, `hsa`) | `download_human_kegg.py` | `data/hsa_pathways/` | 369 |
+| CHO (*C. griseus*, `cge`) | `download_cho_kegg.py` | `data/cge_pathways/` | 366 |
+| iCHO2441 GEM (SBML) | `download_icho_model.py` | `data/icho_model/` | 6,663 reactions |
+
+```bash
+# Build each organism into its own database
+metabokg-build --data data/hsa_pathways                            # human (default db)
+metabokg-build --data data/cge_pathways --db .metabokg/cge.sqlite  # CHO
+metabokg-build --data data/icho_model   --db .metabokg/icho.sqlite # iCHO GEM
+```
+
+> **Enzyme name resolution** for CHO requires `data/cge_gene_names.tsv`. Download once:
+> ```bash
+> python scripts/download_kegg_names.py --genes cge hsa
+> ```
 
 ## Architecture
 
@@ -141,7 +179,7 @@ Options:
   --lancedb PATH           LanceDB directory (default: .metabokg/lancedb)
   --model NAME             Sentence-transformer model (default: all-MiniLM-L6-v2)
   --no-index               Skip building LanceDB vector index
-  --no-wipe                Skip wiping existing data (default: wipe before build)
+  --wipe                   Wipe existing data before building (default: keep existing)
 ```
 
 ### `metabokg-update`
@@ -382,21 +420,26 @@ store.close()
 # Core functionality only
 poetry install
 
-# Web visualization
+# Metabolic simulations (FBA, ODE)
+poetry install --extras simulate
+
+# Web visualization (Streamlit)
 poetry install --extras viz
 
-# 3D visualization (includes PyVista, PyQt5)
+# 3D visualization (PyVista + PyQt5)
 poetry install --extras viz3d
 
 # BioPAX format support
 poetry install --extras biopax
 
-# MCP integration
-poetry install --extras mcp
-
-# Everything
+# All public extras (simulate + viz + viz3d + biopax)
 poetry install --extras all
 ```
+
+> **Note:** The `kg` extra (`--extras kg`) installs PyCodeKG, DocKG, AgentKG, and other
+> knowledge-graph integrations from private Flux Frontiers repositories. These require
+> repository access and are not publicly available. Do not use `--extras kg` unless you
+> have been granted access.
 
 ## Configuration
 
@@ -518,7 +561,7 @@ For commercial licensing inquiries, please contact the author.
 
 ## Acknowledgments
 
-- [CodeKG](https://github.com/flux-frontiers/code_kg) — Provides semantic analysis and knowledge graph capabilities for this codebase
+- [PyCodeKG](https://github.com/flux-frontiers/pycode_kg) — Provides semantic analysis and knowledge graph capabilities for this codebase
 - Layout algorithms adapted from [repo_vis](https://github.com/Suchanek/repo_vis)
 - KEGG, Reactome, and MetaCyc teams for pathway data standards
 - PyVista, Streamlit, and LanceDB communities for visualization and indexing
@@ -527,4 +570,4 @@ For commercial licensing inquiries, please contact the author.
 
 **Built with ❤️ for computational biology research -egs- **
 
-*Last updated: February 2026*
+*Last updated: April 2026*

@@ -1,7 +1,7 @@
 
 # MetaboKG — Complete Capabilities Reference
 
-**v0.2.0** · Metabolic pathway knowledge graph with simulation, semantic search, and MCP tooling.
+**v0.5.0** · Metabolic pathway knowledge graph with simulation, semantic search, and MCP tooling.
 
 ---
 
@@ -43,11 +43,15 @@
   │  (SQLite WAL)  │        │  (vector index)   │
   └───────┬────────┘        └──────────────────┘
           │
-          ▼  enrich.py (optional post-build pass)
-  ┌────────────────┐
-  │  Name Enricher  │  Phase 1: enzyme labels from CATALYZES edges
-  │                 │  Phase 2: KEGG TSV → human-readable names
-  └───────┬────────┘
+          ▼  enrich.py (runs automatically during build)
+  ┌────────────────────────────────────────┐
+  │  Name Enricher                         │
+  │  Phase 1:  enzyme labels (CATALYZES)   │
+  │  Phase 2a: compound names (TSV)        │
+  │  Phase 2b: reaction names (TSV)        │
+  │  Phase 2c: reaction detail fallback    │
+  │  Phase 3:  enzyme gene symbols (TSV)   │
+  └───────┬────────────────────────────────┘
           │
     ┌─────┴────────────────────────────────┐
     │              MetaboKG                │  high-level orchestrator
@@ -259,7 +263,7 @@ edges: 891 (SUBSTRATE_OF: 234, PRODUCT_OF: 234, CATALYZES: 87, CONTAINS: 336)
 xref_index: 621 rows
 lancedb: 255 rows indexed (dim=384)
 parse_errors: 0
-Enrichment: 87 reaction names from graph, 198 compound names from TSV, 54 reaction names from TSV
+Enrichment: 87 reaction names from graph, 198 compound names from TSV, 54 reaction names from TSV, 12 reaction names from detail TSV, 41 enzyme names from gene TSV
 ```
 
 ---
@@ -270,7 +274,7 @@ KGML-sourced graphs initially carry bare KEGG accessions as node names (e.g. `C0
 `R00710`).  The enrichment pipeline replaces these with human-readable names and stores
 them directly in `meta_nodes.name`, making them available everywhere — CLI, MCP, Streamlit.
 
-### 5.1 Two-phase enrichment
+### 5.1 Four-phase enrichment
 
 **Phase 1 — no network, always runs:**
 
@@ -281,42 +285,109 @@ edges pointing to it and join the catalysing enzyme gene symbols with ` / `:
 R00710  →  "ADH1A / ADH1B / ADH1C"
 ```
 
-**Phase 2 — requires downloaded KEGG name TSV files:**
+**Phase 2a — compound names from TSV:**
 
-Download the KEGG bulk name lists (~19 500 compounds, ~12 400 reactions) using the
-provided script, then re-run enrichment:
+Replaces bare compound accessions with human-readable names:
 
-```bash
-# Download KEGG name lists (~30s, 1-second courtesy pause between requests)
-python scripts/download_kegg_names.py
-
-# Apply to the database
-metabokg-enrich --db .metabokg/hsa.sqlite
+```
+C00031  →  "D-Glucose"
 ```
 
-Phase 2 updates:
-- **Compound names** from `data/kegg_compound_names.tsv` (e.g. `C00031` → `D-Glucose`)
-- **Reaction names** from `data/kegg_reaction_names.tsv` (overrides Phase-1 enzyme labels
-  with canonical KEGG reaction names where available)
+Reads from `data/kegg_compound_names.tsv` (~19,500 entries).
 
-Both phases are **idempotent** — safe to run multiple times.
+**Phase 2b — reaction names from TSV:**
+
+Replaces bare reaction accessions (and Phase 1 enzyme-label overrides) with
+canonical KEGG reaction names:
+
+```
+R00710  →  "Acetaldehyde:NAD+ oxidoreductase"
+```
+
+Reads from `data/kegg_reaction_names.tsv` (~12,400 entries).  Always overrides Phase 1.
+
+**Phase 2c — reaction detail fallback (NEW):**
+
+For reactions still carrying a bare accession after Phase 2b, applies names from the
+reaction detail file.  This covers reactions absent from the list endpoint but present
+in the per-reaction detail download:
+
+```
+R01234  →  "ATP:D-fructose 1-phosphotransferase"
+```
+
+Reads from `data/kegg_reaction_detail.tsv` (~2,147 reactions including name, definition,
+equation, and EC numbers).  Download with:
+
+```bash
+python scripts/download_kegg_reactions.py --kgml-dir data/hsa_pathways
+```
+
+**Phase 3 — enzyme gene symbols:**
+
+Resolves bare gene IDs (e.g. `100689064`) or KEGG ortholog IDs (e.g. `K00016`) to gene
+symbols (e.g. `Ldha`).  Organisms are detected automatically from enzyme node IDs.
+Enables `--knockout Ldha` and `resolve_id("ldha")` at query time.
+
+Reads from `data/{org}_gene_names.tsv`.  Download with:
+
+```bash
+python scripts/download_kegg_names.py --genes hsa cge
+```
+
+**Download all reference files in order:**
+
+```bash
+# 1. Compound + reaction list names (Phases 2a + 2b)
+python scripts/download_kegg_names.py
+
+# 2. Reaction detail (Phase 2c fallback)
+python scripts/download_kegg_reactions.py --kgml-dir data/hsa_pathways
+
+# 3. Per-organism gene names (Phase 3)
+python scripts/download_kegg_names.py --genes hsa cge
+
+# Then enrich:
+metabokg-enrich --db .metabokg/hsa.sqlite
+# (or enrichment runs automatically during metabokg-build)
+```
+
+All phases are **idempotent** — safe to run multiple times.
 
 ### 5.2 Download script options
 
 ```bash
+# Compound and reaction list names
 python scripts/download_kegg_names.py \
-  [--data DIR]   # output directory (default: data/)
-  [--force]      # re-download even if files already exist
-  [--quiet]      # suppress progress output
+  [--data DIR]          # output directory (default: data/)
+  [--force]             # re-download even if files already exist
+  [--quiet]             # suppress progress output
+  [--genes ORG ...]     # also download per-organism gene name TSVs (e.g. hsa cge)
 ```
 
-TSV format produced:
+TSV format produced by `download_kegg_names.py`:
 
 ```
 C00031    D-Glucose
 C00022    Pyruvate
 R00710    Acetaldehyde:NAD+ oxidoreductase
 ...
+```
+
+```bash
+# Reaction detail (name, definition, equation, EC numbers) — used by Phase 2c
+python scripts/download_kegg_reactions.py \
+  [--kgml-dir DIR]      # read reaction IDs from local KGML files (faster)
+  [--force]             # re-download even if file already exists
+  [--dry-run]           # list reaction IDs only, no download
+  [--delay SECS]        # courtesy delay between KEGG API calls (default: 0.34)
+```
+
+TSV format produced by `download_kegg_reactions.py` (`data/kegg_reaction_detail.tsv`):
+
+```
+reaction_id  name                               definition         equation            ec_numbers
+R00710       acetaldehyde:NAD+ oxidoreductase   Acetaldehyde ...   C00084 + C00003 …   1.2.1.3; 1.2.1.4
 ```
 
 ### 5.3 Enrichment CLI options
@@ -348,14 +419,22 @@ with MetaKG(db_path=".metabokg/hsa.sqlite") as kg:
     # Integrated call via orchestrator
     stats: EnrichStats = kg.enrich(data_dir="data/")
     print(stats)
-    # Enrichment: 87 reaction names from graph, 198 compound names from TSV, 54 reaction names from TSV
+    # Enrichment: 87 reaction names from graph, 198 compound names from TSV,
+    #             54 reaction names from TSV, 12 reaction names from detail TSV,
+    #             41 enzyme names from gene TSV
 
 # Or lower-level
 from metabokg.store import MetaStore
-from metabokg.enrich import enrich_reactions_from_graph, enrich_from_tsv
+from metabokg.enrich import (
+    enrich_reactions_from_graph, enrich_from_tsv,
+    enrich_reactions_from_detail, enrich_enzyme_names,
+)
 store = MetaStore(".metabokg/hsa.sqlite")
-n = enrich_reactions_from_graph(store)
-n = enrich_from_tsv(store, Path("data/kegg_compound_names.tsv"), "compound")
+n = enrich_reactions_from_graph(store)                                      # Phase 1
+n = enrich_from_tsv(store, Path("data/kegg_compound_names.tsv"), "compound")  # Phase 2a
+n = enrich_from_tsv(store, Path("data/kegg_reaction_names.tsv"), "reaction")  # Phase 2b
+n = enrich_reactions_from_detail(store, Path("data/kegg_reaction_detail.tsv")) # Phase 2c
+n = enrich_enzyme_names(store, Path("data/"))                               # Phase 3
 ```
 
 ---
@@ -1059,12 +1138,15 @@ metabokg-enrich [--db   .metabokg/hsa.sqlite]
 ```
 
 Phase 1 always runs (enzyme labels from CATALYZES edges).
-Phase 2 runs if `kegg_compound_names.tsv` / `kegg_reaction_names.tsv` exist in `--data`.
+Phase 2a/2b run if `kegg_compound_names.tsv` / `kegg_reaction_names.tsv` exist in `--data`.
+Phase 2c runs if `kegg_reaction_detail.tsv` exists in `--data`.
+Phase 3 runs if `{org}_gene_names.tsv` files exist in `--data`.
 
-Download KEGG name files first with:
+Download all reference files first with:
 
 ```bash
-python scripts/download_kegg_names.py [--data DIR] [--force] [--quiet]
+python scripts/download_kegg_names.py [--data DIR] [--force] [--quiet] [--genes ORG ...]
+python scripts/download_kegg_reactions.py --kgml-dir data/hsa_pathways [--force]
 ```
 
 ### `metabokg-mcp`
@@ -1131,9 +1213,23 @@ metabokg-simulate whatif [--pathway ID|NAME]
 
 Launches a **Streamlit** web application for interactive pathway exploration (requires `pip install metabokg[viz]`).
 
+```
+metabokg-viz [--db   .metabokg/hsa.sqlite]
+             [--lancedb .metabokg/lancedb]
+             [--port 8500]
+             [--no-browser]
+```
+
 ### `metabokg-viz3d`
 
 Launches a **PyVista** 3D graph viewer (requires `pip install metabokg[viz3d]`).
+
+```
+metabokg-viz3d [--db     .metabokg/hsa.sqlite]
+               [--layout allium|cake]
+               [--width  W]
+               [--height H]
+```
 
 ---
 
@@ -1236,9 +1332,11 @@ from metabokg.enrich import EnrichStats
 
 @dataclass
 class EnrichStats:
-    reactions_from_graph: int  # reaction names set from enzyme CATALYZES labels
-    compounds_from_tsv:   int  # compound names updated from KEGG TSV
-    reactions_from_tsv:   int  # reaction names updated from KEGG TSV
+    reactions_from_graph:  int  # reaction names set from enzyme CATALYZES labels (Phase 1)
+    compounds_from_tsv:    int  # compound names updated from KEGG TSV (Phase 2a)
+    reactions_from_tsv:    int  # reaction names updated from KEGG TSV (Phase 2b)
+    reactions_from_detail: int  # reaction names from kegg_reaction_detail.tsv (Phase 2c)
+    enzymes_from_tsv:      int  # enzyme gene IDs resolved to symbols (Phase 3)
 ```
 
 ---
@@ -1377,10 +1475,12 @@ pip install metabokg[simulate,mcp]
 # 2. Build the graph from a directory of KGML / SBML / BioPAX / CSV files
 metabokg-build --data ./pathways --db .metabokg/hsa.sqlite
 
-# 3. Download KEGG name lists and enrich the graph with human-readable names
-python scripts/download_kegg_names.py
+# 3. Download KEGG reference files and enrich the graph with human-readable names
+python scripts/download_kegg_names.py                             # compound + reaction list names
+python scripts/download_kegg_reactions.py --kgml-dir data/hsa_pathways  # reaction detail (Phase 2c)
+python scripts/download_kegg_names.py --genes hsa                # enzyme gene symbols
 metabokg-enrich --db .metabokg/hsa.sqlite
-# (or combine steps 2–3: metabokg-build --data ./pathways --enrich)
+# (or download first, then let build handle it: metabokg-build --data ./pathways)
 
 # 4. Seed kinetic parameters from curated literature values
 metabokg-simulate seed --db .metabokg/hsa.sqlite

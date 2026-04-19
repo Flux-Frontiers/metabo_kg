@@ -71,6 +71,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`snapshot save` VERSION arg now optional** (`src/metabokg/cli/cmd_snapshot.py`) — Version is auto-detected from the installed package; passing it explicitly is no longer required.
 
+### Added
+
+- **Phase 2c reaction name enrichment** (`src/metabokg/enrich.py`) — New `enrich_reactions_from_detail(store, detail_tsv)` function resolves any reactions still carrying bare KEGG IDs (e.g. `R00123`) after Phases 1 and 2b by reading `data/kegg_reaction_detail.tsv`. `EnrichStats` gains `reactions_from_detail` field; `enrich()` runs Phase 2c automatically between Phase 2b and Phase 3. Requires `python scripts/download_kegg_reactions.py` first (~2,147 API calls).
+
+- **`metabokg viz` CLI options** (`src/metabokg/cli/cmd_viz.py`) — `metabokg viz` now accepts `--db`, `--lancedb`, `--port`, and `--no-browser` options via Click, forwarding them to `metabokg_viz.main()`. Previously the Click wrapper had no options and rejected all flags, requiring the cumbersome `-- --db PATH` workaround.
+
+- **`metabokg_viz.main()` keyword arguments** (`src/metabokg/metabokg_viz.py`) — Refactored from argparse-based `sys.argv` parsing to explicit keyword parameters (`db`, `lancedb`, `port`, `no_browser`). Paths are now forwarded to the Streamlit subprocess as `METABOKG_DB` / `METABOKG_LANCEDB` environment variables so `app.py` picks them up correctly at startup.
+
+- **Smart DB path resolution in Streamlit app** (`src/metabokg/app.py`) — New `_resolve_db_path()` helper auto-discovers the `.sqlite` file when a directory is passed (checks `{dir}/.metabokg/hsa.sqlite`, then any `*.sqlite` in `.metabokg/`, then any `*.sqlite` directly). `_load_store()` now catches `sqlite3` errors gracefully and returns `None` instead of crashing. `_get_store()` updates the sidebar path to the resolved file path on first load.
+
+- **`data/kegg_reaction_detail.tsv`** — Downloaded reaction detail file (2,147 entries: name, definition, equation, EC numbers) used by Phase 2c enrichment.
+
+- **`EXAMPLES.md`** — New top-level examples file covering CLI, Python API, simulation, and MCP tool usage across all MetaboKG workflows.
+
+### Changed
+
+- **`metabokg_viz.py` → `metabokg_viz3d.py` rename** — Aligned module names with the `metabokg_` prefix convention (was `metakg_viz.py` / `metakg_viz3d.py`).
+
+- **CLAUDE.md** — Updated `/codekg-rebuild` references to `/pycodekg-rebuild`.
+
+- **`.claude/commands/`** — Renamed `codekg.md` → `pycodekg.md` and `codekg-rebuild.md` → `pycodekg-rebuild.md`; updated all internal references.
+
+- **`docs/WORKFLOW.md`** — Added Phase 0 covering all three KEGG download scripts in correct order, updated Phase 2 to document the full 4-phase enrichment pipeline, added multi-corpus build section, noted `--db` on viz/viz3d commands.
+
+- **`docs/CAPABILITIES.md`** — Bumped version to v0.5.0; rewrote enrichment section to cover all 4 phases including Phase 2c; updated CLI reference with `viz --db` options.
+
 ### Fixed
 
 ---

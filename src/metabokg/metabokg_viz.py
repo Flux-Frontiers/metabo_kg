@@ -16,43 +16,28 @@ import sys
 from pathlib import Path
 
 
-def main() -> None:
+def main(
+    db: str | None = None,
+    lancedb: str | None = None,
+    port: str = "8500",
+    no_browser: bool = False,
+) -> None:
     """
-    Parse arguments and launch the MetaKG Streamlit visualizer as a subprocess.
+    Launch the MetaKG Streamlit visualizer as a subprocess.
 
     Locates the bundled ``app.py`` in the package directory, builds the
     ``streamlit run`` command with the requested database path and port, then
     hands off execution to the subprocess.
+
+    :param db: Path to the SQLite database (overrides env/default).
+    :param lancedb: Path to the LanceDB directory (overrides env/default).
+    :param port: Streamlit server port.
+    :param no_browser: If True, suppress automatic browser launch.
     """
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Launch the MetaKG Streamlit visualizer.")
-    parser.add_argument(
-        "--db",
-        default=None,
-        help="Path to the SQLite database (default: METABOKG_DB env or .metabokg/hsa.sqlite)",
-    )
-    parser.add_argument(
-        "--lancedb",
-        default=None,
-        help="Path to the LanceDB directory (default: METABOKG_LANCEDB env or .metabokg/lancedb)",
-    )
-    parser.add_argument(
-        "--port",
-        default="8500",
-        help="Streamlit server port (default: 8500)",
-    )
-    parser.add_argument(
-        "--no-browser",
-        action="store_true",
-        help="Do not open a browser window automatically",
-    )
-    args = parser.parse_args()
-
     import os
 
-    db = args.db or os.environ.get("METABOKG_DB", ".metabokg/hsa.sqlite")
-    lancedb = args.lancedb or os.environ.get("METABOKG_LANCEDB", ".metabokg/lancedb")
+    db = db or os.environ.get("METABOKG_DB", ".metabokg/hsa.sqlite")
+    lancedb = lancedb or os.environ.get("METABOKG_LANCEDB", ".metabokg/lancedb")
 
     # app.py is bundled alongside this module in the package directory
     app_path = Path(__file__).parent / "app.py"
@@ -71,24 +56,23 @@ def main() -> None:
         "run",
         str(app_path),
         "--server.port",
-        str(args.port),
-        "--",
-        "--db",
-        db,
-        "--lancedb",
-        lancedb,
+        str(port),
     ]
-    if args.no_browser:
-        cmd[5:5] = ["--server.headless", "true"]
+    if no_browser:
+        cmd += ["--server.headless", "true"]
 
-    print(f"Launching MetaKG Explorer on http://localhost:{args.port}")
+    env = os.environ.copy()
+    env["METABOKG_DB"] = db
+    env["METABOKG_LANCEDB"] = lancedb
+
+    print(f"Launching MetaKG Explorer on http://localhost:{port}")
     print(f"  app    : {app_path}")
     print(f"  db     : {db}")
     print(f"  lancedb: {lancedb}")
     print("  Press Ctrl+C to stop.\n")
 
     try:
-        subprocess.run(cmd, check=True)
+        subprocess.run(cmd, env=env, check=True)
     except KeyboardInterrupt:
         print("\nStopped.")
 

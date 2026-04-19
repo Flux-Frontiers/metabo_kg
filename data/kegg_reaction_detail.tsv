@@ -1,0 +1,118 @@
+reaction_id	name	definition	equation	ec_numbers
+R00009	hydrogen-peroxide:hydrogen-peroxide oxidoreductase	2 Hydrogen peroxide <=> Oxygen + 2 H2O	2 C00027 <=> C00007 + 2 C00001	1.11.1.6; 1.11.1.21
+R00010	alpha,alpha-trehalose glucohydrolase	alpha,alpha-Trehalose + H2O <=> 2 D-Glucose	C01083 + C00001 <=> 2 C00031	3.2.1.28
+R00014	pyruvate:thiamin diphosphate acetaldehydetransferase (decarboxylating)	Pyruvate + Thiamin diphosphate <=> 2-(alpha-Hydroxyethyl)thiamine diphosphate + CO2	C00022 + C00068 <=> C05125 + C00011	1.2.4.1; 2.2.1.6; 4.1.1.1
+R00022	chitobiose N-acetylglucosaminohydrolase	Chitobiose + H2O <=> 2 N-Acetyl-D-glucosamine	C01674 + C00001 <=> 2 C00140	3.2.1.52
+R00028	maltose glucohydrolase	Maltose + H2O <=> 2 D-Glucose	C00208 + C00001 <=> 2 C00031	3.2.1.20
+R00031	1,2-benzenediol:oxygen oxidoreductase	Oxygen + 2 L-Tyrosine <=> 2 3,4-Dihydroxy-L-phenylalanine	C00007 + 2 C00082 <=> 2 C00355	1.10.3.1; 1.14.18.1
+R00032	beta-carotene:oxygen 15,15'-oxidoreductase (bond-cleaving)	beta-Carotene + Oxygen <=> 2 Retinal	C02094 + C00007 <=> 2 C00376	1.13.11.63
+R00036	5-aminolevulinate hydro-lyase (adding 5-aminolevulinate and cyclizing	2 5-Aminolevulinate <=> Porphobilinogen + 2 H2O	2 C00430 <=> C00931 + 2 C00001	4.2.1.24
+R00073	reduced acceptor:prostaglandin G2 oxidoreductase	Prostaglandin H2 + Acceptor + H2O <=> Prostaglandin G2 + Reduced acceptor	C00427 + C00028 + C00001 <=> C05956 + C00030	1.14.99.1
+R00078	Fe(II):oxygen oxidoreductase	Oxygen + 4 Fe2+ + 4 H+ <=> 4 Fe3+ + 2 H2O	C00007 + 4 C14818 + 4 C00080 <=> 4 C14819 + 2 C00001	1.16.3.1
+R00084	porphobilinogen:(4-[2-carboxyethyl]-3-[carboxymethyl]pyrrol-2-yl)methyltransferase (hydrolysing)	4 Porphobilinogen + H2O <=> Hydroxymethylbilane + 4 Ammonia	4 C00931 + C00001 <=> C01024 + 4 C00014	2.5.1.61
+R00086	ATP phosphohydrolase	ATP + H2O <=> ADP + Orthophosphate	C00002 + C00001 <=> C00008 + C00009	3.6.1.5; 3.6.1.8; 3.6.1.15; 3.6.1.-; 7.1.2.2
+R00087	ATP diphosphohydrolase (diphosphate-forming)	ATP + H2O <=> AMP + Diphosphate	C00002 + C00001 <=> C00020 + C00013	3.6.1.8; 3.6.1.9; 4.2.1.186
+R00089	ATP diphosphate-lyase (cyclizing	ATP <=> 3',5'-Cyclic AMP + Diphosphate	C00002 <=> C00575 + C00013	4.6.1.1
+R00093	L-glutamate:NAD+ oxidoreductase (transaminating)	2 L-Glutamate + NAD+ <=> L-Glutamine + 2-Oxoglutarate + NADH + H+	2 C00025 + C00003 <=> C00064 + C00026 + C00004 + C00080	1.4.1.14
+R00100	NADH:ferricytochrome-b5 oxidoreductase	NADH + 2 Ferricytochrome b5 <=> NAD+ + 2 Ferrocytochrome b5 + H+	C00004 + 2 C00996 <=> C00003 + 2 C00999 + C00080	1.6.2.2
+R00102	NAD+ glycohydrolase	NAD+ + H2O <=> Nicotinamide + ADP-ribose	C00003 + C00001 <=> C00153 + C00301	3.2.2.5; 3.2.2.6; 3.5.1.-
+R00103	NAD+ phosphohydrolase	NAD+ + H2O <=> AMP + Nicotinamide D-ribonucleotide	C00003 + C00001 <=> C00020 + C00455	3.6.1.9; 3.6.1.22
+R00104	ATP:NAD+ 2'-phosphotransferase	ATP + NAD+ <=> ADP + NADP+	C00002 + C00003 <=> C00008 + C00006	2.7.1.23
+R00111	N-(omega)-hydroxyarginine,NADPH:oxygen oxidoreductase (nitric-oxide-forming)	NADPH + 2 N(omega)-Hydroxyarginine + 2 Oxygen + H+ <=> NADP+ + 2 Nitric oxide + 2 L-Citrulline + 2 H2O	C00005 + 2 C05933 + 2 C00007 + C00080 <=> C00006 + 2 C00533 + 2 C00327 + 2 C00001	1.14.13.39
+R00112	NADPH:NAD+ oxidoreductase	NADPH + NAD+ <=> NADP+ + NADH	C00005 + C00003 <=> C00006 + C00004	1.6.1.1; 1.6.1.3
+R00114	L-glutamate:NADP+ oxidoreductase (transaminating)	2 L-Glutamate + NADP+ <=> L-Glutamine + 2-Oxoglutarate + NADPH + H+	2 C00025 + C00006 <=> C00064 + C00026 + C00005 + C00080	1.4.1.13
+R00115	glutathione:NADP+ oxidoreductase	2 Glutathione + NADP+ <=> Glutathione disulfide + NADPH + H+	2 C00051 + C00006 <=> C00127 + C00005 + C00080	1.8.1.7
+R00119	NADP+:nicotinate ADP-ribosyltransferase	NADP+ + Nicotinate <=> Nicotinamide + Nicotinic acid adenine dinucleotide phosphate	C00006 + C00253 <=> C00153 + C13051	2.4.99.20
+R00120	glutathione:oxygen oxidoreductase	Oxygen + 2 Glutathione <=> Glutathione disulfide + Hydrogen peroxide	C00007 + 2 C00051 <=> C00127 + C00027	1.8.3.3
+R00122	ADP phosphohydrolase	ADP + H2O <=> AMP + Orthophosphate	C00008 + C00001 <=> C00020 + C00009	3.6.1.5
+R00127	ATP:AMP phosphotransferase	ATP + AMP <=> 2 ADP	C00002 + C00020 <=> 2 C00008	2.7.4.3
+R00130	ATP:dephospho-CoA 3'-phosphotransferase	ATP + Dephospho-CoA <=> ADP + CoA	C00002 + C00882 <=> C00008 + C00010	2.7.1.24
+R00135		Peptide + H2O <=> L-Proline + Peptide	C00012 + C00001 <=> C00148 + C00012	3.4.11.5
+R00137	ATP:nicotinamide-nucleotide adenylyltransferase	ATP + Nicotinamide D-ribonucleotide <=> Diphosphate + NAD+	C00002 + C00455 <=> C00013 + C00003	2.7.7.1; 2.7.7.18
+R00139	ATP:2'-deoxy-5-hydroxymethylcytidine-5'-diphosphate phosphotransferase	2'-Deoxy-5-hydroxymethylcytidine-5'-diphosphate + ATP <=> 2'-Deoxy-5-hydroxymethylcytidine-5'-triphosphate + ADP	C11038 + C00002 <=> C11039 + C00008	2.7.4.6
+R00149	carbon-dioxide:ammonia ligase (ADP-forming,carbamate-phosphorylating)	2 ATP + Ammonia + CO2 + H2O <=> 2 ADP + Orthophosphate + Carbamoyl phosphate	2 C00002 + C00014 + C00011 + C00001 <=> 2 C00008 + C00009 + C00169	6.3.4.16
+R00150	ATP:carbamate phosphotransferase	ATP + Ammonia + HCO3- <=> ADP + Carbamoyl phosphate + H2O	C00002 + C00014 + C00288 <=> C00008 + C00169 + C00001	2.7.2.2
+R00155	UDP phosphohydrolase	UDP + H2O <=> UMP + Orthophosphate	C00015 + C00001 <=> C00105 + C00009	3.6.1.5; 3.6.1.6
+R00156	ATP:UDP phosphotransferase	ATP + UDP <=> ADP + UTP	C00002 + C00015 <=> C00008 + C00075	2.7.4.6
+R00158	ATP:UMP phosphotransferase	ATP + UMP <=> ADP + UDP	C00002 + C00105 <=> C00008 + C00015	2.7.4.4; 2.7.4.14; 2.7.4.22
+R00159	UTP phosphohydrolase	UTP + H2O <=> UDP + Orthophosphate	C00075 + C00001 <=> C00015 + C00009	3.6.1.5; 3.6.1.39
+R00160	FAD nucleotidohydrolase	FAD + H2O <=> AMP + FMN	C00016 + C00001 <=> C00020 + C00061	3.6.1.9; 3.6.1.18
+R00161	ATP:FMN adenylyltransferase	ATP + FMN <=> Diphosphate + FAD	C00002 + C00061 <=> C00013 + C00016	2.7.7.2
+R00173	pyridoxal-5'-phosphate phosphohydrolase	Pyridoxal phosphate + H2O <=> Pyridoxal + Orthophosphate	C00018 + C00001 <=> C00250 + C00009	3.1.3.74
+R00174	ATP:pyridoxal 5'-phosphotransferase	ATP + Pyridoxal <=> ADP + Pyridoxal phosphate	C00002 + C00250 <=> C00008 + C00018	2.7.1.35
+R00177	ATP:L-methionine S-adenosyltransferase	Orthophosphate + Diphosphate + S-Adenosyl-L-methionine <=> ATP + L-Methionine + H2O	C00009 + C00013 + C00019 <=> C00002 + C00073 + C00001	2.5.1.6
+R00178	S-adenosyl-L-methionine carboxy-lyase [S-adenosyl 3-(methylsulfanyl)propylamine-forming]	S-Adenosyl-L-methionine + H+ <=> S-Adenosylmethioninamine + CO2	C00019 + C00080 <=> C01137 + C00011	4.1.1.50
+R00181	AMP aminohydrolase	AMP + H2O <=> IMP + Ammonia	C00020 + C00001 <=> C00130 + C00014	3.5.4.6; 3.5.4.17
+R00182	AMP phosphoribohydrolase	AMP + H2O <=> Adenine + D-Ribose 5-phosphate	C00020 + C00001 <=> C00147 + C00117	3.2.2.4
+R00183	adenosine 5'-monophosphate phosphohydrolase	AMP + H2O <=> Adenosine + Orthophosphate	C00020 + C00001 <=> C00212 + C00009	3.1.3.5
+R00184	P1,P4-bis(5'-adenosyl)-tetraphosphate adenylohydrolase	P1,P4-Bis(5'-adenosyl)tetraphosphate + H2O <=> ATP + AMP	C01260 + C00001 <=> C00002 + C00020	3.6.1.17; 3.6.1.61
+R00185	ATP:adenosine 5'-phosphotransferase	ATP + Adenosine <=> ADP + AMP	C00002 + C00212 <=> C00008 + C00020	2.7.1.20
+R00187	P1,P3-bis(5'-adenosyl)-triphosphate adenylohydrolase	P1,P3-Bis(5'-adenosyl) triphosphate + H2O <=> ADP + AMP	C06197 + C00001 <=> C00008 + C00020	3.6.1.29
+R00189	deamido-NAD+:ammonia ligase (AMP-forming)	ATP + Deamino-NAD+ + Ammonia <=> AMP + Diphosphate + NAD+	C00002 + C00857 + C00014 <=> C00020 + C00013 + C00003	6.3.1.5; 6.3.5.1
+R00190	AMP:diphosphate phospho-D-ribosyltransferase	AMP + Diphosphate <=> Adenine + 5-Phospho-alpha-D-ribose 1-diphosphate	C00020 + C00013 <=> C00147 + C00119	2.4.2.7
+R00191	adenosine 3',5'-phosphate 5'-nucleotidohydrolase	3',5'-Cyclic AMP + H2O <=> AMP	C00575 + C00001 <=> C00020	3.1.4.17; 3.1.4.53
+R00192	S-adenosyl-L-homocysteine hydrolase	S-Adenosyl-L-homocysteine + H2O <=> Adenosine + L-Homocysteine	C00021 + C00001 <=> C00212 + C00155	3.13.2.1
+R00196	(S)-lactate:ferricytochrome-c 2-oxidoreductase	(S)-Lactate + 2 Ferricytochrome c <=> Pyruvate + 2 Ferrocytochrome c + 2 H+	C00186 + 2 C00125 <=> C00022 + 2 C00126 + 2 C00080	1.1.2.3
+R00197	(R)-lactate:ferricytochrome-c 2-oxidoreductase	(R)-Lactate + 2 Ferricytochrome c <=> Pyruvate + 2 Ferrocytochrome c + 2 H+	C00256 + 2 C00125 <=> C00022 + 2 C00126 + 2 C00080	1.1.2.4
+R00198	(R)-lactate:ferricytochrome-c-553 2-oxidoreductase	(R)-Lactate + 2 Ferricytochrome c-553 <=> Pyruvate + 2 Ferrocytochrome c-553 + 2 H+	C00256 + 2 C01070 <=> C00022 + 2 C01071 + 2 C00080	1.1.2.5
+R00199	ATP:pyruvate,water phosphotransferase	ATP + Pyruvate + H2O <=> AMP + Phosphoenolpyruvate + Orthophosphate	C00002 + C00022 + C00001 <=> C00020 + C00074 + C00009	2.7.9.2
+R00200	ATP:pyruvate 2-O-phosphotransferase	ATP + Pyruvate <=> ADP + Phosphoenolpyruvate	C00002 + C00022 <=> C00008 + C00074	2.7.1.40
+R00206	ATP:pyruvate,phosphate phosphotransferase	ATP + Pyruvate + Orthophosphate <=> AMP + Phosphoenolpyruvate + Diphosphate	C00002 + C00022 + C00009 <=> C00020 + C00074 + C00013	2.7.9.1
+R00209	pyruvate:NAD+ 2-oxidoreductase (CoA-acetylating)	Pyruvate + CoA + NAD+ <=> Acetyl-CoA + CO2 + NADH + H+	C00022 + C00010 + C00003 <=> C00024 + C00011 + C00004 + C00080	1.2.1.104
+R00210	pyruvate:NADP+ 2-oxidoreductase (CoA-acetylating)	Pyruvate + CoA + NADP+ <=> Acetyl-CoA + CO2 + NADPH + H+	C00022 + C00010 + C00006 <=> C00024 + C00011 + C00005 + C00080	1.2.1.51
+R00212	acetyl-CoA:formate C-acetyltransferase	Acetyl-CoA + Formate <=> CoA + Pyruvate	C00024 + C00058 <=> C00010 + C00022	2.3.1.54
+R00214	(S)-malate:NAD+ oxidoreductase (decarboxylating)	(S)-Malate + NAD+ <=> Pyruvate + CO2 + NADH + H+	C00149 + C00003 <=> C00022 + C00011 + C00004 + C00080	1.1.1.38; 1.1.1.39
+R00216	(S)-malate:NADP+ oxidoreductase(oxaloacetate-decarboxylating)	(S)-Malate + NADP+ <=> Pyruvate + CO2 + NADPH + H+	C00149 + C00006 <=> C00022 + C00011 + C00005 + C00080	1.1.1.40
+R00217	oxaloacetate carboxy-lyase (pyruvate-forming)	Oxaloacetate <=> Pyruvate + CO2	C00036 <=> C00022 + C00011	1.1.1.38; 1.1.1.40; 4.1.1.112
+R00220	L-serine ammonia-lyase	L-Serine <=> Pyruvate + Ammonia	C00065 <=> C00022 + C00014	4.3.1.17; 4.3.1.19
+R00227	acetyl-CoA hydrolase	Acetyl-CoA + H2O <=> CoA + Acetate	C00024 + C00001 <=> C00010 + C00033	3.1.2.1
+R00229	acetate:CoA ligase (ADP-forming)	ATP + Acetate + CoA <=> ADP + Acetyl-CoA + Orthophosphate	C00002 + C00033 + C00010 <=> C00008 + C00024 + C00009	6.2.1.13
+R00233	malonyl-CoA carboxy-lyase (acetyl-CoA-forming)	Malonyl-CoA <=> Acetyl-CoA + CO2	C00083 <=> C00024 + C00011	4.1.1.9
+R00235	acetate:CoA ligase (AMP-forming)	ATP + Acetate + CoA <=> AMP + Diphosphate + Acetyl-CoA	C00002 + C00033 + C00010 <=> C00020 + C00013 + C00024	6.2.1.1
+R00236	acetyl adenylate:CoA acetyltransferase	Acetyl adenylate + CoA <=> AMP + Acetyl-CoA	C05993 + C00010 <=> C00020 + C00024	6.2.1.1
+R00238	acetyl-CoA:acetyl-CoA C-acetyltransferase	2 Acetyl-CoA <=> CoA + Acetoacetyl-CoA	2 C00024 <=> C00010 + C00332	2.3.1.9; 2.3.1.16
+R00239	ATP:L-glutamate 5-phosphotransferase	ATP + L-Glutamate <=> ADP + L-Glutamyl 5-phosphate	C00002 + C00025 <=> C00008 + C03287	2.7.2.11
+R00243	L-glutamate:NAD+ oxidoreductase (deaminating)	L-Glutamate + NAD+ + H2O <=> 2-Oxoglutarate + Ammonia + NADH + H+	C00025 + C00003 + C00001 <=> C00026 + C00014 + C00004 + C00080	1.4.1.2; 1.4.1.3; 1.4.1.14
+R00245	L-glutamate gamma-semialdehyde:NAD+ oxidoreductase	L-Glutamate 5-semialdehyde + NAD+ + H2O <=> L-Glutamate + NADH + H+	C01165 + C00003 + C00001 <=> C00025 + C00004 + C00080	1.2.1.88
+R00248	L-glutamate:NADP+ oxidoreductase (deaminating)	L-Glutamate + NADP+ + H2O <=> 2-Oxoglutarate + Ammonia + NADPH + H+	C00025 + C00006 + C00001 <=> C00026 + C00014 + C00005 + C00080	1.4.1.3; 1.4.1.4; 1.4.1.13
+R00251	5-oxo-L-proline amidohydrolase (ATP-hydrolysing)	ATP + 5-Oxoproline + 2 H2O <=> ADP + Orthophosphate + L-Glutamate	C00002 + C01879 + 2 C00001 <=> C00008 + C00009 + C00025	3.5.2.9
+R00253	L-glutamate:ammonia ligase (ADP-forming)	ATP + L-Glutamate + Ammonia <=> ADP + Orthophosphate + L-Glutamine	C00002 + C00025 + C00014 <=> C00008 + C00009 + C00064	6.3.1.2
+R00256	L-glutamine amidohydrolase	L-Glutamine + H2O <=> L-Glutamate + Ammonia	C00064 + C00001 <=> C00025 + C00014	1.4.1.13; 1.4.1.14; 1.4.7.1; 2.6.1.85; 2.6.1.123; 3.5.1.2; 3.5.1.38; 4.3.2.10; 4.3.3.6; 6.3.4.2; 6.3.5.2; 6.3.5.4; 6.3.5.5; 6.3.5.13
+R00257	deamido-NAD+:L-glutamine amido-ligase (AMP-forming)	ATP + Deamino-NAD+ + L-Glutamine + H2O <=> AMP + Diphosphate + NAD+ + L-Glutamate	C00002 + C00857 + C00064 + C00001 <=> C00020 + C00013 + C00003 + C00025	6.3.5.1
+R00258	L-alanine:2-oxoglutarate aminotransferase	L-Alanine + 2-Oxoglutarate <=> Pyruvate + L-Glutamate	C00041 + C00026 <=> C00022 + C00025	2.6.1.2
+R00259	acetyl-CoA:L-glutamate N-acetyltransferase	Acetyl-CoA + L-Glutamate <=> CoA + N-Acetyl-L-glutamate	C00024 + C00025 <=> C00010 + C00624	2.3.1.1
+R00261	L-glutamate 1-carboxy-lyase (4-aminobutanoate-forming)	L-Glutamate <=> 4-Aminobutanoate + CO2	C00025 <=> C00334 + C00011	4.1.1.15
+R00267	isocitrate:NADP+ oxidoreductase (decarboxylating)	Isocitrate + NADP+ <=> 2-Oxoglutarate + CO2 + NADPH + H+	C00311 + C00006 <=> C00026 + C00011 + C00005 + C00080	1.1.1.42
+R00268	oxalosuccinate carboxy-lyase (2-oxoglutarate-forming)	Oxalosuccinate <=> 2-Oxoglutarate + CO2	C05379 <=> C00026 + C00011	1.1.1.42
+R00269	2-oxoglutaramate amidohydrolase	2-Oxoglutaramate + H2O <=> 2-Oxoglutarate + Ammonia	C00940 + C00001 <=> C00026 + C00014	3.5.1.3; 3.5.1.111
+R00274	glutathione:hydrogen-peroxide oxidoreductase	Hydrogen peroxide + 2 Glutathione <=> Glutathione disulfide + 2 H2O	C00027 + 2 C00051 <=> C00127 + 2 C00001	1.11.1.9
+R00277	pyridoxamine-5'-phosphate:oxygen oxidoreductase (deaminating)	Pyridoxamine phosphate + H2O + Oxygen <=> Pyridoxal phosphate + Ammonia + Hydrogen peroxide	C00647 + C00001 + C00007 <=> C00018 + C00014 + C00027	1.4.3.5
+R00278	pyridoxine 5'-phosphate:oxygen oxidoreductase	Pyridoxine phosphate + Oxygen <=> Hydrogen peroxide + Pyridoxal phosphate	C00627 + C00007 <=> C00027 + C00018	1.4.3.5
+R00286	UDP-glucose:NAD+ 6-oxidoreductase	UDP-glucose + H2O + 2 NAD+ <=> UDP-glucuronate + 2 NADH + 2 H+	C00029 + C00001 + 2 C00003 <=> C00167 + 2 C00004 + 2 C00080	1.1.1.22
+R00287	UDP-glucose glucophosphohydrolase	UDP-glucose + H2O <=> UMP + D-Glucose 1-phosphate	C00029 + C00001 <=> C00105 + C00103	3.6.1.9; 3.6.1.45
+R00289	UTP:alpha-D-glucose-1-phosphate uridylyltransferase	UTP + D-Glucose 1-phosphate <=> Diphosphate + UDP-glucose	C00075 + C00103 <=> C00013 + C00029	2.7.7.9; 2.7.7.64
+R00291	UDP-glucose 4-epimerase	UDP-glucose <=> UDP-alpha-D-galactose	C00029 <=> C00052	5.1.3.2
+R00292	UDP-glucose:glycogen 4-alpha-D-glucosyltransferase	UDP-glucose + Amylose <=> UDP + Amylose	C00029 + C00718 <=> C00015 + C00718	2.4.1.11; 2.4.1.242
+R00297	(R)-2-hydroxy-acid:acceptor 2-oxidoreductase	(R)-Lactate + Acceptor <=> Pyruvate + Reduced acceptor	C00256 + C00028 <=> C00022 + C00030	1.1.99.6
+R00299	ATP:D-glucose 6-phosphotransferase	ATP + D-Glucose <=> ADP + D-Glucose 6-phosphate	C00002 + C00031 <=> C00008 + C00092	2.7.1.1; 2.7.1.2
+R00303	D-glucose-6-phosphate phosphohydrolase	D-Glucose 6-phosphate + H2O <=> D-Glucose + Orthophosphate	C00092 + C00001 <=> C00031 + C00009	3.1.3.9; 3.1.3.58
+R00306	cellobiose glucohydrolase	Cellobiose + H2O <=> 2 D-Glucose	C00185 + C00001 <=> 2 C00031	3.2.1.21; 3.2.1.74
+R00310	protoheme ferro-lyase (protoporphyrin-forming)	Protoporphyrin + Fe2+ <=> Heme + 2 H+	C02191 + C14818 <=> C00032 + 2 C00080	4.98.1.1
+R00311	protoheme,NADPH---hemoprotein reductase:oxygen oxidoreductase (alpha-methene-oxidizing, hydroxylating)	Heme + 3 [Reduced NADPH---hemoprotein reductase] + 3 Oxygen <=> Biliverdin + CO + Fe2+ + 3 [Oxidized NADPH---hemoprotein reductase] + 3 H2O	C00032 + 3 C03024 + 3 C00007 <=> C00500 + C00237 + C14818 + 3 C03161 + 3 C00001	1.14.14.18
+R00315	ATP:acetate phosphotransferase	ATP + Acetate <=> ADP + Acetyl phosphate	C00002 + C00033 <=> C00008 + C00227	2.7.2.1; 2.7.2.15
+R00316	ATP:acetate adenylyltransferase	ATP + Acetate <=> Diphosphate + Acetyl adenylate	C00002 + C00033 <=> C00013 + C05993	6.2.1.1
+R00317	acetyl phosphate phosphohydrolase	Acetyl phosphate + H2O <=> Acetate + Orthophosphate	C00227 + C00001 <=> C00033 + C00009	3.6.1.7
+R00320	diphosphate:acetate phosphotransferase	Diphosphate + Acetate <=> Orthophosphate + Acetyl phosphate	C00013 + C00033 <=> C00009 + C00227	2.7.2.12
+R00328	GDP phosphohydrolase	GDP + H2O <=> GMP + Orthophosphate	C00035 + C00001 <=> C00144 + C00009	3.6.1.5; 3.6.1.6; 3.6.1.42
+R00330	ATP:GDP phosphotransferase	ATP + GDP <=> ADP + GTP	C00002 + C00035 <=> C00008 + C00044	2.7.4.6
+R00331	ATP:nucleoside-diphosphate phosphotransferase	ATP + NDP <=> ADP + Nucleoside triphosphate	C00002 + C00454 <=> C00008 + C00201	2.7.4.6
+R00332	ATP:GMP phosphotransferase	ATP + GMP <=> ADP + GDP	C00002 + C00144 <=> C00008 + C00035	2.7.4.8
+R00333	nucleoside-triphosphate:AMP phosphotransferase	Nucleoside triphosphate + AMP <=> NDP + ADP	C00201 + C00020 <=> C00454 + C00008	2.7.4.10
+R00335	GTP phosphohydrolase	GTP + H2O <=> GDP + Orthophosphate	C00044 + C00001 <=> C00035 + C00009	3.6.1.5; 3.6.5.1; 3.6.5.2; 3.6.5.3; 3.6.5.4; 3.6.5.5; 3.6.5.6
+R00336	guanosine-3',5'-bis(diphosphate) 3'-diphosphohydrolase	Guanosine 3',5'-bis(diphosphate) + H2O <=> GDP + Diphosphate	C01228 + C00001 <=> C00035 + C00013	3.1.7.2
+R00341	ATP:oxaloacetate carboxy-lyase (transphosphorylating	ATP + Oxaloacetate <=> ADP + Phosphoenolpyruvate + CO2	C00002 + C00036 <=> C00008 + C00074 + C00011	4.1.1.49
+R00342	(S)-malate:NAD+ oxidoreductase	(S)-Malate + NAD+ <=> Oxaloacetate + NADH + H+	C00149 + C00003 <=> C00036 + C00004 + C00080	1.1.1.37; 1.1.1.299
+R00343	(S)-malate:NADP+ oxidoreductase	(S)-Malate + NADP+ <=> Oxaloacetate + NADPH + H+	C00149 + C00006 <=> C00036 + C00005 + C00080	1.1.1.82; 1.1.1.299
+R00344	pyruvate:carbon-dioxide ligase (ADP-forming)	ATP + Pyruvate + HCO3- <=> ADP + Orthophosphate + Oxaloacetate	C00002 + C00022 + C00288 <=> C00008 + C00009 + C00036	6.4.1.1
+R00345	phosphate:oxaloacetate carboxy-lyase (adding phosphate	Orthophosphate + Oxaloacetate <=> H2O + Phosphoenolpyruvate + CO2	C00009 + C00036 <=> C00001 + C00074 + C00011	4.1.1.31
+R00346	diphosphate:oxaloacetate carboxy-lyase (transphosphorylating	Diphosphate + Oxaloacetate <=> Orthophosphate + Phosphoenolpyruvate + CO2	C00013 + C00036 <=> C00009 + C00074 + C00011	4.1.1.38

@@ -10,49 +10,22 @@ from __future__ import annotations
 import click
 
 from metabokg.cli.main import cli
-from metabokg.cli.options import db_option, lancedb_option, resolve_db, resolve_lancedb
 
 
 @cli.command("viz3d")
-@db_option
-@lancedb_option
+@click.option("--db", default=None, help="Path to SQLite database.")
+@click.option("--lancedb", default=None, help="Path to LanceDB directory.")
 @click.option(
     "--layout",
-    type=click.Choice(["allium", "cake"], case_sensitive=False),
-    default="cake",
+    default="allium",
     show_default=True,
-    help=(
-        "3-D layout strategy. "
-        "'allium' renders each pathway as a Giant Allium plant; "
-        "'cake' stratifies nodes by kind across Z layers."
-    ),
+    type=click.Choice(["allium", "cake"]),
+    help="3D layout strategy.",
 )
-@click.option(
-    "--width",
-    type=int,
-    default=1400,
-    show_default=True,
-    help="Window width in pixels.",
-)
-@click.option(
-    "--height",
-    type=int,
-    default=900,
-    show_default=True,
-    help="Window height in pixels.",
-)
-@click.option(
-    "--export-html",
-    metavar="PATH",
-    default=None,
-    help="Export to HTML file instead of opening interactive window.",
-)
-@click.option(
-    "--export-png",
-    metavar="PATH",
-    default=None,
-    help="Export to PNG file instead of opening interactive window.",
-)
+@click.option("--width", default=1400, show_default=True, help="Window width in pixels.")
+@click.option("--height", default=900, show_default=True, help="Window height in pixels.")
+@click.option("--export-html", default=None, help="Export to HTML file instead of opening window.")
+@click.option("--export-png", default=None, help="Export to PNG file.")
 def viz3d(
     db: str | None,
     lancedb: str | None,
@@ -63,22 +36,12 @@ def viz3d(
     export_png: str | None,
 ) -> None:
     """Launch the 3D PyVista metabolic knowledge-graph visualizer."""
-    from pathlib import Path
+    from metabokg.metabokg_viz3d import main as viz3d_main_func
 
-    db_path = Path(resolve_db(db))
-    lancedb = resolve_lancedb(lancedb)
-    if not db_path.exists():
-        raise click.ClickException(
-            f"Database not found: {db_path}\n"
-            "Run 'metabokg build' first to build your metabolic knowledge graph."
-        )
-
-    from metabokg.viz3d import launch
-
-    launch(
-        db_path=str(db_path),
-        lancedb_dir=lancedb,
-        layout_name=layout,
+    viz3d_main_func(
+        db=db,
+        lancedb=lancedb,
+        layout=layout,
         width=width,
         height=height,
         export_html=export_html,

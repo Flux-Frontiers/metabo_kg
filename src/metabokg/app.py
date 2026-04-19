@@ -69,7 +69,9 @@ _REL_COLOR: dict[str, str] = {
 
 # Honour the METAKG_DB env var for Docker deployment
 _DEFAULT_DB = os.environ.get("METABOKG_DB", os.environ.get("METAKG_DB", ".metabokg/hsa.sqlite"))
-_DEFAULT_LANCEDB = os.environ.get("METAKG_LANCEDB", ".metabokg/lancedb")
+_DEFAULT_LANCEDB = os.environ.get(
+    "METABOKG_LANCEDB", os.environ.get("METAKG_LANCEDB", ".metabokg/lancedb")
+)
 
 # ---------------------------------------------------------------------------
 # Page config (must be first Streamlit call)
@@ -136,17 +138,40 @@ def _init_state() -> None:
 
 
 @st.cache_resource(show_spinner="Opening SQLite store…")
+def _resolve_db_path(db_path: str) -> Path:
+    """
+    Resolve a db path: if it's a directory, look for a .sqlite file inside
+    .metabokg/ or directly in the directory. Returns the resolved Path
+    (may not exist — caller checks).
+    """
+    p = Path(db_path)
+    if p.is_dir():
+        metabokg_dir = p / ".metabokg"
+        candidates = [p / ".metabokg" / "hsa.sqlite"]
+        if metabokg_dir.is_dir():
+            candidates += sorted(metabokg_dir.glob("*.sqlite"))
+        candidates += sorted(p.glob("*.sqlite"))
+        for candidate in candidates:
+            if Path(candidate).exists():
+                return Path(candidate)
+    return p
+
+
 def _load_store(db_path: str) -> GraphStore | None:
     """
     Load and cache a GraphStore from the given SQLite database path.
 
-    :param db_path: Filesystem path to the SQLite database file.
-    :return: A connected ``GraphStore`` instance, or ``None`` if the file is absent.
+    :param db_path: Filesystem path to the SQLite database file or a directory
+        containing one.
+    :return: A connected ``GraphStore`` instance, or ``None`` if not found.
     """
-    p = Path(db_path)
-    if not p.exists():
+    p = _resolve_db_path(db_path)
+    if not p.exists() or not p.is_file():
         return None
-    return GraphStore(db_path)
+    try:
+        return GraphStore(str(p))
+    except Exception:
+        return None
 
 
 def _get_store() -> GraphStore | None:
@@ -155,8 +180,12 @@ def _get_store() -> GraphStore | None:
     loaded_path = st.session_state.get("store_loaded_path")
 
     if current_path != loaded_path:
-        st.session_state["store"] = _load_store(current_path)
+        resolved = str(_resolve_db_path(current_path))
+        store = _load_store(current_path)
+        st.session_state["store"] = store
         st.session_state["store_loaded_path"] = current_path
+        if store is not None and resolved != current_path:
+            st.session_state["db_path"] = resolved
 
     return st.session_state.get("store")
 
