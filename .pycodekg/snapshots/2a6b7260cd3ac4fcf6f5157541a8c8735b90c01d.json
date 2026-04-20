@@ -1,35 +1,35 @@
 {
-  "key": "9f4cfa58f0234e9f5d6a1d25fef9bd4ece008098",
+  "key": "2a6b7260cd3ac4fcf6f5157541a8c8735b90c01d",
   "branch": "main",
-  "timestamp": "2026-04-19T19:20:14.930138+00:00",
+  "timestamp": "2026-04-20T14:55:50.216104+00:00",
   "version": "0.14.0",
   "metrics": {
     "db_path": ".pycodekg/graph.sqlite",
-    "total_nodes": 5525,
-    "meaningful_nodes": 379,
-    "total_edges": 5092,
+    "total_nodes": 5679,
+    "meaningful_nodes": 385,
+    "total_edges": 5243,
     "node_counts": {
       "class": 47,
-      "function": 147,
+      "function": 153,
       "method": 146,
       "module": 39,
-      "symbol": 5146
+      "symbol": 5294
     },
     "edge_counts": {
-      "ATTR_ACCESS": 1724,
-      "CALLS": 1726,
-      "CONTAINS": 340,
+      "ATTR_ACCESS": 1772,
+      "CALLS": 1800,
+      "CONTAINS": 346,
       "IMPORTS": 335,
       "INHERITS": 11,
-      "RESOLVES_TO": 956
+      "RESOLVES_TO": 979
     },
-    "docstring_coverage": 0.8390000000000001,
+    "docstring_coverage": 0.8420000000000001,
     "critical_issues": 1,
     "complexity_median": 6,
     "module_node_counts": {
       "src/metabokg/__init__.py": 3,
       "src/metabokg/analyze.py": 309,
-      "src/metabokg/app.py": 348,
+      "src/metabokg/app.py": 487,
       "src/metabokg/cho_kinetics.py": 47,
       "src/metabokg/cli/__init__.py": 3,
       "src/metabokg/cli/_utils.py": 23,
@@ -135,9 +135,9 @@
   ],
   "vs_previous": null,
   "vs_baseline": {
-    "nodes": 381,
-    "edges": 417,
-    "coverage_delta": 0.0,
+    "nodes": 535,
+    "edges": 568,
+    "coverage_delta": 0.0030000000000000027,
     "critical_issues_delta": 0
   }
 }

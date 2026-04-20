@@ -86,25 +86,6 @@ st.set_page_config(
 # Minimal CSS tweaks
 # ---------------------------------------------------------------------------
 
-st.markdown(
-    """
-    <style>
-    .stTabs [data-baseweb="tab-list"] { gap: 12px; }
-    .stTabs [data-baseweb="tab"] { font-size: 1rem; padding: 6px 18px; }
-    .node-card {
-        background: #1e1e2e;
-        border-left: 4px solid #3498DB;
-        border-radius: 6px;
-        padding: 10px 14px;
-        margin-bottom: 8px;
-        font-family: monospace;
-        font-size: 0.85rem;
-    }
-    .edge-row { font-family: monospace; font-size: 0.82rem; color: #aaa; }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 
 # ---------------------------------------------------------------------------
 # Session-state initialisation
@@ -124,13 +105,6 @@ def _init_state() -> None:
         "graph_nodes": None,
         "graph_edges": None,
         "selected_node_id": None,
-        # Raw graph data cache (invalidated when db_path changes)
-        "graph_raw_nodes": None,
-        "graph_raw_edges": None,
-        "graph_raw_db": None,
-        # Pathway list cache for simulation tab
-        "pathway_list": None,
-        "pathway_list_db": None,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -162,6 +136,35 @@ def _resolve_db_path(db_path: str) -> Path:
     return p
 
 
+@st.cache_resource(show_spinner="Loading MetaKG (embedding model)…")
+def _load_kg(db_path: str, lancedb_dir: str) -> Any:
+    """Load and cache a MetaKG instance (holds the embedding model in memory)."""
+    from metabokg import MetaKG
+
+    return MetaKG(db_path=db_path, lancedb_dir=lancedb_dir)
+
+
+@st.cache_resource(show_spinner="Loading full graph…")
+def _load_full_graph(db_path: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """
+    Cache-load the full node/edge lists for the Graph Browser tab.
+
+    Keyed by ``db_path`` so the ~17K-row scan runs once per session (or when the
+    user points at a different database), not on every Streamlit rerun.
+    """
+    resolved = _resolve_db_path(db_path)
+    if not resolved.exists() or not resolved.is_file():
+        return [], []
+    store = GraphStore(str(resolved))
+    try:
+        return store.query_nodes(), store.query_edges()
+    finally:
+        try:
+            store.close()
+        except Exception:
+            pass
+
+
 def _load_store(db_path: str) -> GraphStore | None:
     """
     Load and cache a GraphStore from the given SQLite database path.
@@ -177,14 +180,6 @@ def _load_store(db_path: str) -> GraphStore | None:
         return GraphStore(str(p))
     except Exception:
         return None
-
-
-@st.cache_resource(show_spinner="Loading semantic index…")
-def _get_meta_kg(db_path: str, lancedb_dir: str) -> Any:
-    """Return a long-lived MetaKG instance (model loaded once per session)."""
-    from metabokg import MetaKG  # local import — heavy dep, optional
-
-    return MetaKG(db_path=db_path, lancedb_dir=lancedb_dir)
 
 
 def _get_store() -> GraphStore | None:
@@ -444,21 +439,11 @@ def _tab_graph(cfg: dict[str, Any]) -> None:
         )
         return
 
-    # Load full graph — cached in session state, invalidated only when db changes
-    current_db = cfg["db_path"]
-    if (
-        st.session_state.get("graph_raw_db") != current_db
-        or st.session_state["graph_raw_nodes"] is None
-    ):
-        try:
-            st.session_state["graph_raw_nodes"] = store.query_nodes()
-            st.session_state["graph_raw_edges"] = store.query_edges()
-            st.session_state["graph_raw_db"] = current_db
-        except Exception as e:
-            st.error(f"Error loading graph: {e}")
-            return
-    all_nodes: list[dict[str, Any]] = st.session_state["graph_raw_nodes"]
-    all_edges: list[dict[str, Any]] = st.session_state["graph_raw_edges"]
+    try:
+        all_nodes, all_edges = _load_full_graph(str(Path(cfg["db_path"]).resolve()))
+    except Exception as e:
+        st.error(f"Error loading graph: {e}")
+        return
 
     # Filter by kind and relation
     filtered_nodes = [n for n in all_nodes if n.get("kind") in cfg["node_kinds_filter"]]
@@ -481,21 +466,7 @@ def _tab_graph(cfg: dict[str, Any]) -> None:
     st.caption(f"Showing {len(filtered_nodes)} nodes and {len(filtered_edges)} edges")
 
     _render_legend()
-
-    # Cache pyvis HTML — re-render only when filter config or data changes
-    pyvis_cache_key = (
-        current_db,
-        cfg["max_nodes"],
-        cfg["physics_on"],
-        tuple(sorted(cfg["node_kinds_filter"])),
-        tuple(sorted(cfg["edge_rels_filter"])),
-    )
-    if st.session_state.get("pyvis_cache_key") != pyvis_cache_key:
-        st.session_state["pyvis_html"] = _build_pyvis(
-            filtered_nodes, filtered_edges, physics_on=cfg["physics_on"]
-        )
-        st.session_state["pyvis_cache_key"] = pyvis_cache_key
-    html: str = st.session_state["pyvis_html"]
+    html = _build_pyvis(filtered_nodes, filtered_edges, physics_on=cfg["physics_on"])
     st.iframe(html, height=750)
 
     # Node list
@@ -529,6 +500,41 @@ def _tab_graph(cfg: dict[str, Any]) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _expand_hits(
+    seeds: dict[str, dict[str, Any]],
+    store: GraphStore,
+    hops: int,
+) -> dict[str, dict[str, Any]]:
+    """
+    Expand a seed hit map through *hops* of graph neighbours.
+
+    Uses ``store.neighbours`` to build the frontier and a single batched
+    ``store.nodes`` call per hop to fetch node payloads (avoids N+1 fetches).
+
+    :param seeds: Mapping of seed node ID → node dict (mutated is not, returned fresh).
+    :param store: GraphStore instance.
+    :param hops: Number of hops to expand (must be ≥ 1).
+    :return: Dict of node ID → node dict containing seeds plus expanded neighbours.
+    """
+    seen: dict[str, dict[str, Any]] = dict(seeds)
+    frontier: set[str] = set(seen.keys())
+
+    for _ in range(hops):
+        next_ids: set[str] = set()
+        for nid in frontier:
+            for neigh in store.neighbours(nid):
+                if neigh not in seen:
+                    next_ids.add(neigh)
+        if not next_ids:
+            break
+        fetched = store.nodes(list(next_ids))
+        for nid, node in fetched.items():
+            if node is not None:
+                seen[nid] = node
+        frontier = set(fetched.keys()) & set(seen.keys())
+    return seen
+
+
 def _tab_search(cfg: dict[str, Any]) -> None:
     """Render the Semantic Search tab."""
     st.subheader("🔍 Semantic Search")
@@ -538,59 +544,271 @@ def _tab_search(cfg: dict[str, Any]) -> None:
         st.error(f"❌ Database not found at `{cfg['db_path']}`")
         return
 
-    query_text = st.text_area(
-        "Enter a query",
-        placeholder="e.g., 'glucose metabolism' or 'ATP synthase'",
-        height=80,
-    )
-
-    if query_text:
-        col1, col2 = st.columns(2)
-        k = col1.slider("Number of results", min_value=1, max_value=50, value=10)
-        hop = col2.slider(
-            "Graph hops",
+    col_q, col_k, col_h = st.columns([4, 1, 1])
+    with col_q:
+        query_text = st.text_area(
+            "Enter a query",
+            placeholder="e.g., 'glucose metabolism' or 'ATP synthase'",
+            height=80,
+            key="search_query",
+        )
+    with col_k:
+        k = st.number_input(
+            "Results (k)",
+            min_value=1,
+            max_value=50,
+            value=10,
+            key="search_k",
+            help="Number of seed hits from semantic/text search.",
+        )
+    with col_h:
+        hops = st.number_input(
+            "Hops",
             min_value=0,
             max_value=3,
             value=0,
-            help="Expand each seed result through N hops of graph neighbours",
+            key="search_hops",
+            help="Graph hops to expand from seeds (0 = seeds only).",
         )
 
+    if st.button("🔍 Search", type="primary", key="search_run"):
+        if not query_text.strip():
+            st.warning("Enter a query first.")
+        else:
+            debug: dict[str, Any] = {
+                "cwd": str(Path.cwd()),
+                "db_path_cfg": cfg["db_path"],
+                "lancedb_dir_cfg": cfg.get("lancedb_dir"),
+            }
+            with st.spinner("Searching…"):
+                try:
+                    lancedb_dir = cfg.get("lancedb_dir", _DEFAULT_LANCEDB)
+                    # Normalise to absolute paths so cache_resource key is stable
+                    # across reruns where _get_store() may resolve the relative path
+                    abs_db = str(Path(cfg["db_path"]).resolve())
+                    abs_ld = str(Path(lancedb_dir).resolve())
+                    debug["lancedb_exists"] = Path(abs_ld).exists()
+                    use_vector = Path(abs_ld).exists()
+                    raw_hits: list[dict[str, Any]] = []
+                    if use_vector:
+                        kg = _load_kg(abs_db, abs_ld)
+                        if kg is None:
+                            raise RuntimeError(
+                                f"Could not load MetaKG (db={abs_db}, "
+                                f"lancedb={abs_ld}). Check that the index exists."
+                            )
+                        debug["kg_db"] = str(kg.db_path)
+                        debug["kg_lancedb"] = str(kg.lancedb_dir)
+                        debug["kg_model"] = kg.model_name
+                        debug["kg_table"] = kg.table_name
+                        query_results = kg.query(query_text, k=int(k))
+                        raw_hits = query_results.hits
+                        debug["raw_hits"] = len(raw_hits)
+                    else:
+                        raw_hits = store.query_text(query_text, k=int(k))
+                        debug["raw_hits"] = len(raw_hits)
+
+                    seed_ids = {h["id"] for h in raw_hits}
+                    hits_by_id: dict[str, dict[str, Any]] = {h["id"]: {**h} for h in raw_hits}
+                    expanded = int(hops) > 0
+                    if expanded:
+                        hits_by_id = _expand_hits(hits_by_id, store, int(hops))
+
+                    all_edges = store.edges_within(set(hits_by_id.keys()))
+
+                    st.session_state["search_hits"] = list(hits_by_id.values())
+                    st.session_state["search_seed_ids"] = seed_ids
+                    st.session_state["search_edges"] = all_edges
+                    st.session_state["search_mode"] = "vector" if use_vector else "text"
+                    st.session_state["search_hops_used"] = int(hops)
+                    st.session_state["search_debug"] = debug
+                except Exception as exc:
+                    debug["exception"] = f"{type(exc).__name__}: {exc}"
+                    st.error(f"Query failed: {exc}")
+                    st.session_state["search_hits"] = []
+                    st.session_state["search_seed_ids"] = set()
+                    st.session_state["search_edges"] = []
+                    st.session_state["search_hops_used"] = 0
+                    st.session_state["search_debug"] = debug
+
+    hits: list[dict[str, Any]] | None = st.session_state.get("search_hits")
+    debug_info = st.session_state.get("search_debug")
+    if hits is None:
+        st.info("Enter a query above and click **🔍 Search**.")
+        return
+    if not hits:
+        st.warning("No results found.")
+        if debug_info:
+            with st.expander("🐞 Debug — what the search saw", expanded=True):
+                st.json(debug_info)
+        return
+
+    all_edges = st.session_state.get("search_edges", [])
+    mode = st.session_state.get("search_mode", "")
+    hops_used = int(st.session_state.get("search_hops_used", 0))
+    seed_ids = set(st.session_state.get("search_seed_ids", set()))
+    kinds_filter: list[str] = cfg["node_kinds_filter"]
+    rels_filter: list[str] = cfg["edge_rels_filter"]
+
+    visible = [h for h in hits if h.get("kind") in kinds_filter]
+    visible_ids = {h["id"] for h in visible}
+
+    result_edges = [
+        e
+        for e in all_edges
+        if e["src"] in visible_ids and e["dst"] in visible_ids and e.get("rel") in rels_filter
+    ]
+
+    seed_count = len(seed_ids) if seed_ids else len(hits)
+    hop_note = f", +{len(hits) - seed_count} via {hops_used}-hop expansion" if hops_used else ""
+    st.success(
+        f"Found {seed_count} seed{'s' if seed_count != 1 else ''} ({mode} search){hop_note}"
+        + (f" — {len(visible)} shown after filters" if len(visible) != len(hits) else "")
+    )
+
+    tab_graph, tab_list = st.tabs(["🗺️ Graph", "📋 Results"])
+
+    with tab_graph:
+        if result_edges:
+            _render_legend()
+            html = _build_pyvis(visible, result_edges, height="500px")
+            st.iframe(html, height=500)
+        else:
+            st.info("No edges connect these result nodes — try a broader query or more results.")
+
+    with tab_list:
+        for i, result in enumerate(visible, 1):
+            nid = result.get("id")
+            kind = result.get("kind", "")
+            name = result.get("name", "")
+            description = result.get("description", "")
+            score = result.get("score")
+            score_str = f"  score={score:.3f}" if isinstance(score, float) else ""
+            color = _KIND_COLOR.get(kind, "#95A5A6")
+            st.markdown(
+                f'<div class="node-card" style="border-left-color:{color}">'
+                f'<b>{i}. {name}</b> <code style="color:{color}">{kind}</code>'
+                f"<small>{score_str}</small><br>"
+                f"<small>{nid}</small><br>"
+                f"<small>{description[:_DESCRIPTION_CARD_LEN]}</small>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+
+    _node_detail_section(visible, store, key_prefix="search")
+
+
+def _render_node_detail(node: dict[str, Any], store: GraphStore | None = None) -> None:
+    """Render a full detail card for a metabolic graph node."""
+    kind = node.get("kind", "")
+    color = _KIND_COLOR.get(kind, "#95A5A6")
+    name = node.get("name", "") or node.get("id", "")
+    node_id = node.get("id", "")
+    description = (node.get("description") or "").strip()
+
+    is_dark = st.get_option("theme.base") == "dark"
+    card_bg = "rgba(255,255,255,0.06)" if is_dark else "rgba(0,0,0,0.04)"
+    text_col = "#e0e0e0" if is_dark else "#111"
+    meta_col = "#aaa" if is_dark else "#555"
+    id_col = "#777" if is_dark else "#888"
+
+    st.markdown(
+        f"""
+        <div style="background:{card_bg};border-left:5px solid {color};
+                    border-radius:8px;padding:14px 18px;margin-bottom:8px;">
+          <span style="background:{color};color:#fff;border-radius:4px;
+                       padding:2px 9px;font-size:12px;font-weight:bold;
+                       font-family:monospace;">{kind}</span>
+          &nbsp;
+          <span style="font-size:17px;font-weight:bold;color:{text_col};">{name}</span>
+          <br>
+          <span style="color:{id_col};font-size:10px;font-family:monospace;">id: {node_id}</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if description:
+            st.markdown(f"**Description:** {description}")
+        if kind == "compound":
+            formula = node.get("formula", "")
+            charge = node.get("charge", "")
+            if formula:
+                st.markdown(f"**Formula:** `{formula}`")
+            if charge is not None and charge != "":
+                st.markdown(f"**Charge:** {charge}")
+        elif kind == "enzyme":
+            ec = node.get("ec_number", "")
+            if ec:
+                st.markdown(f"**EC Number:** `{ec}`")
+
+    with col2:
+        xrefs = node.get("xrefs")
+        if xrefs:
+            try:
+                xrefs_dict = json.loads(xrefs) if isinstance(xrefs, str) else xrefs
+                st.markdown("**Cross-references**")
+                for db, ext_id in xrefs_dict.items():
+                    st.markdown(
+                        f'<span style="color:{meta_col};font-family:monospace;font-size:12px;">'
+                        f"{db}: `{ext_id}`</span>",
+                        unsafe_allow_html=True,
+                    )
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+    if store and node_id:
+        st.markdown("**🔗 Edges**")
         try:
-            lancedb_dir = cfg.get("lancedb_dir", _DEFAULT_LANCEDB)
-            use_vector = Path(lancedb_dir).exists()
-
-            if use_vector:
-                kg = _get_meta_kg(cfg["db_path"], lancedb_dir)
-                hits = kg.query(query_text, k=k, hop=hop).hits
+            outgoing = store.query_edges(src=node_id)
+            incoming = store.query_edges(dst=node_id)
+            rows = [
+                {"src": e["src"], "rel": e["rel"], "dst": e["dst"]}
+                for e in (outgoing + incoming)[:60]
+            ]
+            if rows:
+                st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
             else:
-                hits = store.query_text(query_text, k=k)
-                if hop > 0:
-                    hits = store.expand_hops(hits, hop)
+                st.caption("*No edges.*")
+        except Exception:
+            pass
 
-            mode = "vector" if use_vector else "text"
-            seed_note = f" + {hop}-hop expansion" if hop > 0 else ""
-            st.success(f"Found {len(hits)} results ({mode} search{seed_note})")
 
-            for i, result in enumerate(hits, 1):
-                node_id = result.get("id")
-                kind = result.get("kind", "")
-                name = result.get("name", "")
-                description = result.get("description", "")
-                score = result.get("score")
-                score_str = f"  score={score:.3f}" if isinstance(score, float) else ""
-                color = _KIND_COLOR.get(kind, "#95A5A6")
+def _node_detail_section(
+    nodes: list[dict[str, Any]],
+    store: GraphStore | None,
+    *,
+    key_prefix: str = "detail",
+) -> None:
+    """Render a selectbox + detail card below a result list."""
+    if not nodes:
+        return
 
-                st.markdown(
-                    f'<div class="node-card" style="border-left-color:{color}">'
-                    f'<b>{i}. {name}</b> <code style="color:{color}">{kind}</code>'
-                    f'<small style="color:#aaa">{score_str}</small><br>'
-                    f"<small>{node_id}</small><br>"
-                    f"<small>{description[:_DESCRIPTION_CARD_LEN]}</small>"
-                    f"</div>",
-                    unsafe_allow_html=True,
-                )
-        except Exception as e:
-            st.error(f"Query failed: {e}")
+    st.markdown("---")
+    st.subheader("🔎 Node Detail")
+
+    label_map: dict[str, dict[str, Any]] = {}
+    for n in nodes:
+        lbl = n.get("name") or n["id"]
+        if lbl in label_map:
+            lbl = f"{lbl}  [{n['id']}]"
+        label_map[lbl] = n
+
+    options = ["— select a node —"] + sorted(label_map.keys())
+    chosen = st.selectbox(
+        "Select node to inspect",
+        options=options,
+        index=0,
+        key=f"{key_prefix}_node_select",
+        help="Pick any result node to see its full detail and edges.",
+    )
+
+    if chosen and chosen != "— select a node —":
+        node = label_map.get(chosen)
+        if node:
+            _render_node_detail(node, store=store)
 
 
 # ---------------------------------------------------------------------------
@@ -709,19 +927,11 @@ def _tab_simulation(cfg: dict[str, Any]) -> None:
         st.error(f"❌ Database not found at `{cfg['db_path']}`")
         return
 
-    current_db = cfg["db_path"]
-    if (
-        st.session_state.get("pathway_list_db") != current_db
-        or st.session_state["pathway_list"] is None
-    ):
-        try:
-            all_nodes = store.query_nodes()
-            st.session_state["pathway_list"] = [n for n in all_nodes if n.get("kind") == "pathway"]
-            st.session_state["pathway_list_db"] = current_db
-        except Exception as e:
-            st.error(f"Could not load pathways: {e}")
-            return
-    pathways: list[dict[str, Any]] = st.session_state["pathway_list"]
+    try:
+        pathways = [n for n in store.query_nodes() if n.get("kind") == "pathway"]
+    except Exception as e:
+        st.error(f"Could not load pathways: {e}")
+        return
 
     if not pathways:
         st.warning("No pathways found in the current database.")
@@ -887,6 +1097,41 @@ def _tab_simulation(cfg: dict[str, Any]) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Theme-aware CSS
+# ---------------------------------------------------------------------------
+
+
+def _inject_css() -> None:
+    """Inject CSS that matches Streamlit's active theme (light or dark)."""
+    is_dark = st.get_option("theme.base") == "dark"
+    card_bg = "rgba(255,255,255,0.06)" if is_dark else "rgba(0,0,0,0.04)"
+    card_color = "#e0e0e0" if is_dark else "#111"
+    small_color = "#aaa" if is_dark else "#555"
+    edge_color = "#aaa" if is_dark else "#444"
+    st.markdown(
+        f"""
+        <style>
+        .stTabs [data-baseweb="tab-list"] {{ gap: 12px; }}
+        .stTabs [data-baseweb="tab"] {{ font-size: 1rem; padding: 6px 18px; }}
+        .node-card {{
+            background: {card_bg};
+            color: {card_color};
+            border-left: 4px solid #3498DB;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }}
+        .node-card small {{ color: {small_color}; }}
+        .edge-row {{ font-family: monospace; font-size: 0.82rem; color: {edge_color}; }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -899,15 +1144,8 @@ def main() -> None:
     three tab renderers: Graph Browser, Semantic Search, and Node Details.
     """
     _init_state()
+    _inject_css()
     cfg = _render_sidebar()
-
-    # Warm up the sentence-transformer model at startup so the first search
-    # query doesn't pay the ~100MB load cost.  Accessing kg.index triggers
-    # SentenceTransformerEmbedder.__init__ which is where the model actually loads.
-    lancedb_dir = cfg.get("lancedb_dir", _DEFAULT_LANCEDB)
-    if Path(lancedb_dir).exists():
-        kg = _get_meta_kg(cfg["db_path"], lancedb_dir)
-        _ = kg.index  # noqa: F841 — side-effect: loads the embedding model
 
     st.title("🧬 MetaboKG Explorer")
     st.caption(
