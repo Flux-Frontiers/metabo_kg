@@ -1,0 +1,145 @@
+{
+  "key": "1ac0c1887cea530d3999ffaa4a83f3de6bcda171",
+  "branch": "claude/analyze-streamlit-state-performance-7APrU",
+  "timestamp": "2026-04-20T15:17:31.456242+00:00",
+  "version": "0.14.0",
+  "metrics": {
+    "db_path": ".pycodekg/graph.sqlite",
+    "total_nodes": 5845,
+    "meaningful_nodes": 396,
+    "total_edges": 5440,
+    "node_counts": {
+      "class": 48,
+      "function": 156,
+      "method": 151,
+      "module": 41,
+      "symbol": 5449
+    },
+    "edge_counts": {
+      "ATTR_ACCESS": 1814,
+      "CALLS": 1862,
+      "CONTAINS": 355,
+      "IMPORTS": 356,
+      "INHERITS": 11,
+      "RESOLVES_TO": 1042
+    },
+    "docstring_coverage": 0.843,
+    "critical_issues": 1,
+    "complexity_median": 6,
+    "module_node_counts": {
+      "src/metabokg/__init__.py": 3,
+      "src/metabokg/analyze.py": 309,
+      "src/metabokg/app.py": 487,
+      "src/metabokg/cho_kinetics.py": 47,
+      "src/metabokg/cli/__init__.py": 3,
+      "src/metabokg/cli/_utils.py": 23,
+      "src/metabokg/cli/cmd_analyze.py": 49,
+      "src/metabokg/cli/cmd_build.py": 78,
+      "src/metabokg/cli/cmd_hooks.py": 22,
+      "src/metabokg/cli/cmd_info.py": 25,
+      "src/metabokg/cli/cmd_mcp.py": 19,
+      "src/metabokg/cli/cmd_pack.py": 31,
+      "src/metabokg/cli/cmd_query.py": 60,
+      "src/metabokg/cli/cmd_simulate.py": 114,
+      "src/metabokg/cli/cmd_snapshot.py": 144,
+      "src/metabokg/cli/cmd_viz.py": 7,
+      "src/metabokg/cli/cmd_viz3d.py": 10,
+      "src/metabokg/cli/main.py": 2,
+      "src/metabokg/cli/options.py": 19,
+      "src/metabokg/embed.py": 42,
+      "src/metabokg/enrich.py": 228,
+      "src/metabokg/graph.py": 64,
+      "src/metabokg/index.py": 123,
+      "src/metabokg/kinetics_fetch.py": 43,
+      "src/metabokg/layout3d.py": 180,
+      "src/metabokg/mcp_tools.py": 293,
+      "src/metabokg/metabokg_viz.py": 22,
+      "src/metabokg/metabokg_viz3d.py": 17,
+      "src/metabokg/orchestrator.py": 368,
+      "src/metabokg/parsers/__init__.py": 2,
+      "src/metabokg/parsers/base.py": 9,
+      "src/metabokg/parsers/biopax.py": 130,
+      "src/metabokg/parsers/csv_tsv.py": 101,
+      "src/metabokg/parsers/kgml.py": 105,
+      "src/metabokg/parsers/sbml.py": 115,
+      "src/metabokg/primitives.py": 88,
+      "src/metabokg/simulate.py": 351,
+      "src/metabokg/snapshots.py": 264,
+      "src/metabokg/store.py": 403,
+      "src/metabokg/thorough_analysis.py": 94,
+      "src/metabokg/viz3d.py": 450
+    }
+  },
+  "hotspots": [
+    {
+      "name": "m:src/metabokg/store.py:MetaStore.node",
+      "callers": 21,
+      "callees": 3,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/analyze.py:PathwayAnalyzer.close",
+      "callers": 13,
+      "callees": 1,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/orchestrator.py:MetaKG.close",
+      "callers": 13,
+      "callees": 1,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/store.py:MetaStore.close",
+      "callers": 13,
+      "callees": 1,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/orchestrator.py:MetaKG.store",
+      "callers": 11,
+      "callees": 1,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/analyze.py:PathwayAnalyzer.conn",
+      "callers": 9,
+      "callees": 1,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/store.py:MetaStore.edges_of",
+      "callers": 7,
+      "callees": 3,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/orchestrator.py:MetaKG.index",
+      "callers": 6,
+      "callees": 2,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/snapshots.py:SnapshotManager.load_manifest",
+      "callers": 5,
+      "callees": 5,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/snapshots.py:SnapshotManager.load_snapshot",
+      "callers": 5,
+      "callees": 16,
+      "risk_level": "low"
+    }
+  ],
+  "issues": [
+    "[WARN] 1 orphaned functions found (`snapshot_diff`) -- consider archiving or documenting"
+  ],
+  "vs_previous": null,
+  "vs_baseline": {
+    "nodes": 701,
+    "edges": 765,
+    "coverage_delta": 0.0039999999999998925,
+    "critical_issues_delta": 0
+  }
+}

@@ -399,6 +399,24 @@ def _mcp_get_kinetic_params(metabokg: MetaKG, reaction_id: str) -> str:
     )
 
 
+def _mcp_pack(metabokg: MetaKG, text: str, k: int = 8, hop: int = 1) -> str:
+    """
+    Build a context-rich metabolic pack from a semantic query.
+
+    Runs vector search + graph expansion, then bundles each matched node
+    with its biological context (reactions, substrates, products, enzymes)
+    into a structured Markdown document ready for LLM context injection.
+
+    :param text: Natural-language query, e.g. ``"glycolysis"`` or
+        ``"fatty acid beta oxidation"``.
+    :param k: Seed results from vector search (default 8).
+    :param hop: Graph hops to expand from seeds (default 1).
+    :return: Markdown-formatted context pack.
+    """
+    result = metabokg.pack(text, k=k, hop=hop)
+    return result.to_markdown()
+
+
 def _mcp_snapshot_list(limit: int = 20) -> str:
     """
     List MetaKG metric snapshots in reverse chronological order.
@@ -504,6 +522,12 @@ def register_tools(mcp, metabokg: MetaKG) -> None:
     :param mcp: A ``FastMCP`` instance (from ``mcp.server.fastmcp``).
     :param metabokg: Initialised :class:`~metabokg.orchestrator.MetaKG` instance.
     """
+
+    def pack(text: str, k: int = 8, hop: int = 1) -> str:
+        return _mcp_pack(metabokg, text, k, hop)
+
+    pack.__doc__ = _mcp_pack.__doc__
+    mcp.tool()(pack)
 
     def query_pathway(name: str, k: int = 8) -> str:
         return _mcp_query_pathway(metabokg, name, k)
@@ -613,6 +637,8 @@ def create_server(metabokg: MetaKG, *, name: str = "metabokg"):
         name,
         instructions=(
             "MetaKG gives you semantic access to a metabolic pathway knowledge graph. "
+            "Use pack(text, k, hop) to get a context-rich Markdown document bundling "
+            "matching pathways, reactions, compounds, and enzymes — ideal for LLM context. "
             "Use query_pathway to find pathways, get_compound/get_reaction for entity "
             "detail, and find_path to trace biochemical routes between compounds. "
             "For simulation: call seed_kinetics once to populate kinetic parameters, "

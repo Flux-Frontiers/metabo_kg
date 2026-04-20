@@ -344,6 +344,39 @@ class MetaStore:
         )
         return [dict(r) for r in cur.fetchall()]
 
+    def query_edges(
+        self,
+        *,
+        src: str | None = None,
+        dst: str | None = None,
+        rel: str | None = None,
+    ) -> list[dict]:
+        """
+        Query edges, optionally filtered by source, destination, and/or relation type.
+
+        :param src: If provided, only edges from this node are returned.
+        :param dst: If provided, only edges to this node are returned.
+        :param rel: If provided, only edges with this relation type are returned.
+        :return: List of edge dicts with keys ``src``, ``rel``, ``dst``, ``evidence``.
+        """
+        clauses: list[str] = []
+        params: list[str] = []
+        if src:
+            clauses.append("src=?")
+            params.append(src)
+        if dst:
+            clauses.append("dst=?")
+            params.append(dst)
+        if rel:
+            clauses.append("rel=?")
+            params.append(rel)
+        where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
+        cur = self._conn.execute(
+            f"SELECT src, rel, dst, evidence FROM meta_edges{where}",
+            params,
+        )
+        return [dict(r) for r in cur.fetchall()]
+
     def neighbours(self, node_id: str, *, rels: tuple[str, ...] = DEFAULT_RELS) -> list[str]:
         """
         Return IDs of nodes reachable from *node_id* in one hop along *rels*.
@@ -364,6 +397,30 @@ class MetaStore:
         )
         out += [r[0] for r in cur.fetchall()]
         return out
+
+    def expand_hops(self, seed_hits: list[dict], hop: int) -> list[dict]:
+        """
+        Expand *seed_hits* through graph neighbours for *hop* iterations.
+
+        :param seed_hits: Initial node dicts (must have an ``"id"`` key).
+        :param hop: Number of BFS expansion steps.
+        :return: Deduplicated list of seed + neighbour node dicts.
+        """
+        seen: dict[str, dict] = {h["id"]: {**h} for h in seed_hits}
+        frontier: set[str] = set(seen)
+        for _ in range(hop):
+            next_frontier: set[str] = set()
+            for node_id in frontier:
+                for neighbour_id in self.neighbours(node_id):
+                    if neighbour_id not in seen:
+                        node = self.node(neighbour_id)
+                        if node:
+                            seen[neighbour_id] = node
+                            next_frontier.add(neighbour_id)
+            frontier = next_frontier
+            if not frontier:
+                break
+        return list(seen.values())
 
     def edges_within(self, node_ids: set[str]) -> list[dict]:
         """
@@ -850,31 +907,6 @@ class GraphStore(MetaStore):
         :return: List of node dicts.
         """
         return self.all_nodes(kind=kind)
-
-    def query_edges(self, *, src: str | None = None, dst: str | None = None) -> list[dict]:
-        """
-        Query edges, optionally filtered by source or destination.
-
-        :param src: If provided, only edges from this node are returned.
-        :param dst: If provided, only edges to this node are returned.
-        :return: List of edge dicts.
-        """
-        if src and dst:
-            cur = self._conn.execute(
-                "SELECT src, rel, dst, evidence FROM meta_edges WHERE src=? AND dst=?",
-                (src, dst),
-            )
-        elif src:
-            cur = self._conn.execute(
-                "SELECT src, rel, dst, evidence FROM meta_edges WHERE src=?", (src,)
-            )
-        elif dst:
-            cur = self._conn.execute(
-                "SELECT src, rel, dst, evidence FROM meta_edges WHERE dst=?", (dst,)
-            )
-        else:
-            cur = self._conn.execute("SELECT src, rel, dst, evidence FROM meta_edges")
-        return [dict(r) for r in cur.fetchall()]
 
     def get_node(self, node_id: str) -> dict | None:
         """

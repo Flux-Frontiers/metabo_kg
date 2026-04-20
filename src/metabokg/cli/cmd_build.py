@@ -22,7 +22,6 @@ from metabokg.cli.options import (
     db_option,
     lancedb_option,
     model_option,
-    wipe_option,
 )
 
 
@@ -47,7 +46,7 @@ def _colocate_defaults(data_dir: Path, db: str | None, lancedb: str | None) -> t
 @lancedb_option
 @model_option
 @click.option("--no-index", is_flag=True, help="Skip building the LanceDB vector index.")
-@wipe_option
+@click.option("--no-wipe", is_flag=True, help="Keep existing data instead of wiping before build.")
 @click.option(
     "--no-enrich",
     is_flag=True,
@@ -70,15 +69,15 @@ def build(
     lancedb: str,
     model: str,
     no_index: bool,
-    wipe: bool,
+    no_wipe: bool,
     no_enrich: bool,
     enrich_data: str | None,
     no_seed_kinetics: bool,
 ) -> None:
     """Build the MetaKG metabolic knowledge graph from pathway files.
 
-    Keeps existing data by default. Use --wipe to clear the database and
-    vector index before building."""
+    Wipes existing data by default. Use --no-wipe to keep existing data and
+    merge new files on top (same as metabokg-update)."""
     data_dir = Path(data).resolve()
     if not data_dir.exists():
         raise click.ClickException(f"data directory not found: {data_dir}")
@@ -87,10 +86,11 @@ def build(
     from metabokg import MetaKG
 
     kg = MetaKG(db_path=db, lancedb_dir=lancedb, model=model)
-    click.echo(f"Building MetaKG from {data_dir}...", err=True)
+    wipe = not no_wipe
+    click.echo(f"Building MetaKG from {data_dir} (wipe={wipe})...", err=True)
     stats = kg.build(
         data_dir=data_dir,
-        wipe=wipe,
+        wipe=not no_wipe,
         build_index=not no_index,
         enrich=not no_enrich,
         enrich_data_dir=enrich_data,

@@ -181,105 +181,21 @@ metabokg/
 
 ## Commands
 
-### `metabokg-build`
+Quick reference — see **[CHEATSHEET.md](CHEATSHEET.md)** for full options and examples.
 
-Parse pathway files and build the knowledge graph.
-
-```bash
-# Minimal — db and lancedb colocate automatically under <data-dir>/.metabokg/
-metabokg-build --data ./data/hsa_pathways
-
-# With overrides
-metabokg-build --data ./data/hsa_pathways \
-             --model all-MiniLM-L6-v2 \
-             --wipe
-
-Options:
-  --data PATH              Directory containing pathway files (required)
-  --db PATH                SQLite database path (default: <data-dir>/.metabokg/<org>.sqlite)
-  --lancedb PATH           LanceDB directory (default: <data-dir>/.metabokg/lancedb)
-  --model NAME             Sentence-transformer model (default: all-MiniLM-L6-v2)
-  --no-index               Skip building LanceDB vector index
-  --wipe                   Wipe existing data before building (default: keep existing)
-```
-
-### `metabokg-update`
-
-Incrementally merge new pathway files into an existing database without wiping.
-
-If new files are in the **same data directory** as the original build, colocation resolves the db automatically:
-
-```bash
-metabokg-update --data data/hsa_pathways  # → data/hsa_pathways/.metabokg/hsa.sqlite
-```
-
-If new files are in a **different directory**, specify `--db` and `--lancedb` explicitly to target the correct existing KG:
-
-```bash
-metabokg-update --data data/new_hsa_files \
-  --db data/hsa_pathways/.metabokg/hsa.sqlite \
-  --lancedb data/hsa_pathways/.metabokg/lancedb
-```
-
-### `metabokg-viz`
-
-Launch interactive Streamlit web explorer.
-
-```bash
-metabokg-viz --db data/hsa_pathways/data/hsa_pathways/.metabokg/hsa.sqlite \
-           --lancedb data/hsa_pathways/data/hsa_pathways/.metabokg/lancedb \
-           --port 8500
-
-Options:
-  --db PATH                SQLite database path
-  --lancedb PATH           LanceDB directory path
-  --port PORT              Streamlit server port (default: 8500)
-  --no-browser             Don't open browser automatically
-```
-
-**Features:**
-- **Graph Browser** — Visualize full or filtered metabolic network
-- **Semantic Search** — Query by description or keywords
-- **Node Details** — View comprehensive node information with cross-references
-
-### `metabokg-viz3d`
-
-Launch interactive 3D PyVista metabolic pathway visualizer.
-
-```bash
-metabokg-viz3d --db data/hsa_pathways/data/hsa_pathways/.metabokg/hsa.sqlite \
-             --layout allium \
-             --width 1400 \
-             --height 900
-
-Options:
-  --db PATH                SQLite database path
-  --lancedb PATH           LanceDB directory path
-  --layout {allium,cake}   3D layout strategy (default: allium)
-  --width INT              Window width in pixels (default: 1400)
-  --height INT             Window height in pixels (default: 900)
-  --export-html PATH       Export to HTML instead of opening GUI
-  --export-png PATH        Export to PNG instead of opening GUI
-```
-
-**Layout Strategies:**
-- **Allium** — Each pathway rendered as a "Giant Allium flower" with reactions/compounds forming a sphere around it
-- **LayerCake** — Vertical stratification by node kind (pathways at bottom, reactions middle, compounds/enzymes at top)
-
-### `metabokg-mcp`
-
-Start MCP server to expose the knowledge graph to Claude and other AI assistants.
-
-```bash
-metabokg-mcp --db data/hsa_pathways/data/hsa_pathways/.metabokg/hsa.sqlite \
-           --lancedb data/hsa_pathways/data/hsa_pathways/.metabokg/lancedb \
-           --transport stdio
-
-Options:
-  --db PATH                SQLite database path
-  --lancedb PATH           LanceDB directory path
-  --transport {stdio,sse}  MCP transport method (default: stdio)
-```
+| Command | Purpose |
+|---------|---------|
+| `metabokg-build --data DIR` | Parse pathways → SQLite + LanceDB |
+| `metabokg-update --data DIR` | Incremental add (no wipe) |
+| `metabokg-enrich` | Re-run name enrichment only |
+| `metabokg-query QUERY` | Semantic search, ranked hits |
+| `metabokg-pack QUERY` | Context-rich Markdown/JSON pack for LLM use |
+| `metabokg-analyze` | 7-phase pathway analysis report |
+| `metabokg-simulate` | FBA / ODE / what-if simulations |
+| `metabokg-viz` | 2D Streamlit explorer |
+| `metabokg-viz3d` | 3D PyVista viewer |
+| `metabokg-mcp` | MCP server for Claude |
+| `metabokg-snapshot` | Save / list / diff graph metric snapshots |
 
 ## Python API
 
@@ -326,10 +242,26 @@ from metabokg import MetaKG
 
 kg = MetaKG(db_path="data/hsa_pathways/.metabokg/hsa.sqlite", lancedb_dir="data/hsa_pathways/.metabokg/lancedb")
 
-# Semantic similarity search
-results = kg.query_pathway("glucose metabolism", k=10)
+# General semantic search (all node kinds: pathway, compound, enzyme, reaction)
+results = kg.query("glucose metabolism", k=10)
 for hit in results.hits:
-    print(f"{hit['name']}: {hit['description'][:100]}")
+    print(f"[{hit['kind']}] {hit['name']}: {hit['description'][:80]}")
+
+# Pathway-only search
+results = kg.query_pathway("glycolysis", k=5)
+for hit in results.hits:
+    print(f"{hit['name']} ({hit['member_count']} reactions)")
+
+# Graph expansion — include immediate graph neighbours of seed hits
+results = kg.query("hexokinase", k=5, hop=1)
+
+# Context-rich pack for LLM use
+from metabokg import MetaKG, MetabolicPack
+
+pack = kg.pack("TCA cycle", k=8, hop=1)
+print(pack.to_markdown())      # Markdown with reactions, substrates, enzymes
+pack.save("tca_context.md")   # Write to file
+pack.save("tca_context.json", fmt="json")  # JSON format
 
 kg.close()
 ```

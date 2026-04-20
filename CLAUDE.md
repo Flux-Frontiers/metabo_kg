@@ -29,22 +29,25 @@ poetry install --all-extras  # Full install with viz, viz3d, mcp
 
 | Command | Purpose |
 |---------|---------|
-| `metabokg-build --data DIR` | Parse pathways → SQLite + LanceDB (enriches by default, no wipe) |
-| `metabokg-build --data DIR --wipe` | Full rebuild: wipe then parse |
+| `metabokg-info` | Show active corpus, resolved db/lancedb paths, node/edge counts |
+| `metabokg-build --data DIR` | Full rebuild: wipe + parse pathways → SQLite + LanceDB (enriches by default) |
+| `metabokg-build --data DIR --no-wipe` | Parse without wiping — merge new files on top |
 | `metabokg-update --data DIR` | Incrementally add new files without wiping |
 | `metabokg-analyze [--output FILE]` | 7-phase pathway analysis |
 | `metabokg-viz [--port 8500]` | 2D Streamlit explorer |
 | `metabokg-viz3d [--layout allium\|cake]` | 3D PyVista visualization |
 | `metabokg-mcp` | MCP server for Claude |
+| `metabokg-query QUERY [--k 10] [--hop 0]` | Semantic + graph search, ranked hits |
+| `metabokg-pack QUERY [--k 8] [--hop 1]` | Context-rich Markdown/JSON pack for LLM use |
 
 **Common options:**
 - `--db PATH`: SQLite db (default: `.metabokg/hsa.sqlite`)
 - `--lancedb PATH`: Vector index (default: `.metabokg/lancedb`)
-- `--wipe`: Wipe existing data before building (default: keep existing)
+- `--no-wipe`: Keep existing data instead of wiping (build wipes by default)
 - `--no-index`: Skip LanceDB (SQLite only)
 - `--no-enrich`: Skip enrichment (on by default)
 
-**MCP tools:** `query_pathway`, `get_compound`, `get_reaction`, `find_path`, `seed_kinetics`, `simulate_fba`, `simulate_ode`, `simulate_whatif`
+**MCP tools:** `pack`, `query_pathway`, `get_compound`, `get_reaction`, `find_path`, `seed_kinetics`, `simulate_fba`, `simulate_ode`, `simulate_whatif`
 
 ### 3D Visualization (`metabokg-viz3d`)
 

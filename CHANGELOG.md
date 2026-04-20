@@ -33,6 +33,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`metabokg query` CLI command** (`src/metabokg/cli/cmd_query.py`) — New subcommand for semantic or substring search across the knowledge graph. Uses vector (LanceDB) search by default; falls back to text search when the index is absent or `--text-only` is set. Supports `--k`, `--hop` (graph expansion), and `--text-only` options. Also registered as a standalone `metabokg-query` entry point.
 
+- **`MetabolicPack` result type** (`src/metabokg/orchestrator.py`) — New dataclass that bundles matched nodes with their full biological context. For pathways: reactions with substrates, products, enzymes, and stoichiometry. For reactions: full stoichiometric detail. For compounds: participating reactions. For enzymes: catalyzed reactions. Provides `to_markdown()`, `to_json()`, and `save(path, fmt)` methods. Also exported from `metabokg` top-level (`from metabokg import MetabolicPack`).
+
+- **`MetaKG.pack(text, k=8, hop=1)` method** (`src/metabokg/orchestrator.py`) — Runs semantic search + graph expansion then enriches each hit with biological context, returning a `MetabolicPack`. Mirrors the `PyCodeKG.pack()` pattern: `kg.pack("TCA cycle", k=8, hop=1).save("context.md")`. Deduplicates results and sorts by kind (pathways first).
+
+- **`metabokg-pack` CLI command** (`src/metabokg/cli/cmd_pack.py`) — New `metabokg pack QUERY` subcommand and `metabokg-pack` standalone entry point. Options: `--k`, `--hop`, `--output/-o`, `--fmt {md,json}`, `--max-rxn`. Default output is Markdown to stdout.
+
+- **`pack` MCP tool** (`src/metabokg/mcp_tools.py`) — New MCP tool `pack(text, k, hop)` registered first in `register_tools`. Returns a Markdown context pack for direct LLM injection. The `create_server` instructions now surface `pack` as the primary entry point.
+
+- **`MetaStore.expand_hops(seed_hits, hop)` method** (`src/metabokg/store.py`) — BFS graph expansion previously buried in `cli/cmd_query.py` is now a first-class method on `MetaStore`. Uses `neighbours()` internally. Called by `MetaKG.query()` and `MetaKG.query_pathway()` when `hop > 0`.
+
+- **`hop` parameter on `MetaKG.query()` and `MetaKG.query_pathway()`** (`src/metabokg/orchestrator.py`) — Both methods now accept `hop: int = 0`. When `hop > 0`, seed hits are expanded via `store.expand_hops()`. Mirrors the `PyCodeKG.query(k, hop)` API so callers never need to handle expansion themselves.
+
 - **Phase 2d: glycan name enrichment** (`src/metabokg/enrich.py`) — New `enrich_glycans_from_tsv()` phase resolves `gl:G#####` compound nodes using `data/kegg_glycan_names.tsv` (~11 k entries). `EnrichStats` gains a `glycans_from_tsv` field.
 
 - **Phase 2e: KO enzyme name enrichment** (`src/metabokg/enrich.py`) — New `enrich_ko_enzymes_from_tsv()` phase resolves `enz:kegg:K#####` stubs using `data/kegg_ko_names.tsv` (~28 k entries). `EnrichStats` gains a `ko_enzymes_from_tsv` field.

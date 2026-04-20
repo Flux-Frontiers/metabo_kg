@@ -3,10 +3,12 @@ Tests for metabokg.orchestrator — MetaKG top-level orchestrator and result typ
 """
 
 import json
+from unittest.mock import MagicMock
 
 import pytest
 
 from metabokg import MetabolicRuntimeStats, MetaKG
+from metabokg.embed import SeedHit
 from metabokg.primitives import (
     KIND_COMPOUND,
     KIND_ENZYME,
@@ -274,3 +276,110 @@ class TestMetaKGGetStats:
         assert "total_edges" in d
         assert "node_counts" in d
         assert "edge_counts" in d
+
+
+# ---------------------------------------------------------------------------
+# Helpers for query tests — inject a mock index so no model load is needed
+# ---------------------------------------------------------------------------
+
+def _mock_index(hits: list[SeedHit]) -> MagicMock:
+    idx = MagicMock()
+    idx.search.return_value = hits
+    return idx
+
+
+def _seed(node_id_val: str, kind: str, name: str, distance: float = 0.1) -> SeedHit:
+    return SeedHit(id=node_id_val, kind=kind, name=name, distance=distance, rank=0)
+
+
+class TestMetaKGQuery:
+    """Tests for MetaKG.query(text, k, hop)."""
+
+    def test_query_returns_seed_hits(self, kg_with_data):
+        glucose_id = node_id(KIND_COMPOUND, "kegg", "C00031")
+        pyruvate_id = node_id(KIND_COMPOUND, "kegg", "C00022")
+        kg_with_data._index = _mock_index([
+            _seed(glucose_id, KIND_COMPOUND, "D-Glucose"),
+            _seed(pyruvate_id, KIND_COMPOUND, "Pyruvate", distance=0.2),
+        ])
+        result = kg_with_data.query("glucose", k=2)
+        assert len(result.hits) == 2
+        ids = {h["id"] for h in result.hits}
+        assert glucose_id in ids
+        assert pyruvate_id in ids
+
+    def test_query_attaches_distance(self, kg_with_data):
+        glucose_id = node_id(KIND_COMPOUND, "kegg", "C00031")
+        kg_with_data._index = _mock_index([_seed(glucose_id, KIND_COMPOUND, "D-Glucose", distance=0.42)])
+        result = kg_with_data.query("glucose", k=1)
+        assert result.hits[0]["_distance"] == pytest.approx(0.42)
+
+    def test_query_skips_missing_nodes(self, kg_with_data):
+        kg_with_data._index = _mock_index([_seed("cpd:kegg:MISSING", KIND_COMPOUND, "Ghost")])
+        result = kg_with_data.query("ghost", k=1)
+        assert result.hits == []
+
+    def test_query_hop0_returns_seeds_only(self, kg_with_data):
+        glucose_id = node_id(KIND_COMPOUND, "kegg", "C00031")
+        kg_with_data._index = _mock_index([_seed(glucose_id, KIND_COMPOUND, "D-Glucose")])
+        result = kg_with_data.query("glucose", k=1, hop=0)
+        assert len(result.hits) == 1
+        assert result.hits[0]["id"] == glucose_id
+
+    def test_query_hop1_expands_to_reaction(self, kg_with_data):
+        glucose_id = node_id(KIND_COMPOUND, "kegg", "C00031")
+        rxn_id = node_id(KIND_REACTION, "kegg", "R00200")
+        kg_with_data._index = _mock_index([_seed(glucose_id, KIND_COMPOUND, "D-Glucose")])
+        result = kg_with_data.query("glucose", k=1, hop=1)
+        ids = {h["id"] for h in result.hits}
+        assert glucose_id in ids
+        assert rxn_id in ids
+
+    def test_query_hop2_expands_further(self, kg_with_data):
+        glucose_id = node_id(KIND_COMPOUND, "kegg", "C00031")
+        pyruvate_id = node_id(KIND_COMPOUND, "kegg", "C00022")
+        kg_with_data._index = _mock_index([_seed(glucose_id, KIND_COMPOUND, "D-Glucose")])
+        result = kg_with_data.query("glucose", k=1, hop=2)
+        ids = {h["id"] for h in result.hits}
+        assert pyruvate_id in ids
+
+    def test_query_result_query_field(self, kg_with_data):
+        kg_with_data._index = _mock_index([])
+        result = kg_with_data.query("my query text", k=5)
+        assert result.query == "my query text"
+
+
+class TestMetaKGQueryPathway:
+    """Tests for MetaKG.query_pathway(name, k, hop)."""
+
+    def test_query_pathway_returns_only_pathways(self, kg_with_data):
+        glucose_id = node_id(KIND_COMPOUND, "kegg", "C00031")
+        pwy_id = node_id(KIND_PATHWAY, "kegg", "hsa00010")
+        # Index returns both; only the pathway node should survive the kind filter
+        kg_with_data._index = _mock_index([
+            _seed(glucose_id, KIND_COMPOUND, "D-Glucose"),
+            _seed(pwy_id, KIND_PATHWAY, "Glycolysis"),
+        ])
+        result = kg_with_data.query_pathway("glycolysis", k=2)
+        assert all(h["kind"] == KIND_PATHWAY for h in result.hits)
+        assert len(result.hits) == 1
+
+    def test_query_pathway_includes_member_count(self, kg_with_data):
+        pwy_id = node_id(KIND_PATHWAY, "kegg", "hsa00010")
+        kg_with_data._index = _mock_index([_seed(pwy_id, KIND_PATHWAY, "Glycolysis")])
+        result = kg_with_data.query_pathway("glycolysis", k=1)
+        assert "member_count" in result.hits[0]
+        assert result.hits[0]["member_count"] == 1  # one CONTAINS edge in fixture
+
+    def test_query_pathway_hop1_expands(self, kg_with_data):
+        pwy_id = node_id(KIND_PATHWAY, "kegg", "hsa00010")
+        rxn_id = node_id(KIND_REACTION, "kegg", "R00200")
+        kg_with_data._index = _mock_index([_seed(pwy_id, KIND_PATHWAY, "Glycolysis")])
+        result = kg_with_data.query_pathway("glycolysis", k=1, hop=1)
+        ids = {h["id"] for h in result.hits}
+        assert rxn_id in ids
+
+    def test_query_pathway_no_results(self, kg_with_data):
+        kg_with_data._index = _mock_index([])
+        result = kg_with_data.query_pathway("nonexistent pathway", k=5)
+        assert result.hits == []
