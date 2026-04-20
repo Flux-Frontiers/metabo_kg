@@ -73,32 +73,15 @@ We also queried **SABIO-RK** for all *Cricetulus griseus* kinetic law entries
 (91 entries, 268 measured parameters including Km and kcat values), providing
 an additional experimental data layer for parameter validation.
 
-## What Is Still Missing
-
-To complete a production-grade CHO metabolic platform, three gaps remain:
-
-1. **CHO-specific kinetics for amino acid biosynthesis** — 20 pathways with
-   CHO-measured Km/Vmax values; currently defaults to human literature
-2. **Recombinant protein coupling** — mAb / IgG synthesis as a growth-coupled
-   FBA objective (product titer as the objective function)
-3. **Fed-batch culture constraints** — glucose pulse kinetics, oxygen gradients,
-   lactate switch dynamics
-
-These are precisely where AMBIC flux data and your lab's published CHO
-metabolomics would complete the picture.
-
 ## The Ask
 
 MetaboKG is licensed under the **Elastic License 2.0** — free for internal
 academic and research use, source-available on GitHub. We are looking for:
 
-1. **An institutional licensee** — JHMI / AMBIC adopting MetaboKG as a shared
-   research tool for the lab and collaborators
+1. **An institutional licensee** — JHMI / AMBIC adopting MetaboKG under an
+   institutional license as a shared research tool for the lab and collaborators
 2. **A deployment host** — running it as a shared MCP server or Streamlit
    instance accessible to lab members and AI assistants
-3. **A data partnership** — AMBIC CHO flux measurements closing the kinetics
-   gaps in exchange for co-authorship on a CHO-MetaboKG methods paper targeting
-   *Metabolic Engineering* or *Biotechnology & Bioengineering*
 
 A 30-minute live demo — running FBA and ODE simulations on a CHO glycolysis or
 glutaminolysis pathway of your choice — would speak louder than this email.
