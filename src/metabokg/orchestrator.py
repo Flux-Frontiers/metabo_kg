@@ -345,12 +345,13 @@ class MetaKG:
     # Query
     # ------------------------------------------------------------------
 
-    def query_pathway(self, name: str, *, k: int = 8) -> MetabolicQueryResult:
+    def query_pathway(self, name: str, *, k: int = 8, hop: int = 0) -> MetabolicQueryResult:
         """
         Find metabolic pathways by name or description using semantic search.
 
         :param name: Pathway name or description (e.g. ``"glycolysis"``).
         :param k: Maximum results to return.
+        :param hop: Graph hops to expand from seed results (0 = seeds only).
         :return: :class:`MetabolicQueryResult` with matching pathway nodes.
         """
         hits = self.index.search(name, k=k)
@@ -364,9 +365,11 @@ class MetaKG:
                 )
                 member_count = cur.fetchone()[0]
                 results.append({**node, "_distance": h.distance, "member_count": member_count})
+        if hop > 0:
+            results = self.store.expand_hops(results, hop)
         return MetabolicQueryResult(query=name, hits=results)
 
-    def query(self, text: str, *, k: int = 10) -> MetabolicQueryResult:
+    def query(self, text: str, *, k: int = 10, hop: int = 0) -> MetabolicQueryResult:
         """
         Semantic search across all indexed node kinds (compound, enzyme, pathway).
 
@@ -375,6 +378,7 @@ class MetaKG:
 
         :param text: Natural-language query.
         :param k: Maximum results to return.
+        :param hop: Graph hops to expand from seed results (0 = seeds only).
         :return: :class:`MetabolicQueryResult` with matching nodes of any kind.
         """
         hits = self.index.search(text, k=k)
@@ -383,6 +387,8 @@ class MetaKG:
             node = self.store.node(h.id)
             if node:
                 results.append({**node, "_distance": h.distance})
+        if hop > 0:
+            results = self.store.expand_hops(results, hop)
         return MetabolicQueryResult(query=text, hits=results)
 
     def get_compound(self, compound_id: str) -> dict | None:

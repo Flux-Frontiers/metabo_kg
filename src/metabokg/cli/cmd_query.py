@@ -95,11 +95,8 @@ def _run_vector_query(
     click.echo(f"  db      : {db_path}", err=True)
     click.echo(f"  lancedb : {lancedb_dir}\n", err=True)
 
-    results = kg.query(query_text, k=k)
+    results = kg.query(query_text, k=k, hop=hop)
     hits = results.hits
-
-    if hop > 0:
-        hits = _expand_hops(hits, kg.store, hop)
 
     kg.close()
 
@@ -120,7 +117,7 @@ def _run_text_query(db_path: str, query_text: str, k: int, hop: int) -> None:
     hits = store.query_text(query_text, k=k)
 
     if hop > 0:
-        hits = _expand_hops(hits, store, hop)
+        hits = store.expand_hops(hits, hop)
 
     store.close()
 
@@ -129,30 +126,6 @@ def _run_text_query(db_path: str, query_text: str, k: int, hop: int) -> None:
         return
 
     _print_hits(hits)
-
-
-def _expand_hops(seed_hits: list[dict], store: object, hop: int) -> list[dict]:
-    """Expand seed hits through graph edges for *hop* iterations."""
-    from metabokg.store import MetaStore
-
-    assert isinstance(store, MetaStore)
-    seen: dict[str, dict] = {h["id"]: {**h} for h in seed_hits}
-    frontier: set[str] = set(seen)
-
-    for _ in range(hop):
-        next_frontier: set[str] = set()
-        for node_id in frontier:
-            for neighbour_id in store.neighbours(node_id):
-                if neighbour_id not in seen:
-                    node = store.node(neighbour_id)
-                    if node:
-                        seen[neighbour_id] = node
-                        next_frontier.add(neighbour_id)
-        frontier = next_frontier
-        if not frontier:
-            break
-
-    return list(seen.values())
 
 
 def _print_hits(hits: list[dict]) -> None:

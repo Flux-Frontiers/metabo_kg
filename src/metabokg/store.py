@@ -365,6 +365,30 @@ class MetaStore:
         out += [r[0] for r in cur.fetchall()]
         return out
 
+    def expand_hops(self, seed_hits: list[dict], hop: int) -> list[dict]:
+        """
+        Expand *seed_hits* through graph neighbours for *hop* iterations.
+
+        :param seed_hits: Initial node dicts (must have an ``"id"`` key).
+        :param hop: Number of BFS expansion steps.
+        :return: Deduplicated list of seed + neighbour node dicts.
+        """
+        seen: dict[str, dict] = {h["id"]: {**h} for h in seed_hits}
+        frontier: set[str] = set(seen)
+        for _ in range(hop):
+            next_frontier: set[str] = set()
+            for node_id in frontier:
+                for neighbour_id in self.neighbours(node_id):
+                    if neighbour_id not in seen:
+                        node = self.node(neighbour_id)
+                        if node:
+                            seen[neighbour_id] = node
+                            next_frontier.add(neighbour_id)
+            frontier = next_frontier
+            if not frontier:
+                break
+        return list(seen.values())
+
     def edges_within(self, node_ids: set[str]) -> list[dict]:
         """
         Return all edges where both endpoints are in *node_ids*.

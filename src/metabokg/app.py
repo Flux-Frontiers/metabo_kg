@@ -548,20 +548,16 @@ def _tab_search(cfg: dict[str, Any]) -> None:
                           help="Expand each seed result through N hops of graph neighbours")
 
         try:
-            from metabokg.cli.cmd_query import _expand_hops
-
             lancedb_dir = cfg.get("lancedb_dir", _DEFAULT_LANCEDB)
             use_vector = Path(lancedb_dir).exists()
 
             if use_vector:
                 kg = _get_meta_kg(cfg["db_path"], lancedb_dir)
-                query_results = kg.query(query_text, k=k)
-                hits = query_results.hits
+                hits = kg.query(query_text, k=k, hop=hop).hits
             else:
                 hits = store.query_text(query_text, k=k)
-
-            if hop > 0:
-                hits = _expand_hops(hits, store, hop)
+                if hop > 0:
+                    hits = store.expand_hops(hits, hop)
 
             mode = "vector" if use_vector else "text"
             seed_note = f" + {hop}-hop expansion" if hop > 0 else ""
