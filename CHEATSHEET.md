@@ -29,11 +29,11 @@ metabokg-build --data data/icho_model     # icho.sqlite
 ### Build & Manage
 
 ```bash
-# Full build (enrichment on by default)
+# Full build — wipes existing data first (default)
 metabokg-build --data DIR
 
-# Full rebuild — wipe first
-metabokg-build --data DIR --wipe
+# Keep existing data and merge new files on top
+metabokg-build --data DIR --no-wipe
 
 # Incremental — add new files without wiping
 metabokg-update --data DIR
@@ -53,7 +53,7 @@ metabokg install-hooks
 | `--lancedb PATH` | `<data>/.metabokg/lancedb` | LanceDB output directory |
 | `--model NAME` | `all-MiniLM-L6-v2` | Sentence-transformer model |
 | `--no-index` | — | Skip LanceDB vector index |
-| `--wipe` | — | Wipe existing data first |
+| `--no-wipe` | — | Keep existing data instead of wiping |
 | `--no-enrich` | — | Skip name enrichment |
 
 ---
