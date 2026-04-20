@@ -181,7 +181,9 @@ class MetabolicPack:
 
     def to_json(self, *, indent: int = 2) -> str:
         """Serialise to JSON string."""
-        return json.dumps({"query": self.query, "sections": self.sections}, indent=indent, default=str)
+        return json.dumps(
+            {"query": self.query, "sections": self.sections}, indent=indent, default=str
+        )
 
     def to_markdown(self) -> str:
         """Render as structured Markdown for LLM context injection."""
@@ -226,15 +228,13 @@ class MetabolicPack:
                 for role, key in (("Substrates", "substrates"), ("Products", "products")):
                     items = sec.get(key, [])
                     if items:
-                        parts = ", ".join(
-                            f"{n['name']} (×{n['stoich']})" for n in items
-                        )
+                        parts = ", ".join(f"{n['name']} (×{n['stoich']})" for n in items)
                         lines.append(f"**{role}:** {parts}")
                 enzymes = sec.get("enzymes", [])
                 if enzymes:
                     lines.append(
                         "**Enzymes:** "
-                        + ", ".join(f"{e['name']} [{e.get('role','CATALYZES')}]" for e in enzymes)
+                        + ", ".join(f"{e['name']} [{e.get('role', 'CATALYZES')}]" for e in enzymes)
                     )
 
             elif kind == "compound" and sec.get("reactions"):
@@ -491,7 +491,9 @@ class MetaKG:
             results = self.store.expand_hops(results, hop)
         return MetabolicQueryResult(query=text, hits=results)
 
-    def pack(self, text: str, *, k: int = 8, hop: int = 1, max_rxn_per_pathway: int = 30) -> MetabolicPack:
+    def pack(
+        self, text: str, *, k: int = 8, hop: int = 1, max_rxn_per_pathway: int = 30
+    ) -> MetabolicPack:
         """
         Build a context-rich pack of metabolic entities matching *text*.
 

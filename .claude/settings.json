@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Edit(/.claude/skills/metabokg/**)"
+      "Edit(/.claude/skills/metabokg/**)",
+      "Bash(.venv/bin/pytest --tb=short -q)"
     ]
   }
 }

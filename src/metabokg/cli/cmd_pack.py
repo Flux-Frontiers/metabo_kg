@@ -30,7 +30,9 @@ from metabokg.cli.options import (
 @db_option
 @lancedb_option
 @model_option
-@click.option("--k", default=8, show_default=True, type=int, help="Seed results from vector search.")
+@click.option(
+    "--k", default=8, show_default=True, type=int, help="Seed results from vector search."
+)
 @click.option(
     "--hop",
     "--hops",
@@ -40,7 +42,8 @@ from metabokg.cli.options import (
     help="Graph hops to expand from seed results.",
 )
 @click.option(
-    "--output", "-o",
+    "--output",
+    "-o",
     default=None,
     help="Write pack to this file (.md or .json).  Defaults to stdout.",
 )

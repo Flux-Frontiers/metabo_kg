@@ -180,7 +180,7 @@ def _load_store(db_path: str) -> GraphStore | None:
 
 
 @st.cache_resource(show_spinner="Loading semantic index…")
-def _get_meta_kg(db_path: str, lancedb_dir: str) -> "Any":
+def _get_meta_kg(db_path: str, lancedb_dir: str) -> Any:
     """Return a long-lived MetaKG instance (model loaded once per session)."""
     from metabokg import MetaKG  # local import — heavy dep, optional
 
@@ -446,7 +446,10 @@ def _tab_graph(cfg: dict[str, Any]) -> None:
 
     # Load full graph — cached in session state, invalidated only when db changes
     current_db = cfg["db_path"]
-    if st.session_state.get("graph_raw_db") != current_db or st.session_state["graph_raw_nodes"] is None:
+    if (
+        st.session_state.get("graph_raw_db") != current_db
+        or st.session_state["graph_raw_nodes"] is None
+    ):
         try:
             st.session_state["graph_raw_nodes"] = store.query_nodes()
             st.session_state["graph_raw_edges"] = store.query_edges()
@@ -544,8 +547,13 @@ def _tab_search(cfg: dict[str, Any]) -> None:
     if query_text:
         col1, col2 = st.columns(2)
         k = col1.slider("Number of results", min_value=1, max_value=50, value=10)
-        hop = col2.slider("Graph hops", min_value=0, max_value=3, value=0,
-                          help="Expand each seed result through N hops of graph neighbours")
+        hop = col2.slider(
+            "Graph hops",
+            min_value=0,
+            max_value=3,
+            value=0,
+            help="Expand each seed result through N hops of graph neighbours",
+        )
 
         try:
             lancedb_dir = cfg.get("lancedb_dir", _DEFAULT_LANCEDB)
@@ -702,7 +710,10 @@ def _tab_simulation(cfg: dict[str, Any]) -> None:
         return
 
     current_db = cfg["db_path"]
-    if st.session_state.get("pathway_list_db") != current_db or st.session_state["pathway_list"] is None:
+    if (
+        st.session_state.get("pathway_list_db") != current_db
+        or st.session_state["pathway_list"] is None
+    ):
         try:
             all_nodes = store.query_nodes()
             st.session_state["pathway_list"] = [n for n in all_nodes if n.get("kind") == "pathway"]
