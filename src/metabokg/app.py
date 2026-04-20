@@ -124,6 +124,13 @@ def _init_state() -> None:
         "graph_nodes": None,
         "graph_edges": None,
         "selected_node_id": None,
+        # Raw graph data cache (invalidated when db_path changes)
+        "graph_raw_nodes": None,
+        "graph_raw_edges": None,
+        "graph_raw_db": None,
+        # Pathway list cache for simulation tab
+        "pathway_list": None,
+        "pathway_list_db": None,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -170,6 +177,14 @@ def _load_store(db_path: str) -> GraphStore | None:
         return GraphStore(str(p))
     except Exception:
         return None
+
+
+@st.cache_resource(show_spinner="Loading semantic index…")
+def _get_meta_kg(db_path: str, lancedb_dir: str) -> "Any":
+    """Return a long-lived MetaKG instance (model loaded once per session)."""
+    from metabokg import MetaKG  # local import — heavy dep, optional
+
+    return MetaKG(db_path=db_path, lancedb_dir=lancedb_dir)
 
 
 def _get_store() -> GraphStore | None:
@@ -429,13 +444,18 @@ def _tab_graph(cfg: dict[str, Any]) -> None:
         )
         return
 
-    # Load full graph
-    try:
-        all_nodes = store.query_nodes()
-        all_edges = store.query_edges()
-    except Exception as e:
-        st.error(f"Error loading graph: {e}")
-        return
+    # Load full graph — cached in session state, invalidated only when db changes
+    current_db = cfg["db_path"]
+    if st.session_state.get("graph_raw_db") != current_db or st.session_state["graph_raw_nodes"] is None:
+        try:
+            st.session_state["graph_raw_nodes"] = store.query_nodes()
+            st.session_state["graph_raw_edges"] = store.query_edges()
+            st.session_state["graph_raw_db"] = current_db
+        except Exception as e:
+            st.error(f"Error loading graph: {e}")
+            return
+    all_nodes: list[dict[str, Any]] = st.session_state["graph_raw_nodes"]
+    all_edges: list[dict[str, Any]] = st.session_state["graph_raw_edges"]
 
     # Filter by kind and relation
     filtered_nodes = [n for n in all_nodes if n.get("kind") in cfg["node_kinds_filter"]]
@@ -458,7 +478,21 @@ def _tab_graph(cfg: dict[str, Any]) -> None:
     st.caption(f"Showing {len(filtered_nodes)} nodes and {len(filtered_edges)} edges")
 
     _render_legend()
-    html = _build_pyvis(filtered_nodes, filtered_edges, physics_on=cfg["physics_on"])
+
+    # Cache pyvis HTML — re-render only when filter config or data changes
+    pyvis_cache_key = (
+        current_db,
+        cfg["max_nodes"],
+        cfg["physics_on"],
+        tuple(sorted(cfg["node_kinds_filter"])),
+        tuple(sorted(cfg["edge_rels_filter"])),
+    )
+    if st.session_state.get("pyvis_cache_key") != pyvis_cache_key:
+        st.session_state["pyvis_html"] = _build_pyvis(
+            filtered_nodes, filtered_edges, physics_on=cfg["physics_on"]
+        )
+        st.session_state["pyvis_cache_key"] = pyvis_cache_key
+    html: str = st.session_state["pyvis_html"]
     st.iframe(html, height=750)
 
     # Node list
@@ -515,11 +549,8 @@ def _tab_search(cfg: dict[str, Any]) -> None:
             use_vector = Path(lancedb_dir).exists()
 
             if use_vector:
-                from metabokg import MetaKG
-
-                kg = MetaKG(db_path=cfg["db_path"], lancedb_dir=lancedb_dir)
+                kg = _get_meta_kg(cfg["db_path"], lancedb_dir)
                 query_results = kg.query(query_text, k=k)
-                kg.close()
                 hits = query_results.hits
             else:
                 hits = store.query_text(query_text, k=k)
@@ -665,11 +696,16 @@ def _tab_simulation(cfg: dict[str, Any]) -> None:
         st.error(f"❌ Database not found at `{cfg['db_path']}`")
         return
 
-    try:
-        pathways = [n for n in store.query_nodes() if n.get("kind") == "pathway"]
-    except Exception as e:
-        st.error(f"Could not load pathways: {e}")
-        return
+    current_db = cfg["db_path"]
+    if st.session_state.get("pathway_list_db") != current_db or st.session_state["pathway_list"] is None:
+        try:
+            all_nodes = store.query_nodes()
+            st.session_state["pathway_list"] = [n for n in all_nodes if n.get("kind") == "pathway"]
+            st.session_state["pathway_list_db"] = current_db
+        except Exception as e:
+            st.error(f"Could not load pathways: {e}")
+            return
+    pathways: list[dict[str, Any]] = st.session_state["pathway_list"]
 
     if not pathways:
         st.warning("No pathways found in the current database.")
