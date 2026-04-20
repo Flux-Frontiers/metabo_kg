@@ -542,9 +542,14 @@ def _tab_search(cfg: dict[str, Any]) -> None:
     )
 
     if query_text:
-        k = st.slider("Number of results", min_value=1, max_value=50, value=10)
+        col1, col2 = st.columns(2)
+        k = col1.slider("Number of results", min_value=1, max_value=50, value=10)
+        hop = col2.slider("Graph hops", min_value=0, max_value=3, value=0,
+                          help="Expand each seed result through N hops of graph neighbours")
 
         try:
+            from metabokg.cli.cmd_query import _expand_hops
+
             lancedb_dir = cfg.get("lancedb_dir", _DEFAULT_LANCEDB)
             use_vector = Path(lancedb_dir).exists()
 
@@ -555,8 +560,12 @@ def _tab_search(cfg: dict[str, Any]) -> None:
             else:
                 hits = store.query_text(query_text, k=k)
 
+            if hop > 0:
+                hits = _expand_hops(hits, store, hop)
+
             mode = "vector" if use_vector else "text"
-            st.success(f"Found {len(hits)} results ({mode} search)")
+            seed_note = f" + {hop}-hop expansion" if hop > 0 else ""
+            st.success(f"Found {len(hits)} results ({mode} search{seed_note})")
 
             for i, result in enumerate(hits, 1):
                 node_id = result.get("id")
