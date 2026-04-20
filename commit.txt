@@ -1,10 +1,18 @@
-feat(query+enrich): generic semantic search, Phase 2d/2e enrichment, code quality
+feat(app): cached resources, multi-hop search, theme-aware CSS, node detail
 
-Add MetaKG.query() for all-kinds semantic search, fixing metabokg query
-and Streamlit search returning empty results for compound/enzyme terms.
-Extend enrichment pipeline with glycan (Phase 2d) and KO enzyme (Phase 2e)
-phases. Add metabokg query CLI command. Fix quiet-param bug in
-enrich_reactions_from_graph. Add authorship/license headers to all
-modified modules. Simplify _get_node_label to regex-based bare ID check.
+Overhauled the Streamlit explorer to eliminate per-rerun latency and add
+graph-aware search UX:
+
+- _load_kg() / _load_full_graph(): @st.cache_resource keeps the MetaKG
+  embedding model and the full 17K-node scan in memory across reruns
+- _expand_hits(): multi-hop graph expansion from search seed nodes
+- _render_node_detail() / _node_detail_section(): rich node detail card
+  with formula, EC number, cross-refs, and edge table; selectbox picker
+- _inject_css(): theme-aware CSS (light/dark) replacing static block
+- _tab_search() wired to session_state, adds k/hops controls, graph/list
+  sub-tabs, PyVis visualisation, and a collapsible debug panel
+
+Also: pin sentence-transformers to ^5.2.0, pre-commit hooks use .venv/bin/
+directly (drops poetry spawn overhead), add .agentkg/ to .gitignore.
 
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>

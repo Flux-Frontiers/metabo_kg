@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`_load_kg()` and `_load_full_graph()` cached resource helpers** (`src/metabokg/app.py`) — Two new `@st.cache_resource` functions hold the `MetaKG` embedding model and the full 17K-node/edge scan in memory across Streamlit reruns. Previously these were re-created on every interaction, causing noticeable latency; now they load once per session (keyed on `db_path`).
+
+- **`_expand_hits()` — multi-hop graph expansion for search** (`src/metabokg/app.py`) — Expands a set of seed hit nodes through *n* hops of graph neighbours using `store.neighbours()` and a batched `store.nodes()` fetch, avoiding N+1 query patterns. Used by the revamped Search tab when `hops > 0`.
+
+- **`_render_node_detail()` and `_node_detail_section()`** (`src/metabokg/app.py`) — New helpers render a rich, theme-aware detail card for any metabolic graph node (compound formula/charge, enzyme EC number, cross-references, and an edge table). A selectbox (`_node_detail_section`) lets users pick any result node without leaving the tab.
+
+- **`_inject_css()` — theme-aware CSS injection** (`src/metabokg/app.py`) — Replaces the removed static `st.markdown(<style>…)` block at startup. Detects Streamlit's active theme via `st.get_option("theme.base")` and generates card/edge colours that work in both light and dark mode.
+
+### Changed
+
+- **`_tab_search()` major overhaul** (`src/metabokg/app.py`) — Search results are now persisted in `st.session_state` so they survive Streamlit reruns without re-querying. The tab gains k/hops number inputs, a graph visualisation sub-tab (PyVis) alongside the results list, a seed-vs-expanded count banner, an active kind/relation filter pass, and a `_node_detail_section` at the bottom. Added a collapsible debug panel that surfaces path resolution and model metadata when results are empty.
+
+- **`sentence-transformers` pinned to `^5.2.0`** (`pyproject.toml`) — Tightened from `>=2.7.0` to `^5.2.0` to align with `pycode-kg`'s constraint and ensure the renamed `get_embedding_dimension()` API (introduced in 4.x) is always available; the old floor allowed silent installation of pre-rename versions.
+
+- **Pre-commit hooks invoke `.venv/bin/` directly** (`.pre-commit-config.yaml`) — Changed `entry` for `mypy` and `pytest` hooks from `poetry run mypy src/` / `poetry run pytest --tb=short -q` to `.venv/bin/mypy src/` / `.venv/bin/pytest --tb=short -q`. Removes the `poetry` process-spawn overhead on every commit; requires the virtualenv to be activated or the `.venv` symlink to be present.
+
+- **`.gitignore`** — Added `.agentkg/` to exclude AgentKG runtime artefacts from version control.
+
+### Added
+
 - **`MetaKG.query()` — general-purpose semantic search** (`src/metabokg/orchestrator.py`) — New method searches all indexed node kinds (compound, enzyme, pathway) by semantic similarity. Unlike `query_pathway()`, it does not filter results by kind, so queries like `"glucose"` or `"ATP synthase"` now correctly return compound and enzyme nodes. Both `metabokg query` (CLI) and the Streamlit Search tab now use this method; `query_pathway()` is retained for pathway-specific callers (MCP tools, etc.).
 
 - **`metabokg query` CLI command** (`src/metabokg/cli/cmd_query.py`) — New subcommand for semantic or substring search across the knowledge graph. Uses vector (LanceDB) search by default; falls back to text search when the index is absent or `--text-only` is set. Supports `--k`, `--hop` (graph expansion), and `--text-only` options. Also registered as a standalone `metabokg-query` entry point.

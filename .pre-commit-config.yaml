@@ -16,13 +16,13 @@ repos:
     hooks:
       - id: mypy
         name: mypy
-        entry: poetry run mypy src/
+        entry: .venv/bin/mypy src/
         language: system
         pass_filenames: false
         always_run: true
       - id: pytest
         name: pytest
-        entry: poetry run pytest --tb=short -q
+        entry: .venv/bin/pytest --tb=short -q
         language: system
         pass_filenames: false
         always_run: true
