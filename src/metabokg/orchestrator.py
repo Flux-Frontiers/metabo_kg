@@ -163,6 +163,106 @@ class MetabolicQueryResult:
         return json.dumps({"query": self.query, "hits": self.hits}, indent=indent)
 
 
+@dataclass
+class MetabolicPack:
+    """
+    Context-rich pack of metabolic entities matching a query.
+
+    Bundles each matching node with its biological context (reactions,
+    substrates, products, enzymes) into a structured document suitable
+    for LLM context injection or downstream analysis.
+
+    :param query: Original query string.
+    :param sections: List of context dicts, one per unique matched node.
+    """
+
+    query: str
+    sections: list[dict]
+
+    def to_json(self, *, indent: int = 2) -> str:
+        """Serialise to JSON string."""
+        return json.dumps({"query": self.query, "sections": self.sections}, indent=indent, default=str)
+
+    def to_markdown(self) -> str:
+        """Render as structured Markdown for LLM context injection."""
+        lines: list[str] = [f"# MetaboKG Pack: {self.query!r}", ""]
+        for sec in self.sections:
+            kind = sec.get("kind", "node")
+            name = sec.get("name") or sec.get("id", "?")
+            node_id = sec.get("id", "")
+            lines.append(f"## {name} `[{kind}]`")
+            lines.append(f"**ID:** `{node_id}`")
+            if sec.get("description"):
+                lines.append(f"**Description:** {sec['description']}")
+            if sec.get("formula"):
+                lines.append(f"**Formula:** {sec['formula']}")
+            if sec.get("ec_number"):
+                lines.append(f"**EC:** {sec['ec_number']}")
+
+            if kind == "pathway" and sec.get("reactions"):
+                lines.append("")
+                lines.append(f"**Reactions ({len(sec['reactions'])}):**")
+                for rxn in sec["reactions"]:
+                    rxn_name = rxn.get("name") or rxn.get("id", "?")
+                    subs = ", ".join(
+                        f"{s['name']} (×{s['stoich']})" for s in rxn.get("substrates", [])
+                    )
+                    prods = ", ".join(
+                        f"{p['name']} (×{p['stoich']})" for p in rxn.get("products", [])
+                    )
+                    enzs = ", ".join(
+                        f"{e['name']} [{e.get('role', 'CATALYZES')}]"
+                        for e in rxn.get("enzymes", [])
+                    )
+                    lines.append(f"- **{rxn_name}**")
+                    if subs:
+                        lines.append(f"  - Substrates: {subs}")
+                    if prods:
+                        lines.append(f"  - Products: {prods}")
+                    if enzs:
+                        lines.append(f"  - Enzymes: {enzs}")
+
+            elif kind == "reaction":
+                for role, key in (("Substrates", "substrates"), ("Products", "products")):
+                    items = sec.get(key, [])
+                    if items:
+                        parts = ", ".join(
+                            f"{n['name']} (×{n['stoich']})" for n in items
+                        )
+                        lines.append(f"**{role}:** {parts}")
+                enzymes = sec.get("enzymes", [])
+                if enzymes:
+                    lines.append(
+                        "**Enzymes:** "
+                        + ", ".join(f"{e['name']} [{e.get('role','CATALYZES')}]" for e in enzymes)
+                    )
+
+            elif kind == "compound" and sec.get("reactions"):
+                lines.append(
+                    "**Participates in:** "
+                    + ", ".join(r.get("name") or r.get("id", "?") for r in sec["reactions"])
+                )
+
+            elif kind == "enzyme" and sec.get("reactions"):
+                lines.append(
+                    "**Catalyzes:** "
+                    + ", ".join(r.get("name") or r.get("id", "?") for r in sec["reactions"])
+                )
+
+            lines.append("")
+        return "\n".join(lines)
+
+    def save(self, path: str | Path, *, fmt: str = "md") -> None:
+        """
+        Write this pack to *path*.
+
+        :param path: Output file path.
+        :param fmt: ``"md"`` (default) for Markdown or ``"json"`` for JSON.
+        """
+        content = self.to_markdown() if fmt == "md" else self.to_json()
+        Path(path).write_text(content, encoding="utf-8")
+
+
 # ---------------------------------------------------------------------------
 # MetaKG — orchestrator
 # ---------------------------------------------------------------------------
@@ -390,6 +490,63 @@ class MetaKG:
         if hop > 0:
             results = self.store.expand_hops(results, hop)
         return MetabolicQueryResult(query=text, hits=results)
+
+    def pack(self, text: str, *, k: int = 8, hop: int = 1, max_rxn_per_pathway: int = 30) -> MetabolicPack:
+        """
+        Build a context-rich pack of metabolic entities matching *text*.
+
+        Runs semantic search + graph expansion, then fetches full biological
+        context for each hit node (reactions, substrates, products, enzymes).
+        The result is structured for LLM context injection or analysis.
+
+        :param text: Natural-language query.
+        :param k: Seed results from vector search.
+        :param hop: Graph hops to expand from seeds (default 1).
+        :param max_rxn_per_pathway: Cap on reactions shown per pathway section.
+        :return: :class:`MetabolicPack` with context-enriched sections.
+        """
+        hits = self.query(text, k=k, hop=hop).hits
+
+        # Deduplicate while preserving order; sort pathways first
+        _kind_order = {"pathway": 0, "reaction": 1, "compound": 2, "enzyme": 3}
+        seen: dict[str, dict] = {}
+        for h in hits:
+            nid = h.get("id")
+            if nid and nid not in seen:
+                seen[nid] = h
+        ordered = sorted(seen.values(), key=lambda n: _kind_order.get(n.get("kind", ""), 9))
+
+        sections: list[dict] = []
+        for node in ordered:
+            kind = node.get("kind", "")
+            nid = node["id"]
+
+            if kind == "pathway":
+                rxn_edges = self.store.query_edges(src=nid, rel="CONTAINS")
+                reactions = []
+                for edge in rxn_edges[:max_rxn_per_pathway]:
+                    detail = self.store.reaction_detail(edge["dst"])
+                    if detail:
+                        reactions.append(detail)
+                sections.append({**node, "reactions": reactions})
+
+            elif kind == "reaction":
+                detail = self.store.reaction_detail(nid)
+                sections.append(detail if detail else node)
+
+            elif kind == "compound":
+                compound = self.get_compound(nid)
+                sections.append(compound if compound else node)
+
+            elif kind == "enzyme":
+                rxn_edges = self.store.query_edges(dst=nid, rel="CATALYZES")
+                rxns = [self.store.node(e["src"]) for e in rxn_edges]
+                sections.append({**node, "reactions": [r for r in rxns if r]})
+
+            else:
+                sections.append(node)
+
+        return MetabolicPack(query=text, sections=sections)
 
     def get_compound(self, compound_id: str) -> dict | None:
         """

@@ -21,6 +21,7 @@ from metabokg.cli import (  # noqa: F401  — registers snapshot save/list/show/
     cmd_build,  # noqa: F401  — registers build, update, enrich
     cmd_hooks,  # noqa: F401  — registers install-hooks
     cmd_mcp,  # noqa: F401  — registers mcp
+    cmd_pack,  # noqa: F401  — registers pack
     cmd_query,  # noqa: F401  — registers query
     cmd_simulate,
     cmd_snapshot,
@@ -34,6 +35,7 @@ from metabokg.cli import (  # noqa: F401  — registers snapshot save/list/show/
 from metabokg.cli.cmd_analyze import analyze_basic_main, analyze_main  # noqa: F401
 from metabokg.cli.cmd_build import build_main, enrich_main, update_main  # noqa: F401
 from metabokg.cli.cmd_mcp import mcp_main  # noqa: F401
+from metabokg.cli.cmd_pack import pack_main  # noqa: F401
 from metabokg.cli.cmd_query import query_main  # noqa: F401
 from metabokg.cli.cmd_simulate import simulate_main  # noqa: F401
 from metabokg.cli.cmd_snapshot import snapshot_main  # noqa: F401
@@ -50,6 +52,7 @@ __all__ = [
     "enrich_main",
     "update_main",
     "mcp_main",
+    "pack_main",
     "query_main",
     "simulate_main",
     "snapshot_main",
