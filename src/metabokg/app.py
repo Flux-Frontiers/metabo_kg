@@ -885,6 +885,14 @@ def main() -> None:
     _init_state()
     cfg = _render_sidebar()
 
+    # Warm up the sentence-transformer model at startup so the first search
+    # query doesn't pay the ~100MB load cost.  Accessing kg.index triggers
+    # SentenceTransformerEmbedder.__init__ which is where the model actually loads.
+    lancedb_dir = cfg.get("lancedb_dir", _DEFAULT_LANCEDB)
+    if Path(lancedb_dir).exists():
+        kg = _get_meta_kg(cfg["db_path"], lancedb_dir)
+        _ = kg.index  # noqa: F841 — side-effect: loads the embedding model
+
     st.title("🧬 MetaboKG Explorer")
     st.caption(
         "Interactive metabolic knowledge-graph explorer. "
