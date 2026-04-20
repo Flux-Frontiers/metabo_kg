@@ -36,6 +36,8 @@ poetry install --all-extras  # Full install with viz, viz3d, mcp
 | `metabokg-viz [--port 8500]` | 2D Streamlit explorer |
 | `metabokg-viz3d [--layout allium\|cake]` | 3D PyVista visualization |
 | `metabokg-mcp` | MCP server for Claude |
+| `metabokg-query QUERY [--k 10] [--hop 0]` | Semantic + graph search, ranked hits |
+| `metabokg-pack QUERY [--k 8] [--hop 1]` | Context-rich Markdown/JSON pack for LLM use |
 
 **Common options:**
 - `--db PATH`: SQLite db (default: `.metabokg/hsa.sqlite`)
@@ -44,7 +46,7 @@ poetry install --all-extras  # Full install with viz, viz3d, mcp
 - `--no-index`: Skip LanceDB (SQLite only)
 - `--no-enrich`: Skip enrichment (on by default)
 
-**MCP tools:** `query_pathway`, `get_compound`, `get_reaction`, `find_path`, `seed_kinetics`, `simulate_fba`, `simulate_ode`, `simulate_whatif`
+**MCP tools:** `pack`, `query_pathway`, `get_compound`, `get_reaction`, `find_path`, `seed_kinetics`, `simulate_fba`, `simulate_ode`, `simulate_whatif`
 
 ### 3D Visualization (`metabokg-viz3d`)
 

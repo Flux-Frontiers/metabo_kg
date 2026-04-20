@@ -281,6 +281,40 @@ Options:
   --transport {stdio,sse}  MCP transport method (default: stdio)
 ```
 
+### `metabokg-query`
+
+Semantic or text search across all node kinds (compounds, reactions, pathways, enzymes).
+
+```bash
+metabokg-query "glucose metabolism" --k 10 --hop 1
+
+Options:
+  --k INT                  Number of seed results (default: 10)
+  --hop INT                Graph hops to expand from seeds (default: 0)
+  --text-only              Use substring search instead of vector search
+  --db PATH                SQLite database path
+  --lancedb PATH           LanceDB directory path
+```
+
+### `metabokg-pack`
+
+Build a context-rich Markdown or JSON document bundling matched nodes with their full
+biological context — reactions, substrates, products, enzymes. Designed for dropping
+directly into an LLM context window.
+
+```bash
+metabokg-pack "TCA cycle" --k 8 --hop 1 -o tca_pack.md
+
+Options:
+  --k INT                  Seed results from vector search (default: 8)
+  --hop INT                Graph hops to expand from seeds (default: 1)
+  --output / -o PATH       Write to file (default: stdout)
+  --fmt {md,json}          Output format: Markdown or JSON (default: md)
+  --max-rxn INT            Max reactions per pathway section (default: 30)
+  --db PATH                SQLite database path
+  --lancedb PATH           LanceDB directory path
+```
+
 ## Python API
 
 ### Basic Usage
@@ -326,10 +360,26 @@ from metabokg import MetaKG
 
 kg = MetaKG(db_path="data/hsa_pathways/.metabokg/hsa.sqlite", lancedb_dir="data/hsa_pathways/.metabokg/lancedb")
 
-# Semantic similarity search
-results = kg.query_pathway("glucose metabolism", k=10)
+# General semantic search (all node kinds: pathway, compound, enzyme, reaction)
+results = kg.query("glucose metabolism", k=10)
 for hit in results.hits:
-    print(f"{hit['name']}: {hit['description'][:100]}")
+    print(f"[{hit['kind']}] {hit['name']}: {hit['description'][:80]}")
+
+# Pathway-only search
+results = kg.query_pathway("glycolysis", k=5)
+for hit in results.hits:
+    print(f"{hit['name']} ({hit['member_count']} reactions)")
+
+# Graph expansion — include immediate graph neighbours of seed hits
+results = kg.query("hexokinase", k=5, hop=1)
+
+# Context-rich pack for LLM use
+from metabokg import MetaKG, MetabolicPack
+
+pack = kg.pack("TCA cycle", k=8, hop=1)
+print(pack.to_markdown())      # Markdown with reactions, substrates, enzymes
+pack.save("tca_context.md")   # Write to file
+pack.save("tca_context.json", fmt="json")  # JSON format
 
 kg.close()
 ```
