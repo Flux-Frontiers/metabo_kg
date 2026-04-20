@@ -26,6 +26,16 @@ metabokg-build --data data/icho_model     # icho.sqlite
 
 ## CLI Commands
 
+### Corpus Info
+
+```bash
+# Show active corpus, resolved paths, and node/edge counts
+metabokg-info
+
+# Show a different corpus
+metabokg-info --db data/cge_pathways/.metabokg/cge.sqlite
+```
+
 ### Build & Manage
 
 ```bash

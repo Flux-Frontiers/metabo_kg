@@ -97,6 +97,7 @@ pylint = "^4.0.5"
 # metabokg metabolic pathway cli entrypoints
 
 metabokg                = "metabokg.cli.main:cli"
+metabokg-info           = "metabokg.cli:info_main"
 metabokg-build          = "metabokg.cli:build_main"
 metabokg-update         = "metabokg.cli:update_main"
 metabokg-enrich         = "metabokg.cli:enrich_main"

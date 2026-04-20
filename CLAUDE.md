@@ -29,6 +29,7 @@ poetry install --all-extras  # Full install with viz, viz3d, mcp
 
 | Command | Purpose |
 |---------|---------|
+| `metabokg-info` | Show active corpus, resolved db/lancedb paths, node/edge counts |
 | `metabokg-build --data DIR` | Full rebuild: wipe + parse pathways → SQLite + LanceDB (enriches by default) |
 | `metabokg-build --data DIR --no-wipe` | Parse without wiping — merge new files on top |
 | `metabokg-update --data DIR` | Incrementally add new files without wiping |
