@@ -18,9 +18,11 @@ is the right scientific home for it.
 
 ## What MetaboKG Does
 
-MetaboKG ingests KEGG pathway data into a dual-layer local graph (SQLite for
-structural precision + LanceDB for semantic vector search) and exposes four
-query modalities:
+MetaboKG ingests metabolic pathway data from any standard format — KGML, SBML,
+BioPAX, CSV — into a dual-layer local graph (SQLite for structural precision +
+LanceDB for semantic vector search). KEGG is one source; genome-scale models,
+BiGG, Recon, and custom flux datasets are equally valid inputs. Four query
+modalities are exposed:
 
 1. Natural-language pathway discovery — "find CHO glutaminolysis pathways"
 2. Structural neighbourhood traversal — "all products of glutamate dehydrogenase"
@@ -36,9 +38,10 @@ summary of control points, bottlenecks, and recommended experiments.
 
 ## The CHO Build — Verified Numbers
 
-We have a complete, validated CHO build. All 366 *Cricetulus griseus* (`cge`)
-KEGG pathways are ingested and fully enriched, producing a graph we have
-verified locally:
+We have a complete, validated CHO build. All 366 *Cricetulus griseus* KEGG
+pathways are ingested and enriched as a reference build, producing a graph
+we have verified locally. The iCHO2441 genome-scale model (SBML) is also
+supported as a second corpus:
 
 | Entity | Count |
 |--------|------:|
