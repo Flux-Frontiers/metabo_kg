@@ -8,11 +8,11 @@
 Dear Professor Betenbaugh,
 
 I am writing to introduce **MetaboKG**, a metabolic knowledge graph system we
-have built at Flux Frontiers, and to propose a collaboration I think could
-produce a strong methods paper and a meaningful licensing relationship. MetaboKG
-is one piece of a broader AI-assisted bioprocess intelligence platform we are
-developing; the CHO component is the most mature, and your lab is the natural
-scientific home for it.
+have built at Flux Frontiers, and to offer your lab the opportunity to take the
+lead on the CHO module. MetaboKG is one piece of a broader AI-assisted
+bioprocess intelligence platform we are developing. The CHO component is the
+most mature piece, it is immediately useful to AMBIC as a shared computational
+resource, and your lab is the natural scientific home for it.
 
 ## What MetaboKG Does
 
@@ -82,47 +82,46 @@ The analysis pipeline now includes a dedicated kinetics phase that surfaces
 rate-limiting steps (by Km), throughput bottlenecks (by Vmax), and allosteric
 control points automatically — without manual curation.
 
-## Where Your Lab's Data Would Complete the Picture
+## What Your Lab Gets Out of the Box
 
-Three gaps remain that AMBIC flux data is uniquely positioned to close:
+MetaboKG is ready to use today. A student or postdoc can install it, run FBA
+on any of the 366 CHO pathways, and get kinetics-informed simulation output
+in an afternoon. The analysis pipeline surfaces rate-limiting steps, allosteric
+control points, and pathway coupling without any manual curation — and the
+synthesis command generates a narrative summary ready to drop into a methods
+section or grant proposal.
 
-1. **CHO-specific kinetics for amino acid biosynthesis** — 20 pathways currently
-   default to human literature values; CHO-measured Km/Vmax would replace them
-2. **Recombinant protein coupling** — mAb / IgG synthesis as a growth-coupled
-   FBA objective (product titer as the optimization target)
-3. **Fed-batch culture constraints** — glucose pulse kinetics, oxygen gradients,
-   lactate switch dynamics
+For the AMBIC consortium specifically, this means a shared, reproducible
+computational substrate for CHO metabolic modeling that any member lab can
+run locally, extend, and cite.
 
-These are exactly where your published CHO metabolomics and AMBIC flux
-measurements would complete a production-grade model.
+## The Offer
 
-## Proposed Collaboration
+I am proposing that your lab take the **lead role** on the CHO module —
+directing its scientific development, publishing from it, and establishing it
+as the consortium standard. The terms I have in mind:
 
-I would like to propose the following structure:
+**Working agreement** — a simple letter agreement between Flux Frontiers and
+JHMI establishing your lab as the primary scientific steward of the CHO module,
+with co-development rights and first-authorship on the methods paper.
+
+**Research license** — MetaboKG is source-available under the **Elastic License
+2.0**. JHMI / AMBIC would receive a perpetual research license at no cost.
+Deployment and integration into your infrastructure is entirely on your side —
+the tool installs with a single command and requires no external services.
 
 **Co-authored methods paper** targeting *Metabolic Engineering* or
-*Biotechnology & Bioengineering*:
-- MetaboKG as the computational platform (Flux Frontiers contribution)
-- AMBIC CHO flux measurements and experimental validation (Betenbaugh lab
-  contribution)
-- Target: a reproducible, open-source CHO metabolic modeling workflow the
-  community can build on
+*Biotechnology & Bioengineering*, with your lab as lead authors on the CHO
+application sections.
 
-**Institutional license** — MetaboKG is source-available under the
-**Elastic License 2.0**. For JHMI / AMBIC we would structure a research
-license that grants your lab and collaborators full unrestricted use, with
-the data partnership as the consideration. Deployment and integration into
-your existing infrastructure would be entirely on your side — the tool is
-self-contained and installs with a single command.
+**Adjunct appointment** — if there is appetite for a closer institutional
+relationship, an adjunct research scientist or adjunct faculty affiliation at
+JHU ChemBE would give us a home for joint grant applications (NIH SBIR/STTR,
+NSF, DARPA BRICS) and deeper integration with AMBIC's research agenda.
 
-**Adjunct appointment** — if there is appetite for a closer relationship,
-an adjunct research scientist or adjunct faculty affiliation at JHMI /
-JHU ChemBE would let us pursue grant funding together (NIH SBIR/STTR,
-NSF, DARPA BRICS) and give the collaboration an institutional home.
-
-A 30-minute live demo — running FBA and ODE simulations on a CHO glycolysis or
-glutaminolysis pathway of your choice, including kinetics analysis and LLM
-narrative synthesis — would be the fastest way to show what this can do.
+A 30-minute live demo — FBA and ODE simulations on a CHO glycolysis or
+glutaminolysis pathway of your choice, kinetics analysis, and LLM narrative
+synthesis — would be the fastest way to show what your lab would be taking on.
 
 GitHub: https://github.com/Flux-Frontiers/metabo_kg
 
