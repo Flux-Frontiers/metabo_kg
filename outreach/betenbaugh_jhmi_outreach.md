@@ -1,16 +1,18 @@
 # Outreach: Prof. Michael Betenbaugh, JHMI / JHU ChemBE
 
 **To:** beten@jhu.edu
-**Subject:** MetaboKG — CHO Metabolic Knowledge Graph + Collaboration Proposal
+**Subject:** MetaboKG — CHO Metabolic Knowledge Graph, Licensing & Collaboration Inquiry
 
 ---
 
 Dear Professor Betenbaugh,
 
-I am writing to introduce **MetaboKG**, an open-source metabolic knowledge graph
-system we have built at Flux Frontiers, and to propose a collaboration that I
-think could produce a strong methods paper and a shared computational platform
-for the CHO bioprocessing community.
+I am writing to introduce **MetaboKG**, a metabolic knowledge graph system we
+have built at Flux Frontiers, and to propose a collaboration I think could
+produce a strong methods paper and a meaningful licensing relationship. MetaboKG
+is one piece of a broader AI-assisted bioprocess intelligence platform we are
+developing; the CHO component is the most mature, and your lab is the natural
+scientific home for it.
 
 ## What MetaboKG Does
 
@@ -103,20 +105,24 @@ I would like to propose the following structure:
 - MetaboKG as the computational platform (Flux Frontiers contribution)
 - AMBIC CHO flux measurements and experimental validation (Betenbaugh lab
   contribution)
-- Target: a reproducible, open-source CHO metabolic modeling workflow
+- Target: a reproducible, open-source CHO metabolic modeling workflow the
+  community can build on
 
-**Institutional license** — MetaboKG is licensed under the **Elastic License
-2.0** (free for internal academic and research use, source-available on GitHub).
-We are open to a collaborative license arrangement that gives JHMI / AMBIC
-unrestricted use in exchange for the data partnership.
+**Institutional license** — MetaboKG is source-available under the
+**Elastic License 2.0**. For JHMI / AMBIC we would structure a research
+license that grants your lab and collaborators full unrestricted use, with
+the data partnership as the consideration. Deployment and integration into
+your existing infrastructure would be entirely on your side — the tool is
+self-contained and installs with a single command.
 
-**Shared deployment** — we can set up MetaboKG as a shared MCP server or
-Streamlit instance accessible to lab members and AI coding assistants, making
-it available to the broader AMBIC consortium.
+**Adjunct appointment** — if there is appetite for a closer relationship,
+an adjunct research scientist or adjunct faculty affiliation at JHMI /
+JHU ChemBE would let us pursue grant funding together (NIH SBIR/STTR,
+NSF, DARPA BRICS) and give the collaboration an institutional home.
 
 A 30-minute live demo — running FBA and ODE simulations on a CHO glycolysis or
-glutaminolysis pathway of your choice, including the kinetics analysis and LLM
-synthesis — would be the fastest way to show what this can do.
+glutaminolysis pathway of your choice, including kinetics analysis and LLM
+narrative synthesis — would be the fastest way to show what this can do.
 
 GitHub: https://github.com/Flux-Frontiers/metabo_kg
 
