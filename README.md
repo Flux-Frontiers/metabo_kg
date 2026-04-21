@@ -114,22 +114,70 @@ metabokg-build --data ./data/icho_model
 metabokg-viz --db data/hsa_pathways/.metabokg/hsa.sqlite --port 8500
 ```
 
-## Multi-Organism Support
+## CHO Support
 
-MetaboKG supports multiple organisms, each stored in its own database for federated cross-organism queries.
+MetaboKG has a complete, validated CHO build. The `cge` KEGG organism code covers
+*Cricetulus griseus* — the species underlying all CHO cell lines.
 
-| Organism | Script | Output | Pathways |
-|----------|--------|--------|----------|
-| Human (*Homo sapiens*, `hsa`) | `download_human_kegg.py` | `data/hsa_pathways/` | 369 |
-| CHO (*C. griseus*, `cge`) | `download_cho_kegg.py` | `data/cge_pathways/` | 366 |
-| iCHO2441 GEM (SBML) | `download_icho_model.py` | `data/icho_model/` | 6,663 reactions |
+| Entity | Human (hsa) | CHO (cge) |
+|--------|------------:|----------:|
+| Pathways | 369 | 366 |
+| Reactions | 2,139 | 2,099 |
+| Compounds | 5,115 | 5,105 |
+| Enzymes | 9,427 | 9,360 |
+| **Total nodes** | **17,050** | **16,930** |
+
+### CHO-Specific Kinetics
+
+`cho_kinetics.py` seeds **35 reactions** across 6 core pathways from published CHO
+culture literature (Ahn & Antoniewicz 2011; Zagari et al. 2013; Templeton et al. 2013),
+all at **pH 7.2, 37°C** (standard bioreactor conditions):
+
+| Pathway | Reactions |
+|---------|----------:|
+| Glycolysis (cge00010) | 12 |
+| TCA cycle (cge00020) | 8 |
+| Oxidative phosphorylation (cge00190) | 3 |
+| Glutaminolysis | 4 |
+| Amino acid metabolism | 4 |
+| Anaplerosis / PPP | 4 |
+
+Key CHO-specific differences vs. human defaults:
+
+| Reaction | Enzyme | CHO Detail |
+|----------|--------|-----------|
+| R00299 | Hexokinase | Km_glucose = 0.046 mM (high affinity) |
+| R00703 | LDH | Vmax = 350 mM/s — overflow lactate phenotype |
+| R00256 | GLS1 | Km_Gln = 1.5 mM; product-inhibited by glutamate |
+| R00756 | PFK | Recalibrated for pH 7.2 bioreactor conditions |
+
+### iCHO2441 Genome-Scale Model
 
 ```bash
-# db and lancedb colocate automatically under each data dir
-metabokg-build --data data/hsa_pathways  # → data/hsa_pathways/.metabokg/hsa.sqlite
-metabokg-build --data data/cge_pathways  # → data/cge_pathways/.metabokg/cge.sqlite
-metabokg-build --data data/icho_model    # → data/icho_model/.metabokg/icho.sqlite
+# Download iCHO2441 (Hefzi et al. 2016, BioModels MODEL2206100001)
+python scripts/download_icho_model.py --output data/icho_model
+
+# Build — SBML parser ingests directly
+metabokg-build --data data/icho_model
+# → data/icho_model/.metabokg/icho.sqlite  (6,663 reactions, 2,441 genes)
 ```
+
+### Multi-Corpus Queries
+
+```bash
+# Build all three corpora (each stored in its own data dir)
+metabokg-build --data data/hsa_pathways    # human
+metabokg-build --data data/cge_pathways    # CHO
+metabokg-build --data data/icho_model      # iCHO2441 GEM
+```
+
+| Corpus | DB path | Coverage |
+|--------|---------|---------|
+| Human | `data/hsa_pathways/.metabokg/hsa.sqlite` | 369 KEGG pathways |
+| CHO | `data/cge_pathways/.metabokg/cge.sqlite` | 366 KEGG pathways |
+| iCHO2441 | `data/icho_model/.metabokg/icho.sqlite` | GEM, 6,663 reactions |
+
+See [docs/cho_workflow.md](docs/cho_workflow.md) for the complete CHO build and simulation workflow.
 
 ## Architecture
 
@@ -468,9 +516,6 @@ metabokg-mcp                               # uses env vars
 
 - Default: `all-MiniLM-L6-v2` (384-dimensional, ~80 MB, downloaded once)
 - Override via `--model` flag or `METABOKG_MODEL` env var
-- **SQLite** — `<data-dir>/.metabokg/<org>.sqlite` (colocated with pathway data, e.g. `data/hsa_pathways/.metabokg/hsa.sqlite`)
-- **LanceDB** — `<data-dir>/.metabokg/lancedb`
-- **Embedding Model** — `all-MiniLM-L6-v2` (384-dimensional vectors)
 
 ## Performance Characteristics
 
@@ -527,7 +572,7 @@ For commercial licensing inquiries, contact [Flux Frontiers](https://github.com/
 
 ## Acknowledgments
 
-- [CodeKG](https://github.com/flux-frontiers/code_kg) — Semantic analysis and knowledge graph capabilities
+- [PyCodeKG](https://github.com/flux-frontiers/pycode_kg) — Provides semantic analysis and knowledge graph capabilities for this codebase
 - Layout algorithms adapted from [repo_vis](https://github.com/Suchanek/repo_vis)
 - KEGG, Reactome, and MetaCyc teams for pathway data standards
 - PyVista, Streamlit, and LanceDB communities
