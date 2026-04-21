@@ -49,6 +49,25 @@ from metabokg.primitives import (
 _SBO_INHIBITOR = re.compile(r"SBO:000002[0-9]", re.I)
 _SBO_ACTIVATOR = re.compile(r"SBO:000045[0-9]", re.I)
 
+# SBML Level 3 FBC package namespace (Flux Balance Constraints v2)
+_FBC_NS = "http://www.sbml.org/sbml/level3/version1/fbc/version2"
+
+
+def _fbc(local: str) -> str:
+    return f"{{{_FBC_NS}}}{local}"
+
+
+def _collect_gene_refs(elem) -> list[str]:
+    """Recursively collect all fbc:geneProduct values from an association subtree."""
+    refs = []
+    if _strip_ns(elem.tag) == "geneProductRef":
+        gp = elem.attrib.get(_fbc("geneProduct"), "")
+        if gp:
+            refs.append(gp)
+    for child in elem:
+        refs.extend(_collect_gene_refs(child))
+    return refs
+
 
 def _strip_ns(tag: str) -> str:
     """Remove XML namespace prefix from a tag."""
@@ -284,4 +303,67 @@ class SBMLParser(PathwayParser):
                             )
                         )
 
+        # --- FBC gene products and associations (Level 3 FBC package) ---
+        fbc_gene_map = self._parse_fbc_genes(model, nodes, path)
+        if fbc_gene_map:
+            for rxn_elem in model.findall(f".//{_tag('reaction')}"):
+                rxn_id_raw = rxn_elem.attrib.get("id", "")
+                xrefs = {}
+                ann = rxn_elem.find(_tag("annotation"))
+                if ann is not None:
+                    ann_text = ET.tostring(ann, encoding="unicode")
+                    for m in re.finditer(r"identifiers\.org/kegg\.reaction/([A-Z0-9]+)", ann_text):
+                        xrefs["kegg"] = m.group(1)
+                rxn_nid = (
+                    node_id(KIND_REACTION, "kegg", xrefs["kegg"])
+                    if "kegg" in xrefs
+                    else synthetic_id(KIND_REACTION, rxn_id_raw)
+                )
+                self._attach_fbc_catalyzes(rxn_elem, rxn_nid, fbc_gene_map, edges)
+
         return list(nodes.values()), edges
+
+    def _parse_fbc_genes(
+        self,
+        model,
+        nodes: dict,
+        path: Path,
+    ) -> dict[str, str]:
+        """Parse fbc:listOfGeneProducts into enzyme nodes; return fbc_id → node_id map."""
+        fbc_gene_map: dict[str, str] = {}
+        gp_list = model.find(_fbc("listOfGeneProducts"))
+        if gp_list is None:
+            return fbc_gene_map
+        for gp in gp_list.findall(_fbc("geneProduct")):
+            fbc_id = gp.attrib.get(_fbc("id"), "")
+            label = gp.attrib.get(_fbc("label"), fbc_id)
+            gene_id = fbc_id[2:] if fbc_id.startswith("G_") else fbc_id
+            enz_nid = synthetic_id(KIND_ENZYME, fbc_id)
+            fbc_gene_map[fbc_id] = enz_nid
+            if enz_nid not in nodes:
+                nodes[enz_nid] = MetaNode(
+                    id=enz_nid,
+                    kind=KIND_ENZYME,
+                    name=label,
+                    description=f"FBC gene product: {label}",
+                    xrefs=json.dumps({"gene_id": gene_id}),
+                    source_format="sbml",
+                    source_file=str(path),
+                )
+        return fbc_gene_map
+
+    def _attach_fbc_catalyzes(
+        self,
+        rxn_elem,
+        rxn_nid: str,
+        fbc_gene_map: dict[str, str],
+        edges: list,
+    ) -> None:
+        """Emit CATALYZES edges from an fbc:geneProductAssociation element."""
+        gpa = rxn_elem.find(f".//{_fbc('geneProductAssociation')}")
+        if gpa is None:
+            return
+        for gene_ref in _collect_gene_refs(gpa):
+            enz_nid = fbc_gene_map.get(gene_ref)
+            if enz_nid:
+                edges.append(MetaEdge(src=enz_nid, rel=REL_CATALYZES, dst=rxn_nid))

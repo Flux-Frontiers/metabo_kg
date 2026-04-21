@@ -4,7 +4,9 @@
       "Edit(/.claude/skills/metabokg/**)",
       "Bash(.venv/bin/pytest --tb=short -q)",
       "Bash(git -C /Users/egs/repos/Metabo_kg diff src/metabokg/app.py)",
-      "Bash(python -c \"import ast; ast.parse\\(open\\('src/metabokg/app.py'\\).read\\(\\)\\); print\\('OK'\\)\")"
+      "Bash(python -c \"import ast; ast.parse\\(open\\('src/metabokg/app.py'\\).read\\(\\)\\); print\\('OK'\\)\")",
+      "Bash(python scripts/download_icho_model.py --output data/icho_model --force)",
+      "Bash(python3 -c ' *)"
     ]
   }
 }

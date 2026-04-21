@@ -73,6 +73,8 @@ Options
 --quiet           Suppress progress output.
 
 Author: Eric G. Suchanek, PhD
+Last Revision: 2026-04-21 13:52:19
+License: Elastic 2.0
 """
 
 from __future__ import annotations
@@ -543,7 +545,10 @@ def main(argv: list[str] | None = None) -> int:
             "\nTo rebuild the knowledge graph with enriched reaction names:",
             file=sys.stderr,
         )
-        print("  poetry run metabokg-build --data data/hsa_pathways --wipe", file=sys.stderr)
+        print(
+            "  poetry run metabokg-build --data data/hsa_pathways --wipe",
+            file=sys.stderr,
+        )
 
     return 0
 

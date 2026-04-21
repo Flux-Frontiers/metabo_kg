@@ -157,9 +157,10 @@ With all three registered, a single KGRAG query spans them simultaneously:
 
 1. **SABIO-RK coverage** — 91 entries, mostly tRNA ligases; central carbon
    enzymes (HK, PFK, LDH, CS, etc.) not yet in SABIO-RK for CHO
-2. **iCHO2441 SBML** — the 6,663-reaction consensus GEM (Hefzi et al. 2016,
-   BioModels `MODEL2206100001`) requires a free BioModels account to download;
-   once obtained, ingest with `metabokg-build --data data/icho_model`
+2. **iCHO2441 enzyme gene symbols** — 2,441 FBC gene products are parsed and
+   wired to reactions via CATALYZES edges, but names remain bare Entrez IDs
+   (`G_100762926`) until Phase 3 enrichment is extended for the `syn:` namespace;
+   see `docs/icho_workflow.md` for details
 3. **Amino acid biosynthesis kinetics** — 20 pathways still use human defaults
 4. **Fed-batch constraints** — glucose pulse, oxygen gradient, lactate switch
 
@@ -172,4 +173,4 @@ With all three registered, a single KGRAG query spans them simultaneously:
 | `scripts/download_kegg_names.py --genes cge hsa` | Download gene name TSVs (one-time) |
 | `scripts/download_cho_kegg.py` | Download 366 cge KGML pathways |
 | `scripts/fetch_sabio_cho_kinetics.py` | Fetch *C. griseus* kinetics from SABIO-RK |
-| `scripts/download_icho_model.py` | Download iCHO2441 SBML (requires BioModels login) |
+| `scripts/download_icho_model.py` | Download iCHO2441 SBML from BioModels (no login required) |

@@ -7,6 +7,11 @@ MetaKG instance and polished output.
 
 Usage:
     poetry run python scripts/simulation_demo.py
+
+Author: Eric G. Suchanek, PhD
+Last Revision: 2026-04-21 13:52:45
+License: Elastic 2.0
+
 """
 
 import json

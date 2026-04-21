@@ -22,6 +22,10 @@ Output columns (TSV):
 Reference:
     Wittig et al. (2012) SABIO-RK, NAR 40:D790-D796. PMID:22102587
     API docs: https://sabiork.h-its.org/layouts/content/docuRESTfulWeb/manual.gsp
+
+Author: Eric G. Suchanek, PhD
+Last Revision: 2026-04-21 13:52:45
+License: Elastic 2.0
 """
 
 import argparse

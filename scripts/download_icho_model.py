@@ -25,6 +25,10 @@ Or merge into an existing graph:
 Reference:
     Hefzi et al. (2016) Cell Systems 3:434-443. PMID:27883890
     BioModels: https://www.ebi.ac.uk/biomodels/MODEL2206100001
+
+Author: Eric G. Suchanek, PhD
+Last Revision: 2026-04-21 13:51:52
+License: Elastic 2.0
 """
 
 import argparse
@@ -35,7 +39,7 @@ from urllib.request import Request, urlopen
 
 BIOMODELS_BASE = "https://www.ebi.ac.uk/biomodels"
 MODEL_ID = "MODEL2206100001"
-MODEL_FILENAME = f"{MODEL_ID}.xml"
+MODEL_FILENAME = "iCHO2441.xml"
 
 
 def fetch_model_info() -> dict:
@@ -54,13 +58,19 @@ def fetch_model_info() -> dict:
 
 def download_sbml(output_path: Path) -> bool:
     """Download iCHO2441 SBML file from BioModels."""
-    # BioModels REST API download endpoint
-    url = f"{BIOMODELS_BASE}/{MODEL_ID}/download?filename={MODEL_FILENAME}"
+    # BioModels REST API v1 file download endpoint (requires /model/download/ path)
+    url = f"{BIOMODELS_BASE}/model/download/{MODEL_ID}?filename={MODEL_FILENAME}"
     req = Request(url, headers={"Accept": "application/xml, text/xml"})
     try:
-        print(f"Fetching {MODEL_ID} from BioModels...", end=" ", flush=True)
+        print(f"Fetching {MODEL_FILENAME} from BioModels...", end=" ", flush=True)
         with urlopen(req, timeout=120) as resp:
             content = resp.read()
+        if not content.lstrip(b"\n\r ").startswith(b"<?xml") and b"<sbml" not in content[:500]:
+            print(
+                f"✗\nError: response is not XML (got {len(content):,} bytes, likely an HTML error page)",
+                file=sys.stderr,
+            )
+            return False
         output_path.write_bytes(content)
         print(f"✓ ({len(content):,} bytes)")
         return True
@@ -96,8 +106,8 @@ def main():
     output_file = output_dir / MODEL_FILENAME
 
     if args.dry_run:
-        print(f"Would download: {MODEL_ID} → {output_file}")
-        print(f"  Source: {BIOMODELS_BASE}/{MODEL_ID}")
+        print(f"Would download: {MODEL_FILENAME} → {output_file}")
+        print(f"  Source: {BIOMODELS_BASE}/model/download/{MODEL_ID}?filename={MODEL_FILENAME}")
         print("  Model:  iCHO2441 — CHO consensus GEM (6,663 rxns, 2,441 genes)")
         print("  Ref:    Hefzi et al. 2016, PMID:27883890")
         return

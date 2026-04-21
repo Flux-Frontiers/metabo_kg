@@ -54,6 +54,7 @@ License: Elastic 2.0
 from __future__ import annotations
 
 import csv
+import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -249,24 +250,31 @@ def enrich_from_tsv(store, tsv_path: Path, kind: str, *, quiet: bool = False) ->
     conn = store._conn
 
     # Extract all nodes of the target kind
-    cur = conn.execute("SELECT id, name FROM meta_nodes WHERE kind = ?", (kind,))
-    rows = [(r["id"], r["name"]) for r in cur]
+    cur = conn.execute("SELECT id, name, xrefs FROM meta_nodes WHERE kind = ?", (kind,))
+    rows = [(r["id"], r["name"], r["xrefs"]) for r in cur]
 
     updated = 0
     cur2 = conn.cursor()
-    for node_id, _ in rows:
-        # Extract bare KEGG accession from node ID
-        # Format: cpd:kegg:C00031 or rxn:kegg:R00710 → last segment
+    for node_id, _, xrefs_json in rows:
+        # Primary: extract KEGG accession from node ID (cpd:kegg:C00031 → C00031)
         parts = node_id.split(":")
         if len(parts) >= 3 and parts[1] == "kegg":
-            accession = parts[-1]  # e.g., "C00031" or "R00710"
-            canonical = kegg_names.get(accession)
-            if canonical:
-                cur2.execute(
-                    "UPDATE meta_nodes SET name = ? WHERE id = ?",
-                    (canonical, node_id),
-                )
-                updated += 1
+            accession = parts[-1]
+        else:
+            # Fallback: check xrefs JSON for a stored kegg cross-reference
+            try:
+                accession = (json.loads(xrefs_json) if xrefs_json else {}).get("kegg", "")
+            except (json.JSONDecodeError, AttributeError):
+                accession = ""
+        if not accession:
+            continue
+        canonical = kegg_names.get(accession)
+        if canonical:
+            cur2.execute(
+                "UPDATE meta_nodes SET name = ? WHERE id = ?",
+                (canonical, node_id),
+            )
+            updated += 1
 
     conn.commit()
     return updated
@@ -363,19 +371,26 @@ def enrich_reactions_from_detail(store, detail_tsv: Path, *, quiet: bool = False
                 detail_map[parts[0]] = parts[1]
 
     conn = store._conn
-    cur = conn.execute("SELECT id, name FROM meta_nodes WHERE kind = 'reaction'")
-    bare_rxns = [(r["id"], r["name"]) for r in cur if _is_bare_reaction(r["name"])]
+    cur = conn.execute("SELECT id, name, xrefs FROM meta_nodes WHERE kind = 'reaction'")
+    bare_rxns = [(r["id"], r["name"], r["xrefs"]) for r in cur if _is_bare_reaction(r["name"])]
 
     updated = 0
     cur2 = conn.cursor()
-    for node_id, _old_name in bare_rxns:
+    for node_id, _old_name, xrefs_json in bare_rxns:
         parts = node_id.split(":")
         if len(parts) >= 3 and parts[1] == "kegg":
             accession = parts[-1]
-            name = detail_map.get(accession)
-            if name:
-                cur2.execute("UPDATE meta_nodes SET name = ? WHERE id = ?", (name, node_id))
-                updated += 1
+        else:
+            try:
+                accession = (json.loads(xrefs_json) if xrefs_json else {}).get("kegg", "")
+            except (json.JSONDecodeError, AttributeError):
+                accession = ""
+        if not accession:
+            continue
+        name = detail_map.get(accession)
+        if name:
+            cur2.execute("UPDATE meta_nodes SET name = ? WHERE id = ?", (name, node_id))
+            updated += 1
 
     conn.commit()
     return updated
@@ -466,10 +481,21 @@ def _load_gene_names_tsv(tsv_path: Path) -> dict[str, str]:
             if len(row) < 2:
                 continue
             gene_id = row[0].split(":")[-1].strip()
-            # Symbol is always in the last column, before first comma or semicolon
-            symbol = re.split(r"[,;]", row[-1])[0].strip()
-            if gene_id and symbol and symbol != "CDS":
-                mapping[gene_id] = symbol
+            # Strip the description portion (after first ";") then take the
+            # first alias (before first ",").  Examples:
+            #   "Ldha; L-lactate dehydrogenase A chain"  → "Ldha"
+            #   "BRCA1, RNF53; breast cancer 1 [KO:K10605]"  → "BRCA1"
+            #   "amiloride-sensitive amine oxidase [copper-containing]"  → skip (has spaces)
+            #   "1,25-dihydroxyvitamin D(3)…"  → skip (starts with digit)
+            last_col = row[-1]
+            name_part = last_col.split(";")[0]  # drop description
+            symbol = name_part.split(",")[0].strip()  # first alias only
+            # Reject placeholders and anything that isn't a plausible gene symbol.
+            if not gene_id or not symbol or symbol == "CDS":
+                continue
+            if " " in symbol or symbol[0].isdigit():
+                continue
+            mapping[gene_id] = symbol
     return mapping
 
 
@@ -477,10 +503,13 @@ def enrich_enzyme_names(store, data_dir: Path, *, quiet: bool = False) -> int:
     """
     Resolve enzyme gene IDs to gene symbols using per-organism KEGG gene TSVs.
 
-    Detects which organisms are present in the graph from enzyme node IDs of
-    the form ``enz:kegg:{org}:{gene_id}``, then loads
-    ``data/{org}_gene_names.tsv`` for each and updates any enzyme whose name
-    is still a bare gene ID (pure digits) or KEGG ortholog ID (``K\\d{5}``).
+    Handles two enzyme ID schemes:
+
+    - ``enz:kegg:{org}:{gene_id}`` — organism is auto-detected from the ID;
+      loads ``data/{org}_gene_names.tsv`` for each detected organism.
+    - ``enz:syn:{hash}`` with ``xrefs = {"gene_id": "…"}`` — produced by the
+      SBML FBC parser (e.g. iCHO2441); all available ``*_gene_names.tsv`` files
+      in *data_dir* are loaded and the gene ID from xrefs is looked up.
 
     Requires TSV files downloaded by ``download_kegg_names.py --genes``.
 
@@ -491,24 +520,36 @@ def enrich_enzyme_names(store, data_dir: Path, *, quiet: bool = False) -> int:
     """
     conn = store._conn
 
-    # Detect organisms present: enz:kegg:{org}:{gene_id} where org != K (orthologs)
-    cur = conn.execute("SELECT id, name FROM meta_nodes WHERE kind = 'enzyme'")
-    enzyme_rows = [(r["id"], r["name"]) for r in cur]
+    cur = conn.execute("SELECT id, name, xrefs FROM meta_nodes WHERE kind = 'enzyme'")
+    enzyme_rows = [(r["id"], r["name"], r["xrefs"]) for r in cur]
+
+    # --- Partition into kegg: and syn: enzymes ---
+    kegg_enzymes: list[tuple[str, str]] = []  # (eid, name)
+    syn_enzymes: list[tuple[str, str, str]] = []  # (eid, name, gene_id)
 
     orgs: set[str] = set()
-    for eid, _ in enzyme_rows:
+    for eid, name, xrefs_json in enzyme_rows:
         parts = eid.split(":")
-        # enz:kegg:{org}:{gene_id} → parts[2] is organism code
         if len(parts) == 4 and parts[0] == "enz" and parts[1] == "kegg":
             org = parts[2]
             if not org.startswith("K"):  # skip ortholog stubs
                 orgs.add(org)
+            kegg_enzymes.append((eid, name))
+        elif len(parts) == 3 and parts[0] == "enz" and parts[1] == "syn":
+            try:
+                gene_id = (json.loads(xrefs_json) if xrefs_json else {}).get("gene_id", "")
+            except (json.JSONDecodeError, AttributeError):
+                gene_id = ""
+            if gene_id:
+                syn_enzymes.append((eid, name, gene_id))
 
-    if not orgs:
+    if not orgs and not syn_enzymes:
         return 0
 
-    # Load gene name maps for all detected organisms
+    # --- Load gene name maps ---
     gene_map: dict[str, str] = {}
+
+    # kegg: enzymes — load org-specific TSVs
     for org in sorted(orgs):
         tsv = data_dir / f"{org}_gene_names.tsv"
         if tsv.exists():
@@ -520,22 +561,39 @@ def enrich_enzyme_names(store, data_dir: Path, *, quiet: bool = False) -> int:
             if not quiet:
                 print(f"    SKIP {tsv.name} not found — run download_kegg_names.py --genes {org}")
 
+    # syn: enzymes — scan all available *_gene_names.tsv files (organism unknown from ID)
+    if syn_enzymes:
+        for tsv in sorted(data_dir.glob("*_gene_names.tsv")):
+            org = tsv.stem.replace("_gene_names", "")
+            if org not in orgs:  # avoid double-loading
+                org_map = _load_gene_names_tsv(tsv)
+                gene_map.update(org_map)
+                if not quiet:
+                    print(f"    loaded {len(org_map)} gene names for {org} (syn fallback)")
+
     if not gene_map:
         return 0
 
     updated = 0
     cur2 = conn.cursor()
-    for eid, name in enzyme_rows:
-        parts = eid.split(":")
-        if len(parts) != 4:
-            continue
-        gene_id = parts[3]
+
+    # Update kegg: enzymes (existing logic)
+    for eid, name in kegg_enzymes:
+        gene_id = eid.split(":")[-1]
         symbol = gene_map.get(gene_id)
         if not symbol:
             continue
-        # Update if: bare gene ID, KEGG ortholog, truncated KGML name (ends in
-        # "..."), generic "CDS" placeholder, or name doesn't yet equal symbol.
         bare = not name or _BARE_ENZYME.match(name) or name.endswith("...") or name == "CDS"
+        if bare or name != symbol:
+            cur2.execute("UPDATE meta_nodes SET name = ? WHERE id = ?", (symbol, eid))
+            updated += 1
+
+    # Update syn: enzymes (FBC gene products — name is currently bare G_<entrez_id>)
+    for eid, name, gene_id in syn_enzymes:
+        symbol = gene_map.get(gene_id)
+        if not symbol:
+            continue
+        bare = not name or _BARE_ENZYME.match(name) or name.startswith("G_") or name == "CDS"
         if bare or name != symbol:
             cur2.execute("UPDATE meta_nodes SET name = ? WHERE id = ?", (symbol, eid))
             updated += 1

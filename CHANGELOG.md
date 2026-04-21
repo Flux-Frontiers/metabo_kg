@@ -9,6 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **SBML Level 3 FBC v2 gene-association parser** (`src/metabokg/parsers/sbml.py`) — `SBMLParser` now handles the Flux Balance Constraints v2 package used by iCHO2441. `_parse_fbc_genes()` reads `<fbc:listOfGeneProducts>` into `enz:syn:…` nodes (with Entrez gene IDs stored in `xrefs`). `_attach_fbc_catalyzes()` recursively flattens `<fbc:or>` / `<fbc:and>` association trees and emits one `CATALYZES` edge per referenced gene product. Result: 2,441 enzyme nodes and 9,796 CATALYZES edges parsed from iCHO2441.
+
+- **`enrich_enzyme_names` support for `enz:syn:` (SBML FBC) nodes** (`src/metabokg/enrich.py`) — Phase 3 enrichment now handles two enzyme ID schemes. For `enz:kegg:{org}:{gene_id}` the existing org-specific TSV lookup is used. For `enz:syn:{hash}` nodes (produced by the FBC parser) the Entrez gene ID from `xrefs` is matched against all `*_gene_names.tsv` files in `data/`. Result: 1,942 / 2,441 iCHO enzymes (80%) resolved to gene symbols (e.g. `G_100762926` → `Aoc3`).
+
+- **`enrich_from_tsv` and `enrich_reactions_from_detail` xrefs fallback** (`src/metabokg/enrich.py`) — Both functions now read the `xrefs` JSON column and extract a `kegg` cross-reference when a node's ID is not in the `cpd:kegg:…` / `rxn:kegg:…` format. This enables future SBML files that carry `identifiers.org` KEGG annotations to be enriched without code changes.
+
+- **`docs/FEATURES.md`** — New reference document covering all three bundled corpora (hsa, cge, icho): node/edge/vector counts, enrichment details, simulation support matrix, and multi-corpus build commands.
+
+- **`docs/icho_workflow.md`** — Detailed workflow guide for the iCHO2441 genome-scale model: download, FBC-specific parser behaviour, build results, enrichment phase-by-phase analysis, known gaps (499 unresolved genes, single-pathway structure, OR/AND flattening), and KGRAG registration.
+
+- **`docs/EXAMPLES.md`** — Renamed from root `EXAMPLES.md` into `docs/` for consistency with the new `docs/` layout.
+
+### Fixed
+
+- **BioModels download URL** (`scripts/download_icho_model.py`) — The old URL pattern (`/{MODEL_ID}/download?filename=…`) returns an HTML redirect page; the script now uses the correct REST API path (`/model/download/{MODEL_ID}?filename=…`). Added an XML content check that fails fast with a clear error when the response is not SBML. Model filename changed to `iCHO2441.xml` to match the BioModels canonical name.
+
+- **Gene symbol parsing in `_load_gene_names_tsv`** (`src/metabokg/enrich.py`) — Previous logic split only on the last `,` or `;`, producing multi-word descriptions (e.g. `"amiloride-sensitive amine oxidase [copper-containing]"`) as spurious symbols. Now splits on `;` first (drops the description portion) then takes the first `,`-separated alias, and rejects any candidate containing a space or starting with a digit.
+
+### Changed
+
+- **`sentence-transformers` bumped to `^5.4.1`** (`pyproject.toml`) — Updated from `^5.2.0` to track the latest stable release.
+
+- **Author / revision / license headers** added to `scripts/download_icho_model.py`, `scripts/download_kegg_reactions.py`, `scripts/fetch_sabio_cho_kinetics.py`, and `scripts/simulation_demo.py` for consistency with the rest of the codebase (`License: Elastic 2.0`).
+
+- **Code formatting** in `scripts/download_kegg_reactions.py`, `scripts/fetch_sabio_cho_kinetics.py`, and `scripts/simulation_demo.py` — Long lines wrapped to 88 characters (Black/ruff style).
+
+- **`docs/cho_workflow.md`** known limitations updated — iCHO2441 download no longer requires a BioModels account; updated entry to reflect that the download script now works anonymously. Replaced the stale "SBML ingest pending" note with the actual enrichment gap (499 unresolved gene symbols in the `syn:` namespace).
+
+- **`.claude/settings.json`** — Added allowed Bash patterns for `download_icho_model.py --force` and inline Python syntax checks used during development.
+
+### Added
+
 - **`_load_kg()` and `_load_full_graph()` cached resource helpers** (`src/metabokg/app.py`) — Two new `@st.cache_resource` functions hold the `MetaKG` embedding model and the full 17K-node/edge scan in memory across Streamlit reruns. Previously these were re-created on every interaction, causing noticeable latency; now they load once per session (keyed on `db_path`).
 
 - **`_expand_hits()` — multi-hop graph expansion for search** (`src/metabokg/app.py`) — Expands a set of seed hit nodes through *n* hops of graph neighbours using `store.neighbours()` and a batched `store.nodes()` fetch, avoiding N+1 query patterns. Used by the revamped Search tab when `hops > 0`.
