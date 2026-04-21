@@ -95,33 +95,39 @@ For the AMBIC consortium specifically, this means a shared, reproducible
 computational substrate for CHO metabolic modeling that any member lab can
 run locally, extend, and cite.
 
-## The Offer
+## What I Am Proposing
 
-I am proposing that your lab take the **lead role** on the CHO module —
-directing its scientific development, publishing from it, and establishing it
-as the consortium standard. The terms I have in mind:
+I would like your lab to take the **lead scientific role** on the CHO module,
+and I would like an **adjunct appointment** at JHMI or JHU ChemBE in return.
 
-**Working agreement** — a simple letter agreement between Flux Frontiers and
-JHMI establishing your lab as the primary scientific steward of the CHO module,
-with co-development rights and first-authorship on the methods paper.
+That is the core of it. The specifics:
 
-**Research license** — MetaboKG is source-available under the **Elastic License
-2.0**. JHMI / AMBIC would receive a perpetual research license at no cost.
-Deployment and integration into your infrastructure is entirely on your side —
-the tool installs with a single command and requires no external services.
+**Adjunct research scientist / adjunct faculty** — an institutional affiliation
+that gives me standing to serve as co-PI on joint grant applications. There is
+real money available here: NIH SBIR/STTR Phase I/II, NSF, and DARPA BRICS are
+all plausible targets for a CHO metabolic modeling platform with AMBIC behind
+it. Without an institutional address I cannot be on those proposals; with one,
+we can go after them together.
+
+**Research license** — JHMI / AMBIC receives a perpetual, no-cost research
+license under the Elastic License 2.0. Your lab deploys and owns the
+installation; no dependency on Flux Frontiers for ongoing operations.
+
+**Working agreement** — a simple letter agreement establishing your lab as
+primary scientific steward of the CHO module, with co-development rights and
+first-authorship on the CHO application work.
 
 **Co-authored methods paper** targeting *Metabolic Engineering* or
-*Biotechnology & Bioengineering*, with your lab as lead authors on the CHO
-application sections.
+*Biotechnology & Bioengineering*, with your lab leading the CHO validation
+and application sections.
 
-**Adjunct appointment** — if there is appetite for a closer institutional
-relationship, an adjunct research scientist or adjunct faculty affiliation at
-JHU ChemBE would give us a home for joint grant applications (NIH SBIR/STTR,
-NSF, DARPA BRICS) and deeper integration with AMBIC's research agenda.
+In short: you get a ready-to-use computational platform your consortium can
+adopt immediately, lead authorship, and a productive co-PI for grant work.
+I get an institutional home and a path to funding. It is a clean trade.
 
-A 30-minute live demo — FBA and ODE simulations on a CHO glycolysis or
-glutaminolysis pathway of your choice, kinetics analysis, and LLM narrative
-synthesis — would be the fastest way to show what your lab would be taking on.
+A 30-minute live demo — FBA and ODE simulations on a CHO pathway of your
+choice, kinetics analysis, LLM synthesis — would show you exactly what you
+would be taking on.
 
 GitHub: https://github.com/Flux-Frontiers/metabo_kg
 
