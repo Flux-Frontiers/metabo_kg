@@ -495,6 +495,69 @@ def render_thorough_report(report: PathwayAnalysisReport, *, markdown: bool = Tr
         "Predict effects of enzyme knockouts, inhibitions, or metabolite overrides\n"
     )
 
+    # ---- Phase 8: Kinetics & Regulation ----
+    kr = report.kinetics_report
+    if kr and (kr.total_kinetic_rows > 0 or kr.reactions_with_regulation > 0):
+        h(2, "⚗️ Phase 8 — Kinetics & Regulatory Landscape")
+        lines.append(
+            f"**{kr.reactions_with_kinetics}** reactions have measured kinetic parameters "
+            f"({kr.total_kinetic_rows} total entries). "
+            f"**{kr.reactions_with_regulation}** enzymes have known regulatory interactions.\n"
+        )
+
+        if kr.interaction_type_counts:
+            h(3, "Regulatory Interaction Types")
+            lines.extend(th("Type", "Count"))
+            for itype, cnt in kr.interaction_type_counts.items():
+                lines.append(row(itype.replace("_", " ").title(), cnt))
+            lines.append("")
+
+        if kr.regulatory_hubs:
+            h(3, "Regulatory Hubs (Allosteric / Feedback)")
+            lines.append("_Compounds that control multiple enzymes — key metabolic switches._\n")
+            lines.extend(th("Compound", "Total Interactions", "Inhibits", "Activates"))
+            for hub in kr.regulatory_hubs:
+                lines.append(row(
+                    hub.compound_name,
+                    hub.interaction_count,
+                    hub.inhibitor_count,
+                    hub.activator_count,
+                ))
+            lines.append("")
+
+        if kr.top_by_km:
+            h(3, "Rate-Limiting Reactions (Highest Km — Lowest Substrate Affinity)")
+            lines.append("_High Km = enzyme needs more substrate to reach half-maximal rate — potential bottlenecks._\n")
+            lines.extend(th("Reaction", "Km (mM)", "Vmax (mM/s)", "kcat (1/s)", "Confidence"))
+            for e in kr.top_by_km[:10]:
+                lines.append(row(
+                    e.reaction_name,
+                    f"{e.km:.3f}" if e.km is not None else "—",
+                    f"{e.vmax:.1f}" if e.vmax is not None else "—",
+                    f"{e.kcat:.2f}" if e.kcat is not None else "—",
+                    f"{e.confidence_score:.2f}" if e.confidence_score is not None else "—",
+                ))
+            lines.append("")
+
+        if kr.top_by_vmax:
+            h(3, "Highest-Throughput Reactions (Vmax)")
+            lines.append("_Reactions with the highest maximum flux capacity._\n")
+            lines.extend(th("Reaction", "Vmax (mM/s)", "Km (mM)", "ΔG' (kJ/mol)"))
+            for e in kr.top_by_vmax[:10]:
+                lines.append(row(
+                    e.reaction_name,
+                    f"{e.vmax:.1f}" if e.vmax is not None else "—",
+                    f"{e.km:.3f}" if e.km is not None else "—",
+                    f"{e.delta_g_prime:.1f}" if e.delta_g_prime is not None else "—",
+                ))
+            lines.append("")
+    elif kr is not None:
+        h(2, "⚗️ Phase 8 — Kinetics & Regulatory Landscape")
+        lines.append(
+            "_No kinetic parameters found. Run `metabokg-simulate seed` to populate "
+            "kinetic data from literature, then re-run analysis._\n"
+        )
+
     # ---- Appendix ----
     h(2, "📋 Appendix: Network Details")
 

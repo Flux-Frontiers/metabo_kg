@@ -110,6 +110,7 @@ metabokg-analyze        = "metabokg.cli:analyze_main"
 metabokg-analyze-basic  = "metabokg.cli:analyze_basic_main"
 metabokg-simulate       = "metabokg.cli:simulate_main"
 metabokg-snapshot       = "metabokg.cli:snapshot_main"
+metabokg-synthesize     = "metabokg.cli:synthesize_main"
 
 [tool.ruff]
 line-length    = 100

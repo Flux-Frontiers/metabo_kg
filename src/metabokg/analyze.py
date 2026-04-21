@@ -132,6 +132,44 @@ class PathwayProfile:
 
 
 @dataclass
+class KineticEntry:
+    """A reaction with known kinetic parameters."""
+    reaction_id: str
+    reaction_name: str
+    enzyme_id: str | None
+    km: float | None
+    vmax: float | None
+    kcat: float | None
+    delta_g_prime: float | None
+    confidence_score: float | None
+    source_database: str | None
+    organism: str | None
+
+
+@dataclass
+class RegulatoryHub:
+    """A compound that regulates many enzymes allosterically or via feedback."""
+    compound_id: str
+    compound_name: str
+    interaction_count: int
+    inhibitor_count: int
+    activator_count: int
+    regulated_enzymes: list[str]
+
+
+@dataclass
+class KineticsReport:
+    """Summary of kinetic parameters and regulatory interactions in the database."""
+    total_kinetic_rows: int
+    reactions_with_kinetics: int
+    reactions_with_regulation: int
+    top_by_km: list[KineticEntry]        # highest Km = least substrate affinity
+    top_by_vmax: list[KineticEntry]      # highest Vmax = highest throughput
+    regulatory_hubs: list[RegulatoryHub] # compounds regulating multiple enzymes
+    interaction_type_counts: dict[str, int]  # e.g. {"allosteric_inhibitor": 5, ...}
+
+
+@dataclass
 class PathwayAnalysisReport:
     """Full output of :class:`PathwayAnalyzer.run`."""
 
@@ -165,6 +203,9 @@ class PathwayAnalysisReport:
 
     # Pathway profiles
     pathway_profiles: list[PathwayProfile] = field(default_factory=list)
+
+    # Phase 8
+    kinetics_report: KineticsReport | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -599,6 +640,133 @@ class PathwayAnalyzer:
         return [dict(r) for r in cur.fetchall()]
 
     # ------------------------------------------------------------------
+    # Phase 8: kinetics & regulation
+    # ------------------------------------------------------------------
+
+    def _phase8_kinetics(self) -> KineticsReport:
+        """Analyze kinetic parameters and regulatory interactions."""
+        # Count total kinetic rows
+        cur = self.conn.execute("SELECT COUNT(*) FROM kinetic_parameters")
+        total_kinetic_rows = cur.fetchone()[0]
+
+        # Count distinct reactions with kinetics
+        cur = self.conn.execute(
+            "SELECT COUNT(DISTINCT reaction_id) FROM kinetic_parameters WHERE reaction_id IS NOT NULL"
+        )
+        reactions_with_kinetics = cur.fetchone()[0]
+
+        # Count distinct reactions with regulation
+        cur = self.conn.execute(
+            "SELECT COUNT(DISTINCT enzyme_id) FROM regulatory_interactions"
+        )
+        reactions_with_regulation = cur.fetchone()[0]
+
+        # Top reactions by Km (highest Km = rate-limiting, least substrate affinity)
+        cur = self.conn.execute(
+            """
+            SELECT kp.reaction_id, kp.enzyme_id, kp.km, kp.vmax, kp.kcat,
+                   kp.delta_g_prime, kp.confidence_score, kp.source_database, kp.organism,
+                   COALESCE(n.name, kp.reaction_id) AS reaction_name
+            FROM   kinetic_parameters kp
+            LEFT JOIN meta_nodes n ON n.id = kp.reaction_id
+            WHERE  kp.km IS NOT NULL
+            ORDER  BY kp.km DESC
+            LIMIT  ?
+            """,
+            (self.top_n,),
+        )
+        top_by_km = [
+            KineticEntry(
+                reaction_id=r["reaction_id"],
+                reaction_name=r["reaction_name"],
+                enzyme_id=r["enzyme_id"],
+                km=r["km"],
+                vmax=r["vmax"],
+                kcat=r["kcat"],
+                delta_g_prime=r["delta_g_prime"],
+                confidence_score=r["confidence_score"],
+                source_database=r["source_database"],
+                organism=r["organism"],
+            )
+            for r in cur.fetchall()
+        ]
+
+        # Top reactions by Vmax (highest throughput capacity)
+        cur = self.conn.execute(
+            """
+            SELECT kp.reaction_id, kp.enzyme_id, kp.km, kp.vmax, kp.kcat,
+                   kp.delta_g_prime, kp.confidence_score, kp.source_database, kp.organism,
+                   COALESCE(n.name, kp.reaction_id) AS reaction_name
+            FROM   kinetic_parameters kp
+            LEFT JOIN meta_nodes n ON n.id = kp.reaction_id
+            WHERE  kp.vmax IS NOT NULL
+            ORDER  BY kp.vmax DESC
+            LIMIT  ?
+            """,
+            (self.top_n,),
+        )
+        top_by_vmax = [
+            KineticEntry(
+                reaction_id=r["reaction_id"],
+                reaction_name=r["reaction_name"],
+                enzyme_id=r["enzyme_id"],
+                km=r["km"],
+                vmax=r["vmax"],
+                kcat=r["kcat"],
+                delta_g_prime=r["delta_g_prime"],
+                confidence_score=r["confidence_score"],
+                source_database=r["source_database"],
+                organism=r["organism"],
+            )
+            for r in cur.fetchall()
+        ]
+
+        # Regulatory interaction type counts
+        cur = self.conn.execute(
+            "SELECT interaction_type, COUNT(*) AS cnt FROM regulatory_interactions GROUP BY interaction_type ORDER BY cnt DESC"
+        )
+        interaction_type_counts = {r["interaction_type"]: r["cnt"] for r in cur.fetchall()}
+
+        # Regulatory hubs — compounds regulating multiple enzymes
+        cur = self.conn.execute(
+            """
+            SELECT ri.compound_id,
+                   COALESCE(n.name, ri.compound_id) AS compound_name,
+                   COUNT(*) AS interaction_count,
+                   SUM(CASE WHEN ri.interaction_type LIKE '%inhibitor%' THEN 1 ELSE 0 END) AS inhibitor_count,
+                   SUM(CASE WHEN ri.interaction_type LIKE '%activator%' THEN 1 ELSE 0 END) AS activator_count,
+                   GROUP_CONCAT(DISTINCT ri.enzyme_id) AS enzyme_ids
+            FROM   regulatory_interactions ri
+            LEFT JOIN meta_nodes n ON n.id = ri.compound_id
+            GROUP  BY ri.compound_id
+            ORDER  BY interaction_count DESC
+            LIMIT  ?
+            """,
+            (self.top_n,),
+        )
+        regulatory_hubs = [
+            RegulatoryHub(
+                compound_id=r["compound_id"],
+                compound_name=r["compound_name"],
+                interaction_count=r["interaction_count"],
+                inhibitor_count=r["inhibitor_count"],
+                activator_count=r["activator_count"],
+                regulated_enzymes=(r["enzyme_ids"] or "").split(","),
+            )
+            for r in cur.fetchall()
+        ]
+
+        return KineticsReport(
+            total_kinetic_rows=total_kinetic_rows,
+            reactions_with_kinetics=reactions_with_kinetics,
+            reactions_with_regulation=reactions_with_regulation,
+            top_by_km=top_by_km,
+            top_by_vmax=top_by_vmax,
+            regulatory_hubs=regulatory_hubs,
+            interaction_type_counts=interaction_type_counts,
+        )
+
+    # ------------------------------------------------------------------
     # Pathway profiles
     # ------------------------------------------------------------------
 
@@ -699,6 +867,9 @@ class PathwayAnalyzer:
         # Phase 7
         top_enzymes = self._phase7_top_enzymes()
 
+        # Phase 8
+        kinetics_report = self._phase8_kinetics()
+
         # Profiles
         profiles = self._pathway_profiles()
 
@@ -717,6 +888,7 @@ class PathwayAnalyzer:
             isolated_nodes=isolated,
             top_enzymes=top_enzymes,
             pathway_profiles=profiles,
+            kinetics_report=kinetics_report,
         )
 
 

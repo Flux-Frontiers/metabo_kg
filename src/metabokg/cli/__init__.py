@@ -26,6 +26,7 @@ from metabokg.cli import (  # noqa: F401  — registers snapshot save/list/show/
     cmd_query,  # noqa: F401  — registers query
     cmd_simulate,
     cmd_snapshot,
+    cmd_synthesize,  # noqa: F401  — registers synthesize
     cmd_viz,  # noqa: F401  — registers viz
     cmd_viz3d,  # noqa: F401  — registers viz3d
 )
@@ -41,6 +42,7 @@ from metabokg.cli.cmd_pack import pack_main  # noqa: F401
 from metabokg.cli.cmd_query import query_main  # noqa: F401
 from metabokg.cli.cmd_simulate import simulate_main  # noqa: F401
 from metabokg.cli.cmd_snapshot import snapshot_main  # noqa: F401
+from metabokg.cli.cmd_synthesize import synthesize_main  # noqa: F401
 from metabokg.cli.cmd_viz import viz_main  # noqa: F401
 from metabokg.cli.cmd_viz3d import viz3d_main  # noqa: F401
 from metabokg.cli.main import cli
@@ -59,6 +61,7 @@ __all__ = [
     "query_main",
     "simulate_main",
     "snapshot_main",
+    "synthesize_main",
     "viz_main",
     "viz3d_main",
 ]
