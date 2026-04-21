@@ -1,18 +1,20 @@
 # Outreach: Prof. Michael Betenbaugh, JHMI / JHU ChemBE
 
 **To:** beten@jhu.edu
-**Subject:** MetaboKG — CHO Metabolic Knowledge Graph, Licensing & Collaboration Inquiry
+**Subject:** MetaboKG / KGRAG — Metabolic Knowledge Graph Module, Licensing & Collaboration Inquiry
 
 ---
 
 Dear Professor Betenbaugh,
 
-I am writing to introduce **MetaboKG**, a metabolic knowledge graph system we
-have built at Flux Frontiers, and to offer your lab the opportunity to take the
-lead on the CHO module. MetaboKG is one piece of a broader AI-assisted
-bioprocess intelligence platform we are developing. The CHO component is the
-most mature piece, it is immediately useful to AMBIC as a shared computational
-resource, and your lab is the natural scientific home for it.
+I am writing to introduce **MetaboKG** and to offer your lab the opportunity to
+take the scientific lead on it. MetaboKG is the metabolic knowledge graph module
+of **KGRAG** — a hybrid semantic + structural knowledge graph platform for
+retrieval-augmented generation that we are building at Flux Frontiers. KGRAG
+federates domain-specific modules (metabolic, genomic, literature, code) into a
+unified query layer for AI assistants and computational workflows. MetaboKG is
+the most mature module, it covers both human and CHO metabolism, and your lab
+is the right scientific home for it.
 
 ## What MetaboKG Does
 
@@ -97,33 +99,32 @@ run locally, extend, and cite.
 
 ## What I Am Proposing
 
-I would like your lab to take the **lead scientific role** on the CHO module,
-and I would like an **adjunct appointment** at JHMI or JHU ChemBE in return.
-
-That is the core of it. The specifics:
+I would like your lab to take the **lead scientific role** on MetaboKG as a
+whole, and I would like an **adjunct appointment** at JHMI or JHU ChemBE in
+return. That is the core of it.
 
 **Adjunct research scientist / adjunct faculty** — an institutional affiliation
 that gives me standing to serve as co-PI on joint grant applications. There is
 real money available here: NIH SBIR/STTR Phase I/II, NSF, and DARPA BRICS are
-all plausible targets for a CHO metabolic modeling platform with AMBIC behind
-it. Without an institutional address I cannot be on those proposals; with one,
-we can go after them together.
+all plausible targets for a KGRAG-based metabolic modeling platform with AMBIC
+behind it. Without an institutional address I cannot be on those proposals;
+with one, we can go after them together.
 
 **Research license** — JHMI / AMBIC receives a perpetual, no-cost research
 license under the Elastic License 2.0. Your lab deploys and owns the
 installation; no dependency on Flux Frontiers for ongoing operations.
 
 **Working agreement** — a simple letter agreement establishing your lab as
-primary scientific steward of the CHO module, with co-development rights and
-first-authorship on the CHO application work.
+primary scientific steward of MetaboKG within the KGRAG platform, with
+co-development rights and first-authorship on the metabolic application work.
 
 **Co-authored methods paper** targeting *Metabolic Engineering* or
-*Biotechnology & Bioengineering*, with your lab leading the CHO validation
-and application sections.
+*Biotechnology & Bioengineering*, establishing MetaboKG as the reference
+implementation for knowledge-graph-assisted CHO metabolic modeling.
 
-In short: you get a ready-to-use computational platform your consortium can
-adopt immediately, lead authorship, and a productive co-PI for grant work.
-I get an institutional home and a path to funding. It is a clean trade.
+In short: you get a ready-to-use platform your consortium can adopt today,
+lead authorship on a novel methods paper, and a productive co-PI for grant
+work. I get an institutional home and a path to funding. It is a clean trade.
 
 A 30-minute live demo — FBA and ODE simulations on a CHO pathway of your
 choice, kinetics analysis, LLM synthesis — would show you exactly what you
