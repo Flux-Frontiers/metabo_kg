@@ -4,6 +4,10 @@ cmd_build.py — build and enrich subcommands.
 Registers:
   metabokg build    — parse pathway files → SQLite + LanceDB
   metabokg enrich   — enrich node names in an existing database
+
+Author: Eric G. Suchanek, PhD
+Last Revision: 2026-04-19
+License: Elastic 2.0
 """
 
 from __future__ import annotations
@@ -18,21 +22,21 @@ from metabokg.cli.options import (
     db_option,
     lancedb_option,
     model_option,
-    wipe_option,
 )
 
 
 def _colocate_defaults(data_dir: Path, db: str | None, lancedb: str | None) -> tuple[str, str]:
-    """Derive db and lancedb paths from data_dir when not explicitly given.
+    """Derive db and lancedb paths when not explicitly given.
 
-    The db name is derived from the data directory: 'hsa_pathways' → 'hsa.sqlite'.
+    db name is derived from the data directory: 'hsa_pathways' → 'hsa.sqlite'.
+    lancedb defaults to the same .metabokg directory as the resolved db.
     """
     dot_dir = data_dir / ".metabokg"
     dot_dir.mkdir(parents=True, exist_ok=True)
     if db is None:
         org = data_dir.name.split("_")[0]
         db = str(dot_dir / f"{org}.sqlite")
-    resolved_lancedb = lancedb or str(dot_dir / "lancedb")
+    resolved_lancedb = lancedb or str(Path(db).parent / "lancedb")
     return db, resolved_lancedb
 
 
@@ -42,7 +46,7 @@ def _colocate_defaults(data_dir: Path, db: str | None, lancedb: str | None) -> t
 @lancedb_option
 @model_option
 @click.option("--no-index", is_flag=True, help="Skip building the LanceDB vector index.")
-@wipe_option
+@click.option("--no-wipe", is_flag=True, help="Keep existing data instead of wiping before build.")
 @click.option(
     "--no-enrich",
     is_flag=True,
@@ -65,15 +69,15 @@ def build(
     lancedb: str,
     model: str,
     no_index: bool,
-    wipe: bool,
+    no_wipe: bool,
     no_enrich: bool,
     enrich_data: str | None,
     no_seed_kinetics: bool,
 ) -> None:
     """Build the MetaKG metabolic knowledge graph from pathway files.
 
-    Keeps existing data by default. Use --wipe to clear the database and
-    vector index before building."""
+    Wipes existing data by default. Use --no-wipe to keep existing data and
+    merge new files on top (same as metabokg-update)."""
     data_dir = Path(data).resolve()
     if not data_dir.exists():
         raise click.ClickException(f"data directory not found: {data_dir}")
@@ -82,10 +86,11 @@ def build(
     from metabokg import MetaKG
 
     kg = MetaKG(db_path=db, lancedb_dir=lancedb, model=model)
-    click.echo(f"Building MetaKG from {data_dir}...", err=True)
+    wipe = not no_wipe
+    click.echo(f"Building MetaKG from {data_dir} (wipe={wipe})...", err=True)
     stats = kg.build(
         data_dir=data_dir,
-        wipe=wipe,
+        wipe=not no_wipe,
         build_index=not no_index,
         enrich=not no_enrich,
         enrich_data_dir=enrich_data,

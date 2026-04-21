@@ -1,5 +1,9 @@
 """
 options.py — Reusable Click option decorators for MetaKG CLI commands.
+
+Author: Eric G. Suchanek, PhD
+Last Revision: 2026-04-19
+License: Elastic 2.0
 """
 
 from __future__ import annotations
@@ -10,8 +14,8 @@ import click
 
 from metabokg.embed import DEFAULT_MODEL
 
-_DEFAULT_DB = ".metabokg/hsa.sqlite"
-_DEFAULT_LANCEDB = ".metabokg/lancedb"
+_DEFAULT_DB = "data/hsa_pathways/.metabokg/hsa.sqlite"
+_DEFAULT_LANCEDB = "data/hsa_pathways/.metabokg/lancedb"
 
 
 def resolve_db(db: str | None) -> str:

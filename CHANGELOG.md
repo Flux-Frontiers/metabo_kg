@@ -9,6 +9,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`_load_kg()` and `_load_full_graph()` cached resource helpers** (`src/metabokg/app.py`) — Two new `@st.cache_resource` functions hold the `MetaKG` embedding model and the full 17K-node/edge scan in memory across Streamlit reruns. Previously these were re-created on every interaction, causing noticeable latency; now they load once per session (keyed on `db_path`).
+
+- **`_expand_hits()` — multi-hop graph expansion for search** (`src/metabokg/app.py`) — Expands a set of seed hit nodes through *n* hops of graph neighbours using `store.neighbours()` and a batched `store.nodes()` fetch, avoiding N+1 query patterns. Used by the revamped Search tab when `hops > 0`.
+
+- **`_render_node_detail()` and `_node_detail_section()`** (`src/metabokg/app.py`) — New helpers render a rich, theme-aware detail card for any metabolic graph node (compound formula/charge, enzyme EC number, cross-references, and an edge table). A selectbox (`_node_detail_section`) lets users pick any result node without leaving the tab.
+
+- **`_inject_css()` — theme-aware CSS injection** (`src/metabokg/app.py`) — Replaces the removed static `st.markdown(<style>…)` block at startup. Detects Streamlit's active theme via `st.get_option("theme.base")` and generates card/edge colours that work in both light and dark mode.
+
+### Changed
+
+- **`_tab_search()` major overhaul** (`src/metabokg/app.py`) — Search results are now persisted in `st.session_state` so they survive Streamlit reruns without re-querying. The tab gains k/hops number inputs, a graph visualisation sub-tab (PyVis) alongside the results list, a seed-vs-expanded count banner, an active kind/relation filter pass, and a `_node_detail_section` at the bottom. Added a collapsible debug panel that surfaces path resolution and model metadata when results are empty.
+
+- **`sentence-transformers` pinned to `^5.2.0`** (`pyproject.toml`) — Tightened from `>=2.7.0` to `^5.2.0` to align with `pycode-kg`'s constraint and ensure the renamed `get_embedding_dimension()` API (introduced in 4.x) is always available; the old floor allowed silent installation of pre-rename versions.
+
+- **Pre-commit hooks invoke `.venv/bin/` directly** (`.pre-commit-config.yaml`) — Changed `entry` for `mypy` and `pytest` hooks from `poetry run mypy src/` / `poetry run pytest --tb=short -q` to `.venv/bin/mypy src/` / `.venv/bin/pytest --tb=short -q`. Removes the `poetry` process-spawn overhead on every commit; requires the virtualenv to be activated or the `.venv` symlink to be present.
+
+- **`.gitignore`** — Added `.agentkg/` to exclude AgentKG runtime artefacts from version control.
+
+### Added
+
+- **`MetaKG.query()` — general-purpose semantic search** (`src/metabokg/orchestrator.py`) — New method searches all indexed node kinds (compound, enzyme, pathway) by semantic similarity. Unlike `query_pathway()`, it does not filter results by kind, so queries like `"glucose"` or `"ATP synthase"` now correctly return compound and enzyme nodes. Both `metabokg query` (CLI) and the Streamlit Search tab now use this method; `query_pathway()` is retained for pathway-specific callers (MCP tools, etc.).
+
+- **`metabokg query` CLI command** (`src/metabokg/cli/cmd_query.py`) — New subcommand for semantic or substring search across the knowledge graph. Uses vector (LanceDB) search by default; falls back to text search when the index is absent or `--text-only` is set. Supports `--k`, `--hop` (graph expansion), and `--text-only` options. Also registered as a standalone `metabokg-query` entry point.
+
+- **`MetabolicPack` result type** (`src/metabokg/orchestrator.py`) — New dataclass that bundles matched nodes with their full biological context. For pathways: reactions with substrates, products, enzymes, and stoichiometry. For reactions: full stoichiometric detail. For compounds: participating reactions. For enzymes: catalyzed reactions. Provides `to_markdown()`, `to_json()`, and `save(path, fmt)` methods. Also exported from `metabokg` top-level (`from metabokg import MetabolicPack`).
+
+- **`MetaKG.pack(text, k=8, hop=1)` method** (`src/metabokg/orchestrator.py`) — Runs semantic search + graph expansion then enriches each hit with biological context, returning a `MetabolicPack`. Mirrors the `PyCodeKG.pack()` pattern: `kg.pack("TCA cycle", k=8, hop=1).save("context.md")`. Deduplicates results and sorts by kind (pathways first).
+
+- **`metabokg-pack` CLI command** (`src/metabokg/cli/cmd_pack.py`) — New `metabokg pack QUERY` subcommand and `metabokg-pack` standalone entry point. Options: `--k`, `--hop`, `--output/-o`, `--fmt {md,json}`, `--max-rxn`. Default output is Markdown to stdout.
+
+- **`pack` MCP tool** (`src/metabokg/mcp_tools.py`) — New MCP tool `pack(text, k, hop)` registered first in `register_tools`. Returns a Markdown context pack for direct LLM injection. The `create_server` instructions now surface `pack` as the primary entry point.
+
+- **`MetaStore.expand_hops(seed_hits, hop)` method** (`src/metabokg/store.py`) — BFS graph expansion previously buried in `cli/cmd_query.py` is now a first-class method on `MetaStore`. Uses `neighbours()` internally. Called by `MetaKG.query()` and `MetaKG.query_pathway()` when `hop > 0`.
+
+- **`hop` parameter on `MetaKG.query()` and `MetaKG.query_pathway()`** (`src/metabokg/orchestrator.py`) — Both methods now accept `hop: int = 0`. When `hop > 0`, seed hits are expanded via `store.expand_hops()`. Mirrors the `PyCodeKG.query(k, hop)` API so callers never need to handle expansion themselves.
+
+- **Phase 2d: glycan name enrichment** (`src/metabokg/enrich.py`) — New `enrich_glycans_from_tsv()` phase resolves `gl:G#####` compound nodes using `data/kegg_glycan_names.tsv` (~11 k entries). `EnrichStats` gains a `glycans_from_tsv` field.
+
+- **Phase 2e: KO enzyme name enrichment** (`src/metabokg/enrich.py`) — New `enrich_ko_enzymes_from_tsv()` phase resolves `enz:kegg:K#####` stubs using `data/kegg_ko_names.tsv` (~28 k entries). `EnrichStats` gains a `ko_enzymes_from_tsv` field.
+
+- **Bundled KEGG glycan and KO name files** (`data/kegg_glycan_names.tsv`, `data/kegg_ko_names.tsv`) — Downloaded via the extended `scripts/download_kegg_names.py` and committed to the repo for offline enrichment.
+
+### Fixed
+
+- **Streamlit semantic search returning no results** (`src/metabokg/app.py`) — `_tab_search` was calling `kg.query_pathway()` which filtered all results to `kind == "pathway"`. Switched to `kg.query()` so compound and enzyme hits are surfaced correctly. Search mode (vector / text) is now shown in the result count banner.
+
+- **`enrich_reactions_from_graph` ignoring `quiet` parameter** (`src/metabokg/enrich.py`) — The `quiet` argument was accepted but never used; added `if not quiet:` guards around progress output to match the behaviour of all other enrichment phases.
+
+- **Unused `old_name` variable** (`src/metabokg/enrich.py:enrich_from_tsv`) — Loop variable renamed to `_` since only `node_id` is used in the update path.
+
+### Changed
+
+- **`enrich.py` module docstring** — Expanded to document all 7 enrichment sub-phases (1, 2a–2e, 3) with examples for each namespace, and updated the Public API table to include the three functions that were previously undocumented.
+
+- **`_get_node_label` simplification** (`src/metabokg/app.py`) — Replaced per-kind branching with a single `_BARE_KEGG_ID` regex check (`^[RCG]\d{5}$`); enriched nodes of all kinds now display their human-readable names.
+
+- **Authorship, revision date, and license headers** added to `cmd_query.py`, `cmd_build.py`, `cli/__init__.py`, `cli/options.py`, `metabokg_viz.py`, and `enrich.py` for consistency with the rest of the codebase (`License: Elastic 2.0`).
+
+### Added
 - **Per-corpus colocated storage** — `metabokg-build --data <dir>` now places its SQLite database, LanceDB index, and snapshots inside `<dir>/.metabokg/` rather than the project root. The database filename is derived from the data directory prefix (`hsa_pathways` → `hsa.sqlite`, `cge_pathways` → `cge.sqlite`), eliminating ambiguity when multiple organisms are built in the same repo. Mirrors the gutenberg_kg per-book pattern.
 
 - **`resolve_db()` / `resolve_lancedb()` helpers** (`src/metabokg/cli/options.py`) — New module-level functions resolve the effective database/lancedb path via: explicit `--db` arg → `METABOKG_DB` / `METABOKG_LANCEDB` env vars → CWD fallback (`.metabokg/hsa.sqlite`). All CLI commands now call these instead of relying on Click option defaults.
@@ -70,6 +129,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`.pre-commit-config.yaml` portable and broader excludes** — Poetry entry paths changed from absolute (`/Users/egs/.local/bin/poetry run ...`) to relative (`poetry run ...`) so hooks work in any environment. `check-added-large-files` and `detect-secrets` excludes broadened from `.codekg/` only to `^\.[^/]+/` (all hidden directories), preventing large generated files in `.metabokg/` and `.dockg/` from triggering false positives.
 
 - **`snapshot save` VERSION arg now optional** (`src/metabokg/cli/cmd_snapshot.py`) — Version is auto-detected from the installed package; passing it explicitly is no longer required.
+
+### Added
+
+- **Phase 2c reaction name enrichment** (`src/metabokg/enrich.py`) — New `enrich_reactions_from_detail(store, detail_tsv)` function resolves any reactions still carrying bare KEGG IDs (e.g. `R00123`) after Phases 1 and 2b by reading `data/kegg_reaction_detail.tsv`. `EnrichStats` gains `reactions_from_detail` field; `enrich()` runs Phase 2c automatically between Phase 2b and Phase 3. Requires `python scripts/download_kegg_reactions.py` first (~2,147 API calls).
+
+- **`metabokg viz` CLI options** (`src/metabokg/cli/cmd_viz.py`) — `metabokg viz` now accepts `--db`, `--lancedb`, `--port`, and `--no-browser` options via Click, forwarding them to `metabokg_viz.main()`. Previously the Click wrapper had no options and rejected all flags, requiring the cumbersome `-- --db PATH` workaround.
+
+- **`metabokg_viz.main()` keyword arguments** (`src/metabokg/metabokg_viz.py`) — Refactored from argparse-based `sys.argv` parsing to explicit keyword parameters (`db`, `lancedb`, `port`, `no_browser`). Paths are now forwarded to the Streamlit subprocess as `METABOKG_DB` / `METABOKG_LANCEDB` environment variables so `app.py` picks them up correctly at startup.
+
+- **Smart DB path resolution in Streamlit app** (`src/metabokg/app.py`) — New `_resolve_db_path()` helper auto-discovers the `.sqlite` file when a directory is passed (checks `{dir}/.metabokg/hsa.sqlite`, then any `*.sqlite` in `.metabokg/`, then any `*.sqlite` directly). `_load_store()` now catches `sqlite3` errors gracefully and returns `None` instead of crashing. `_get_store()` updates the sidebar path to the resolved file path on first load.
+
+- **`data/kegg_reaction_detail.tsv`** — Downloaded reaction detail file (2,147 entries: name, definition, equation, EC numbers) used by Phase 2c enrichment.
+
+- **`EXAMPLES.md`** — New top-level examples file covering CLI, Python API, simulation, and MCP tool usage across all MetaboKG workflows.
+
+### Changed
+
+- **`metabokg_viz.py` → `metabokg_viz3d.py` rename** — Aligned module names with the `metabokg_` prefix convention (was `metakg_viz.py` / `metakg_viz3d.py`).
+
+- **CLAUDE.md** — Updated `/codekg-rebuild` references to `/pycodekg-rebuild`.
+
+- **`.claude/commands/`** — Renamed `codekg.md` → `pycodekg.md` and `codekg-rebuild.md` → `pycodekg-rebuild.md`; updated all internal references.
+
+- **`docs/WORKFLOW.md`** — Added Phase 0 covering all three KEGG download scripts in correct order, updated Phase 2 to document the full 4-phase enrichment pipeline, added multi-corpus build section, noted `--db` on viz/viz3d commands.
+
+- **`docs/CAPABILITIES.md`** — Bumped version to v0.5.0; rewrote enrichment section to cover all 4 phases including Phase 2c; updated CLI reference with `viz --db` options.
 
 ### Fixed
 

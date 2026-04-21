@@ -292,3 +292,78 @@ class TestNodeCategory:
         assert "category" in row
         assert row["category"] is None
         store.close()
+
+
+class TestNeighbours:
+    def test_outgoing_neighbour(self, store):
+        store.write(_make_nodes(), _make_edges())
+        glucose_id = node_id(KIND_COMPOUND, "kegg", "C00031")
+        rxn_id = node_id(KIND_REACTION, "kegg", "R00200")
+        neighbours = store.neighbours(glucose_id)
+        assert rxn_id in neighbours
+
+    def test_incoming_neighbour(self, store):
+        # neighbours() is bidirectional — reaction should see glucose as neighbour
+        store.write(_make_nodes(), _make_edges())
+        rxn_id = node_id(KIND_REACTION, "kegg", "R00200")
+        glucose_id = node_id(KIND_COMPOUND, "kegg", "C00031")
+        neighbours = store.neighbours(rxn_id)
+        assert glucose_id in neighbours
+
+    def test_isolated_node_has_no_neighbours(self, store):
+        store.write(_make_nodes(), _make_edges())
+        pwy_id = node_id(KIND_PATHWAY, "kegg", "hsa00010")
+        # Pathway only has CONTAINS edges which are not in DEFAULT_RELS
+        neighbours = store.neighbours(pwy_id)
+        assert pwy_id not in neighbours
+
+    def test_unknown_node_returns_empty(self, store):
+        store.write(_make_nodes(), _make_edges())
+        assert store.neighbours("nonexistent:id") == []
+
+
+class TestExpandHops:
+    def test_hop_zero_returns_seeds_unchanged(self, store):
+        store.write(_make_nodes(), _make_edges())
+        glucose_id = node_id(KIND_COMPOUND, "kegg", "C00031")
+        seeds = [store.node(glucose_id)]
+        result = store.expand_hops(seeds, hop=0)
+        assert len(result) == 1
+        assert result[0]["id"] == glucose_id
+
+    def test_one_hop_reaches_reaction(self, store):
+        store.write(_make_nodes(), _make_edges())
+        glucose_id = node_id(KIND_COMPOUND, "kegg", "C00031")
+        rxn_id = node_id(KIND_REACTION, "kegg", "R00200")
+        seeds = [store.node(glucose_id)]
+        result = store.expand_hops(seeds, hop=1)
+        ids = {n["id"] for n in result}
+        assert glucose_id in ids
+        assert rxn_id in ids
+
+    def test_two_hops_reaches_pyruvate(self, store):
+        store.write(_make_nodes(), _make_edges())
+        glucose_id = node_id(KIND_COMPOUND, "kegg", "C00031")
+        pyruvate_id = node_id(KIND_COMPOUND, "kegg", "C00022")
+        seeds = [store.node(glucose_id)]
+        result = store.expand_hops(seeds, hop=2)
+        ids = {n["id"] for n in result}
+        assert pyruvate_id in ids
+
+    def test_results_deduplicated(self, store):
+        store.write(_make_nodes(), _make_edges())
+        glucose_id = node_id(KIND_COMPOUND, "kegg", "C00031")
+        pyruvate_id = node_id(KIND_COMPOUND, "kegg", "C00022")
+        # Both seeds share the reaction neighbour — should appear only once
+        seeds = [store.node(glucose_id), store.node(pyruvate_id)]
+        result = store.expand_hops(seeds, hop=1)
+        ids = [n["id"] for n in result]
+        assert len(ids) == len(set(ids))
+
+    def test_extra_hops_on_exhausted_graph_dont_error(self, store):
+        store.write(_make_nodes(), _make_edges())
+        glucose_id = node_id(KIND_COMPOUND, "kegg", "C00031")
+        seeds = [store.node(glucose_id)]
+        # hop=10 on a tiny graph should terminate cleanly
+        result = store.expand_hops(seeds, hop=10)
+        assert len(result) >= 1

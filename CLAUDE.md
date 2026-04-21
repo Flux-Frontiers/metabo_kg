@@ -11,7 +11,7 @@
 | `get_node(node_id)` | Fetch node by ID (fmt: `fn:module:qualname`) |
 | `callers(node_id)` | Find all callers of a function |
 | `graph_stats()` | Codebase metrics |
-| `/codekg-rebuild` | Rebuild after code changes |
+| `/pycodekg-rebuild` | Rebuild after code changes |
 
 **Workflow:** Query → read snippets → inspect node → find callers
 
@@ -29,22 +29,25 @@ poetry install --all-extras  # Full install with viz, viz3d, mcp
 
 | Command | Purpose |
 |---------|---------|
-| `metabokg-build --data DIR` | Parse pathways → SQLite + LanceDB (enriches by default, no wipe) |
-| `metabokg-build --data DIR --wipe` | Full rebuild: wipe then parse |
+| `metabokg-info` | Show active corpus, resolved db/lancedb paths, node/edge counts |
+| `metabokg-build --data DIR` | Full rebuild: wipe + parse pathways → SQLite + LanceDB (enriches by default) |
+| `metabokg-build --data DIR --no-wipe` | Parse without wiping — merge new files on top |
 | `metabokg-update --data DIR` | Incrementally add new files without wiping |
 | `metabokg-analyze [--output FILE]` | 7-phase pathway analysis |
 | `metabokg-viz [--port 8500]` | 2D Streamlit explorer |
 | `metabokg-viz3d [--layout allium\|cake]` | 3D PyVista visualization |
 | `metabokg-mcp` | MCP server for Claude |
+| `metabokg-query QUERY [--k 10] [--hop 0]` | Semantic + graph search, ranked hits |
+| `metabokg-pack QUERY [--k 8] [--hop 1]` | Context-rich Markdown/JSON pack for LLM use |
 
 **Common options:**
 - `--db PATH`: SQLite db (default: `.metabokg/hsa.sqlite`)
 - `--lancedb PATH`: Vector index (default: `.metabokg/lancedb`)
-- `--wipe`: Wipe existing data before building (default: keep existing)
+- `--no-wipe`: Keep existing data instead of wiping (build wipes by default)
 - `--no-index`: Skip LanceDB (SQLite only)
 - `--no-enrich`: Skip enrichment (on by default)
 
-**MCP tools:** `query_pathway`, `get_compound`, `get_reaction`, `find_path`, `seed_kinetics`, `simulate_fba`, `simulate_ode`, `simulate_whatif`
+**MCP tools:** `pack`, `query_pathway`, `get_compound`, `get_reaction`, `find_path`, `seed_kinetics`, `simulate_fba`, `simulate_ode`, `simulate_whatif`
 
 ### 3D Visualization (`metabokg-viz3d`)
 
@@ -139,16 +142,16 @@ kg.seed_kinetics()
 Each organism or model builds into its own named db and registers as a separate
 KGRAG corpus, enabling federated cross-organism queries.
 
-| Corpus | DB path | Content |
-|--------|---------|---------|
-| `metabokg-hsa` | `.metabokg/hsa.sqlite` *(default)* | 369 human pathways |
-| `metabokg-cge` | `.metabokg/cge.sqlite` | 366 CHO (*C. griseus*) pathways |
-| `metabokg-icho` | `.metabokg/icho.sqlite` | iCHO2441 GEM, 6,663 reactions |
+| Corpus | DB path (colocated) | Content |
+|--------|---------------------|---------|
+| `metabokg-hsa` | `data/hsa_pathways/.metabokg/hsa.sqlite` | 369 human pathways *(bundled in repo)* |
+| `metabokg-cge` | `data/cge_pathways/.metabokg/cge.sqlite` | 366 CHO (*C. griseus*) pathways *(bundled in repo)* |
+| `metabokg-icho` | `data/icho_model/.metabokg/icho.sqlite` | iCHO2441 GEM, 6,663 reactions |
 
 ```bash
-metabokg-build --data data/hsa_pathways                          # human (default db)
-metabokg-build --data data/cge_pathways --db .metabokg/cge.sqlite
-metabokg-build --data data/icho_model   --db .metabokg/icho.sqlite
+metabokg-build --data data/hsa_pathways  # → data/hsa_pathways/.metabokg/hsa.sqlite
+metabokg-build --data data/cge_pathways  # → data/cge_pathways/.metabokg/cge.sqlite
+metabokg-build --data data/icho_model    # → data/icho_model/.metabokg/icho.sqlite
 ```
 
 - **Enzyme name resolution** requires `data/{org}_gene_names.tsv` — download once with
@@ -181,9 +184,13 @@ metabokg-build --data data/icho_model   --db .metabokg/icho.sqlite
 
 ## Data Download Scripts
 
+**All source data is bundled in the repo** (`data/hsa_pathways/`, `data/cge_pathways/`, `data/icho_model/*.xml`). Scripts below are for refreshing data only.
+
 | Script | Purpose | Output |
 |--------|---------|--------|
-| `scripts/download_human_kegg.py` | Download all hsa KGML pathway files | `data/hsa_pathways/*.kgml` |
+| `scripts/download_human_kegg.py` | Re-download hsa KGML pathway files | `data/hsa_pathways/*.kgml` |
+| `scripts/download_cho_kegg.py` | Re-download cge KGML pathway files | `data/cge_pathways/*.kgml` |
+| `scripts/download_icho_model.py` | Re-download iCHO2441 SBML XML | `data/icho_model/*.xml` |
 | `scripts/download_kegg_names.py` | Bulk-download compound + reaction name lists | `data/kegg_compound_names.tsv`, `data/kegg_reaction_names.tsv` |
 | `scripts/download_kegg_reactions.py` | Per-reaction detail: name, definition, equation, EC numbers | `data/kegg_reaction_detail.tsv` |
 
@@ -209,13 +216,14 @@ R00710       acetaldehyde:NAD+ oxidoreductase  Acetaldehyde ...  C00084 + C00003
 ## Typical Workflow
 
 ```bash
-# 1. Download pathway KGML files
-python scripts/download_human_kegg.py --output data/hsa_pathways
+# 1. hsa and cge pathway files are bundled in the repo — no download needed
+#    To refresh: python scripts/download_human_kegg.py --output data/hsa_pathways
 
 # 2. (Optional) Download KEGG name lists for canonical names in enrichment
 python scripts/download_kegg_names.py
 
 # 3. Build & analyze pathways (enrichment runs by default)
+#    db colocates automatically: data/hsa_pathways/.metabokg/hsa.sqlite
 metabokg-build --data ./data/hsa_pathways
 
 # 4. Seed kinetic parameters from literature

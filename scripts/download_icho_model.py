@@ -31,7 +31,7 @@ import argparse
 import sys
 from pathlib import Path
 from urllib.error import URLError
-from urllib.request import urlopen, Request
+from urllib.request import Request, urlopen
 
 BIOMODELS_BASE = "https://www.ebi.ac.uk/biomodels"
 MODEL_ID = "MODEL2206100001"
@@ -45,6 +45,7 @@ def fetch_model_info() -> dict:
     try:
         with urlopen(req, timeout=30) as resp:
             import json
+
             return json.loads(resp.read().decode("utf-8"))
     except URLError as e:
         print(f"Error fetching model info: {e}", file=sys.stderr)
@@ -73,16 +74,19 @@ def main():
         description="Download iCHO2441 CHO genome-scale model (SBML) from BioModels"
     )
     parser.add_argument(
-        "--output", "-o",
+        "--output",
+        "-o",
         default="data/icho_model",
         help="Output directory (default: data/icho_model)",
     )
     parser.add_argument(
-        "--dry-run", action="store_true",
+        "--dry-run",
+        action="store_true",
         help="Show what would be downloaded without downloading",
     )
     parser.add_argument(
-        "--force", action="store_true",
+        "--force",
+        action="store_true",
         help="Re-download even if file already exists",
     )
     args = parser.parse_args()
@@ -94,8 +98,8 @@ def main():
     if args.dry_run:
         print(f"Would download: {MODEL_ID} → {output_file}")
         print(f"  Source: {BIOMODELS_BASE}/{MODEL_ID}")
-        print(f"  Model:  iCHO2441 — CHO consensus GEM (6,663 rxns, 2,441 genes)")
-        print(f"  Ref:    Hefzi et al. 2016, PMID:27883890")
+        print("  Model:  iCHO2441 — CHO consensus GEM (6,663 rxns, 2,441 genes)")
+        print("  Ref:    Hefzi et al. 2016, PMID:27883890")
         return
 
     if output_file.exists() and not args.force:
@@ -106,7 +110,7 @@ def main():
 
     print(f"\n{'=' * 60}")
     print(f"iCHO2441 saved to: {output_file.absolute()}")
-    print(f"\nNext steps:")
+    print("\nNext steps:")
     print(f"  metabokg-build --data {output_dir}    # CHO GEM-only graph")
     print(f"  metabokg-update --data {output_dir}   # merge into existing graph")
     print(f"{'=' * 60}")

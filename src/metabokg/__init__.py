@@ -21,10 +21,11 @@ Last Revision: 2026-02-28 20:55:28
 
 """
 
-__version__ = "0.4.1"
+__version__ = "0.5.0"
 
 from metabokg.orchestrator import (
     MetabolicBuildStats,
+    MetabolicPack,
     MetabolicQueryResult,
     MetabolicRuntimeStats,
     MetaKG,
@@ -33,6 +34,7 @@ from metabokg.orchestrator import (
 __all__ = [
     "MetaKG",
     "MetabolicBuildStats",
+    "MetabolicPack",
     "MetabolicRuntimeStats",
     "MetabolicQueryResult",
 ]

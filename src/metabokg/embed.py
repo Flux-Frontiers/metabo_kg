@@ -76,7 +76,7 @@ class SentenceTransformerEmbedder(Embedder):
 
         self.model = SentenceTransformer(model_name)
         self.model_name = model_name
-        self.dim: int = self.model.get_sentence_embedding_dimension() or 384
+        self.dim: int = self.model.get_embedding_dimension() or 384
 
     def embed_texts(self, texts: list[str]) -> list[list[float]]:
         """

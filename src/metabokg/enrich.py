@@ -3,27 +3,37 @@ enrich.py — Post-build name enrichment for the MetaKG knowledge graph.
 
 After ``metabokg-build`` has populated the SQLite database, compound, reaction,
 and enzyme nodes carry bare KEGG accessions as their ``name`` field.  This
-module replaces those with human-readable names in three phases:
+module replaces those with human-readable names across three phases and seven
+sub-phases:
 
-Phase 1 — no network required, uses data already in the graph:
-    • Reaction nodes: labelled with the gene symbols of their catalysing enzyme,
-      taken from existing CATALYZES edges (e.g. "R00710" → "ADH1A/ADH1B/ADH1C").
+Phase 1 — graph-local, no network required:
+    • Reaction nodes: labelled with the gene symbols of their catalysing
+      enzymes, taken from existing CATALYZES edges
+      (e.g. "R00710" → "ADH1A / ADH1B / ADH1C").
 
 Phase 2 — requires downloaded KEGG name TSV files (see download_kegg_names.py):
-    • Compound nodes: names from ``data/kegg_compound_names.tsv``
-      (e.g. "C00031" → "D-Glucose").
-    • Reaction nodes: canonical KEGG reaction names from
-      ``data/kegg_reaction_names.tsv``
-      (e.g. "R00710" → "Acetaldehyde:NAD+ oxidoreductase").
-      Always replaces Phase 1 enzyme-labels with canonical names (if available).
+    2a  Compound nodes: canonical names from ``data/kegg_compound_names.tsv``
+        (e.g. "C00031" → "D-Glucose").
+    2b  Reaction nodes: canonical KEGG reaction names from
+        ``data/kegg_reaction_names.tsv``
+        (e.g. "R00710" → "Acetaldehyde:NAD+ oxidoreductase").
+        Overrides Phase 1 gene-symbol labels where a canonical name exists.
+    2c  Reaction nodes (fallback): reactions still carrying bare IDs after 2b
+        are resolved via ``data/kegg_reaction_detail.tsv``
+        (e.g. "R02736" → "ATP:pyruvate 2-O-phosphotransferase").
+    2d  Glycan compound nodes: names from ``data/kegg_glycan_names.tsv``
+        for the ``gl:G#####`` namespace (e.g. "G13086" → "Lactosylceramide").
+    2e  KO enzyme nodes: KEGG Orthology descriptions from
+        ``data/kegg_ko_names.tsv`` for ``enz:kegg:K#####`` stubs
+        (e.g. "K00001" → "alcohol dehydrogenase").
 
 Phase 3 — requires per-organism gene name TSV files (see download_kegg_names.py):
-    • Enzyme nodes: gene IDs resolved to gene symbols from
+    • Enzyme nodes: organism gene IDs resolved to gene symbols from
       ``data/{org}_gene_names.tsv`` (e.g. "100689064" → "Ldha").
       Organisms are detected automatically from enzyme node IDs in the graph.
       Enables ``--knockout ldha`` and ``resolve_id("ldha")`` at query time.
 
-All phases are idempotent. Phase 2 always prioritizes canonical KEGG names
+All phases are idempotent. Phase 2 always prioritises canonical KEGG names
 over Phase 1 gene-symbol labels.
 
 Public API
@@ -31,9 +41,14 @@ Public API
     enrich(store, data_dir=None, *, quiet=False) -> EnrichStats
     enrich_reactions_from_graph(store, *, quiet=False) -> int
     enrich_from_tsv(store, tsv_path, kind, *, quiet=False) -> int
+    enrich_glycans_from_tsv(store, glycan_tsv, *, quiet=False) -> int
+    enrich_reactions_from_detail(store, detail_tsv, *, quiet=False) -> int
+    enrich_ko_enzymes_from_tsv(store, ko_tsv, *, quiet=False) -> int
     enrich_enzyme_names(store, data_dir, *, quiet=False) -> int
 
 Author: Eric G. Suchanek, PhD
+Last Revision: 2026-04-19
+License: Elastic 2.0
 """
 
 from __future__ import annotations
@@ -64,6 +79,9 @@ class EnrichStats:
     reactions_from_graph: int = 0
     compounds_from_tsv: int = 0
     reactions_from_tsv: int = 0
+    reactions_from_detail: int = 0
+    glycans_from_tsv: int = 0
+    ko_enzymes_from_tsv: int = 0
     enzymes_from_tsv: int = 0
 
     def __str__(self) -> str:
@@ -71,6 +89,9 @@ class EnrichStats:
             f"Enrichment: {self.reactions_from_graph} reaction names from graph, "
             f"{self.compounds_from_tsv} compound names from TSV, "
             f"{self.reactions_from_tsv} reaction names from TSV, "
+            f"{self.reactions_from_detail} reaction names from detail TSV, "
+            f"{self.glycans_from_tsv} glycan names from TSV, "
+            f"{self.ko_enzymes_from_tsv} KO enzyme names from TSV, "
             f"{self.enzymes_from_tsv} enzyme names from gene TSV"
         )
 
@@ -130,6 +151,8 @@ def enrich_reactions_from_graph(store, *, quiet: bool = False) -> int:
     bare_rxns = [(r["id"], r["name"]) for r in cur if _is_bare_reaction(r["name"])]
 
     if not bare_rxns:
+        if not quiet:
+            print("  SKIP  no bare reaction names found — nothing to enrich from graph")
         return 0
 
     # Build enzyme-label map in one query
@@ -160,6 +183,8 @@ def enrich_reactions_from_graph(store, *, quiet: bool = False) -> int:
             updated += 1
 
     conn.commit()
+    if not quiet:
+        print(f"  OK    {updated} reaction names enriched from CATALYZES edges")
     return updated
 
 
@@ -229,7 +254,7 @@ def enrich_from_tsv(store, tsv_path: Path, kind: str, *, quiet: bool = False) ->
 
     updated = 0
     cur2 = conn.cursor()
-    for node_id, old_name in rows:
+    for node_id, _ in rows:
         # Extract bare KEGG accession from node ID
         # Format: cpd:kegg:C00031 or rxn:kegg:R00710 → last segment
         parts = node_id.split(":")
@@ -242,6 +267,167 @@ def enrich_from_tsv(store, tsv_path: Path, kind: str, *, quiet: bool = False) ->
                     (canonical, node_id),
                 )
                 updated += 1
+
+    conn.commit()
+    return updated
+
+
+# ---------------------------------------------------------------------------
+# Phase 2d: glycan compound names from kegg_glycan_names.tsv
+# ---------------------------------------------------------------------------
+
+
+def enrich_glycans_from_tsv(store, glycan_tsv: Path, *, quiet: bool = False) -> int:
+    """
+    Update glycan compound names from ``kegg_glycan_names.tsv``.
+
+    The KEGG glycan list uses ``gl:G00001`` prefixed IDs; node IDs in the graph
+    use ``cpd:kegg:gl:G00001``.  This phase strips the ``gl:`` prefix to extract
+    the bare accession for lookup.
+
+    :param store: Open :class:`~metabokg.store.MetaStore` instance.
+    :param glycan_tsv: Path to ``kegg_glycan_names.tsv``.
+    :param quiet: Suppress progress output.
+    :return: Number of glycan names updated.
+    """
+    if not glycan_tsv.exists():
+        if not quiet:
+            print(f"  SKIP  {glycan_tsv.name} not found — run download_kegg_names.py first")
+        return 0
+
+    glycan_names: dict[str, str] = {}
+    with glycan_tsv.open(encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split("\t", 1)
+            if len(parts) == 2:
+                # KEGG format: "gl:G00001\tname; alias"
+                raw_id = parts[0].strip()
+                accession = raw_id.split(":")[-1]  # "G00001"
+                name = parts[1].split(";")[0].strip()
+                if accession and name:
+                    glycan_names[accession] = name
+
+    conn = store._conn
+    cur = conn.execute(
+        "SELECT id FROM meta_nodes WHERE kind = 'compound' AND id LIKE 'cpd:kegg:gl:%'"
+    )
+    rows = [r["id"] for r in cur]
+
+    updated = 0
+    cur2 = conn.cursor()
+    for node_id in rows:
+        accession = node_id.split(":")[-1]  # "G00001"
+        canonical = glycan_names.get(accession)
+        if canonical:
+            cur2.execute("UPDATE meta_nodes SET name = ? WHERE id = ?", (canonical, node_id))
+            updated += 1
+
+    conn.commit()
+    return updated
+
+
+# ---------------------------------------------------------------------------
+# Phase 2c: reaction names from kegg_reaction_detail.tsv (fallback)
+# ---------------------------------------------------------------------------
+
+
+def enrich_reactions_from_detail(store, detail_tsv: Path, *, quiet: bool = False) -> int:
+    """
+    Fallback enrichment for reactions still carrying bare KEGG IDs after Phases 1 & 2b.
+
+    Reads ``kegg_reaction_detail.tsv`` (columns: reaction_id, name, ...) and
+    updates only reactions whose name is still a bare accession.
+
+    :param store: Open :class:`~metabokg.store.MetaStore` instance.
+    :param detail_tsv: Path to ``kegg_reaction_detail.tsv``.
+    :param quiet: Suppress progress output.
+    :return: Number of reaction names updated.
+    """
+    if not detail_tsv.exists():
+        if not quiet:
+            print(f"  SKIP  {detail_tsv.name} not found — run download_kegg_reactions.py first")
+        return 0
+
+    # Parse reaction_id → name from the detail TSV (tab-separated, first two columns)
+    detail_map: dict[str, str] = {}
+    with detail_tsv.open(encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith("reaction_id"):
+                continue
+            parts = line.split("\t")
+            if len(parts) >= 2 and parts[0] and parts[1]:
+                detail_map[parts[0]] = parts[1]
+
+    conn = store._conn
+    cur = conn.execute("SELECT id, name FROM meta_nodes WHERE kind = 'reaction'")
+    bare_rxns = [(r["id"], r["name"]) for r in cur if _is_bare_reaction(r["name"])]
+
+    updated = 0
+    cur2 = conn.cursor()
+    for node_id, _old_name in bare_rxns:
+        parts = node_id.split(":")
+        if len(parts) >= 3 and parts[1] == "kegg":
+            accession = parts[-1]
+            name = detail_map.get(accession)
+            if name:
+                cur2.execute("UPDATE meta_nodes SET name = ? WHERE id = ?", (name, node_id))
+                updated += 1
+
+    conn.commit()
+    return updated
+
+
+# ---------------------------------------------------------------------------
+# Phase 2e: KO enzyme names from kegg_ko_names.tsv
+# ---------------------------------------------------------------------------
+
+
+def enrich_ko_enzymes_from_tsv(store, ko_tsv: Path, *, quiet: bool = False) -> int:
+    """
+    Update KO enzyme names (``enz:kegg:K#####``) from ``kegg_ko_names.tsv``.
+
+    KEGG KO list format: ``K00001\\tE1.1.1.1, adh; alcohol dehydrogenase [EC:...]``
+    We use the gene symbol(s) before the semicolon as the enzyme name.
+
+    :param store: Open :class:`~metabokg.store.MetaStore` instance.
+    :param ko_tsv: Path to ``kegg_ko_names.tsv``.
+    :param quiet: Suppress progress output.
+    :return: Number of enzyme names updated.
+    """
+    if not ko_tsv.exists():
+        if not quiet:
+            print(f"  SKIP  {ko_tsv.name} not found — run download_kegg_names.py first")
+        return 0
+
+    ko_names: dict[str, str] = {}
+    with ko_tsv.open(encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split("\t", 1)
+            if len(parts) == 2:
+                ko_id = parts[0].strip()  # e.g. "K00001"
+                label = parts[1].split(";")[0].strip()  # symbols before ";"
+                if ko_id and label:
+                    ko_names[ko_id] = label
+
+    conn = store._conn
+    cur = conn.execute("SELECT id FROM meta_nodes WHERE kind = 'enzyme' AND id LIKE 'enz:kegg:K%'")
+    rows = [r["id"] for r in cur]
+
+    updated = 0
+    cur2 = conn.cursor()
+    for node_id in rows:
+        ko_id = node_id.split(":")[-1]  # "K00001"
+        name = ko_names.get(ko_id)
+        if name:
+            cur2.execute("UPDATE meta_nodes SET name = ? WHERE id = ?", (name, node_id))
+            updated += 1
 
     conn.commit()
     return updated
@@ -404,6 +590,30 @@ def enrich(store, data_dir: Path | str | None = None, *, quiet: bool = False) ->
     stats.reactions_from_tsv = enrich_from_tsv(store, rxn_tsv, "reaction", quiet=quiet)
     if not quiet:
         print(f"    → {stats.reactions_from_tsv} reaction names updated")
+
+    # Phase 2c — fallback for reactions still bare after 2b (uses detail TSV)
+    detail_tsv = data_root / "kegg_reaction_detail.tsv"
+    if not quiet:
+        print(f"  Enriching bare reactions from {detail_tsv.name}...", flush=True)
+    stats.reactions_from_detail = enrich_reactions_from_detail(store, detail_tsv, quiet=quiet)
+    if not quiet:
+        print(f"    → {stats.reactions_from_detail} reaction names updated from detail")
+
+    # Phase 2d — glycan compound names (gl:G##### namespace)
+    glycan_tsv = data_root / "kegg_glycan_names.tsv"
+    if not quiet:
+        print(f"  Enriching glycan names from {glycan_tsv.name}...", flush=True)
+    stats.glycans_from_tsv = enrich_glycans_from_tsv(store, glycan_tsv, quiet=quiet)
+    if not quiet:
+        print(f"    → {stats.glycans_from_tsv} glycan names updated")
+
+    # Phase 2e — KO enzyme names (enz:kegg:K##### namespace)
+    ko_tsv = data_root / "kegg_ko_names.tsv"
+    if not quiet:
+        print(f"  Enriching KO enzyme names from {ko_tsv.name}...", flush=True)
+    stats.ko_enzymes_from_tsv = enrich_ko_enzymes_from_tsv(store, ko_tsv, quiet=quiet)
+    if not quiet:
+        print(f"    → {stats.ko_enzymes_from_tsv} KO enzyme names updated")
 
     # Phase 3 — enzyme gene IDs → gene symbols from per-organism TSVs
     if not quiet:

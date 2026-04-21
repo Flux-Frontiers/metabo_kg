@@ -1,23 +1,18 @@
-refactor(storage): colocate per-corpus artifacts inside data dirs
+feat(app): cached resources, multi-hop search, theme-aware CSS, node detail
 
-Each metabokg-build now places its SQLite db, LanceDB index, and
-snapshots inside <data-dir>/.metabokg/ rather than the project root.
-The db filename is derived from the data directory prefix:
-  hsa_pathways → hsa.sqlite
-  cge_pathways → cge.sqlite
+Overhauled the Streamlit explorer to eliminate per-rerun latency and add
+graph-aware search UX:
 
-This eliminates ambiguity when building multiple organisms in the same
-repo and mirrors the gutenberg_kg per-book storage pattern.
+- _load_kg() / _load_full_graph(): @st.cache_resource keeps the MetaKG
+  embedding model and the full 17K-node scan in memory across reruns
+- _expand_hits(): multi-hop graph expansion from search seed nodes
+- _render_node_detail() / _node_detail_section(): rich node detail card
+  with formula, EC number, cross-refs, and edge table; selectbox picker
+- _inject_css(): theme-aware CSS (light/dark) replacing static block
+- _tab_search() wired to session_state, adds k/hops controls, graph/list
+  sub-tabs, PyVis visualisation, and a collapsible debug panel
 
-Key changes:
-- options.py: db/lancedb defaults → None; resolve_db()/resolve_lancedb()
-  helpers fall back via METABOKG_DB/METABOKG_LANCEDB env vars → CWD
-- cmd_build.py: _colocate_defaults() derives db name from data dir prefix
-- All CLI commands (analyze, simulate, snapshot, viz, mcp) call resolve_db()
-- .gitignore: replaced blanket .metabokg/ with specific artifact ignores
-  so snapshots/ is tracked
-- Renamed legacy meta.sqlite → hsa.sqlite everywhere; removed project-root
-  .metabokg/; rebuilt hsa and cge corpora into their data dirs
-- pre-commit large-file exclude broadened to cover all data/*.tsv and *.kgml
+Also: pin sentence-transformers to ^5.2.0, pre-commit hooks use .venv/bin/
+directly (drops poetry spawn overhead), add .agentkg/ to .gitignore.
 
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>

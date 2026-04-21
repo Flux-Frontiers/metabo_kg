@@ -36,6 +36,8 @@ Options
 --quiet           Suppress progress output
 
 Author: Eric G. Suchanek, PhD
+Last Revision: 2026-04-19 13:48:39
+License: Elastic 2.0
 """
 
 from __future__ import annotations
@@ -43,6 +45,7 @@ from __future__ import annotations
 import argparse
 import sys
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -50,6 +53,8 @@ from pathlib import Path
 _ENDPOINTS: dict[str, str] = {
     "kegg_compound_names.tsv": "https://rest.kegg.jp/list/compound",
     "kegg_reaction_names.tsv": "https://rest.kegg.jp/list/reaction",
+    "kegg_glycan_names.tsv": "https://rest.kegg.jp/list/glycan",
+    "kegg_ko_names.tsv": "https://rest.kegg.jp/list/ko",
 }
 
 _DEFAULT_DATA = Path(__file__).parent.parent / "data"
@@ -70,7 +75,7 @@ def _fetch(url: str, quiet: bool = False) -> str:
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
             return resp.read().decode("utf-8")
-    except Exception as exc:
+    except (urllib.error.URLError, OSError) as exc:
         print(f"ERROR: failed to download {url}: {exc}", file=sys.stderr)
         sys.exit(1)
 
@@ -217,7 +222,10 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.genes:
         if not args.quiet:
-            print(f"Downloading gene name lists for: {', '.join(args.genes)}", file=sys.stderr)
+            print(
+                f"Downloading gene name lists for: {', '.join(args.genes)}",
+                file=sys.stderr,
+            )
         download_gene_names(args.genes, data_dir, force=args.force, quiet=args.quiet)
 
     if not args.quiet:

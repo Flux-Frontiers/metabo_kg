@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "metabo-kg"
-version = "0.4.1"
+version = "0.5.0"
 description = "Metabolic pathway parser and semantic knowledge graph with MCP support"
 authors = ["Eric G. Suchanek, PhD <suchanek@mac.com>"]
 license = "Elastic-2.0"
@@ -21,7 +21,7 @@ packages = [{ include = "metabokg", from = "src" }]
 python     = ">=3.12,<3.14"
 lancedb    = ">=0.29.0"
 numpy      = ">=1.24.0"
-sentence-transformers = ">=2.7.0"
+sentence-transformers = "^5.2.0"
 click      = ">=8.0"
 mcp        = ">=1.0.0"
 
@@ -32,6 +32,7 @@ agent-kg = {git = "https://github.com/Flux-Frontiers/agent_kg.git", optional=tru
 ftree-kg = {git = "https://github.com/Flux-Frontiers/ftree_kg.git", optional=true}
 doc-kg = {git = "https://github.com/Flux-Frontiers/doc_kg.git", optional=true}
 memory-kg = {git = "https://github.com/Flux-Frontiers/memory_kg.git", optional=true}
+watchdoc = "^0.0.1"
 
 [tool.poetry.dependencies.scipy]
 version  = ">=1.11.0"
@@ -96,12 +97,15 @@ pylint = "^4.0.5"
 # metabokg metabolic pathway cli entrypoints
 
 metabokg                = "metabokg.cli.main:cli"
+metabokg-info           = "metabokg.cli:info_main"
 metabokg-build          = "metabokg.cli:build_main"
 metabokg-update         = "metabokg.cli:update_main"
 metabokg-enrich         = "metabokg.cli:enrich_main"
 metabokg-mcp            = "metabokg.cli:mcp_main"
 metabokg-viz            = "metabokg.cli:viz_main"
 metabokg-viz3d          = "metabokg.cli:viz3d_main"
+metabokg-query          = "metabokg.cli:query_main"
+metabokg-pack           = "metabokg.cli:pack_main"
 metabokg-analyze        = "metabokg.cli:analyze_main"
 metabokg-analyze-basic  = "metabokg.cli:analyze_basic_main"
 metabokg-simulate       = "metabokg.cli:simulate_main"

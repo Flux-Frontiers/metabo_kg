@@ -26,9 +26,9 @@ from pathlib import Path
 # Reuse the generic download script with cge defaults
 sys.path.insert(0, str(Path(__file__).parent))
 
-from download_human_kegg import get_pathway_list, download_pathway_kgml  # noqa: E402
-
 import argparse
+
+from download_human_kegg import download_pathway_kgml, get_pathway_list  # noqa: E402
 
 ORGANISM = "cge"  # Cricetulus griseus — Chinese hamster (CHO cells)
 

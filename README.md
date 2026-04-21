@@ -6,12 +6,12 @@ A comprehensive, extendable knowledge graph system for metabolic pathways with s
 
 **CHO support:** Full *Cricetulus griseus* (CHO cell) build — 366 KEGG pathways, CHO-specific kinetics, and iCHO2441 genome-scale model ingestion. See [docs/cho_workflow.md](docs/cho_workflow.md).
 
-**Sister Project:** [CodeKG](https://github.com/flux-frontiers/code_kg) — A codebase knowledge graph system for Python repositories.
+**Sister Project:** [PyCodeKG](https://github.com/flux-frontiers/pycode_kg) — A codebase knowledge graph system for Python repositories. PyCodeKG provides the semantic analysis capabilities that make it possible to explore MetaboKG's own architecture and implementation.
 
-[![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.12 | 3.13](https://img.shields.io/badge/Python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/downloads/)
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic%202.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
-[![Version](https://img.shields.io/badge/Version-0.3.0-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
-[![Poetry](https://img.shields.io/badge/Poetry-1.8+-blue.svg)](https://python-poetry.org/)
+[![Version](https://img.shields.io/badge/Version-0.5.0-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
+[![Poetry](https://img.shields.io/badge/Poetry-2.0+-blue.svg)](https://python-poetry.org/)
 
 ## Features
 
@@ -33,70 +33,79 @@ A comprehensive, extendable knowledge graph system for metabolic pathways with s
 git clone https://github.com/flux-frontiers/metabo_kg.git
 cd metabo_kg
 
-# Create a Python 3.12 virtual environment
+# Create a Python 3.12+ virtual environment
 python3.12 -m venv .venv
 source .venv/bin/activate
 
-# Install the package with all features
-poetry install --all-extras
+# Install with all public extras (viz, viz3d, simulate, biopax)
+poetry install --extras all
 ```
 
-### Download Pathway Data
+### Pathway Data
+
+**Human (`data/hsa_pathways/`) and CHO (`data/cge_pathways/`) KEGG pathways are included in the repository** — no download needed for these.
+
+To refresh or re-download them:
 
 ```bash
-# Human KEGG pathways (369 pathways, ~19 MB)
-python scripts/download_human_kegg.py --output data/hsa_pathways
-
-# CHO (Cricetulus griseus) KEGG pathways (366 pathways)
-python scripts/download_cho_kegg.py --output data/cge_pathways
-
-# KEGG name lists for enrichment (compounds + reactions + gene symbols)
-python scripts/download_kegg_names.py --genes cge hsa
+poetry run python scripts/download_human_kegg.py --output data/hsa_pathways
+poetry run python scripts/download_cho_kegg.py --output data/cge_pathways
 ```
 
-### Build the Knowledge Graph
-
-Each `metabokg-build` run automatically creates its SQLite database and LanceDB index
-inside `<data-dir>/.metabokg/` — no explicit `--db` required:
+**iCHO2441 Genome-Scale Metabolic Model (6,663 reactions, SBML)** — XML files are included in `data/icho_model/` but the knowledge graph has not been built yet. To build:
 
 ```bash
-# Human metabolome
+metabokg-build --data data/icho_model  # → data/icho_model/.metabokg/icho.sqlite
+```
+
+To re-download the source XML:
+```bash
+poetry run python scripts/download_icho_model.py --output data/icho_model
+```
+
+### Build the Metabolic Knowledge Graphs
+
+The `--data` directory drives automatic colocation — no `--db` or `--lancedb` flags needed.
+
+#### Human (*Homo sapiens*, `hsa`)
+
+```bash
 metabokg-build --data ./data/hsa_pathways
-# → data/hsa_pathways/.metabokg/hsa.sqlite
 
-# CHO metabolome
-metabokg-build --data ./data/cge_pathways
-# → data/cge_pathways/.metabokg/cge.sqlite
-```
-
-**Human build output:**
-```
-Building MetaKG from data/hsa_pathways...
-nodes: 17050  {compound: 5115, reaction: 2139, enzyme: 9427, pathway: 369}
-edges: 40166  {SUBSTRATE_OF: 2551, PRODUCT_OF: 2532, CATALYZES: 2394, CONTAINS: 32689}
-isolated: 0
-indexed: 14911 vectors  dim=384
+# Output:
+# Building MetaboKG from ./data/hsa_pathways...
+# data_root   : ./data/hsa_pathways
+# db_path     : data/hsa_pathways/.metabokg/hsa.sqlite
+# nodes       : 17050  {'compound': 5115, 'reaction': 2139, 'enzyme': 9427, 'pathway': 369}
+# edges       : 40166  {'SUBSTRATE_OF': 2551, 'PRODUCT_OF': 2532, 'CATALYZES': 2394, 'CONTAINS': 32689}
+# isolated    : 0
+# indexed     : 14911 vectors  dim=384
 ```
 
-**CHO build output:**
-```
-Building MetaKG from data/cge_pathways...
-nodes: 16930  {compound: 5105, reaction: 2099, enzyme: 9360, pathway: 366}
-edges: 39731  {SUBSTRATE_OF: ..., PRODUCT_OF: ..., CATALYZES: ..., CONTAINS: ...}
-```
+**Complete Human Metabolome:** All 369 KEGG metabolic and regulatory pathways in a single queryable knowledge graph with 17K+ fully-connected nodes and 40K+ edges.
 
-### Seed CHO Kinetics and Simulate
+#### Chinese Hamster Ovary (*C. griseus*, `cge`)
 
 ```bash
-# Seed CHO-specific kinetic parameters (pH 7.2, 37°C)
-metabokg-simulate --db data/cge_pathways/.metabokg/cge.sqlite seed-cho
+metabokg-build --data ./data/cge_pathways
 
-# Flux balance analysis on CHO glycolysis
-metabokg-simulate --db data/cge_pathways/.metabokg/cge.sqlite fba --pathway cge00010
+# Output:
+# Building MetaboKG from ./data/cge_pathways...
+# data_root   : ./data/cge_pathways
+# db_path     : data/cge_pathways/.metabokg/cge.sqlite
+# nodes       : ~16800  {'compound': ..., 'reaction': ..., 'enzyme': ..., 'pathway': 366}
+# edges       : ~39000  {'SUBSTRATE_OF': ..., 'PRODUCT_OF': ..., 'CATALYZES': ..., 'CONTAINS': ...}
+# isolated    : 0
+```
 
-# LDH knockout — CHO lactate overflow model
-metabokg-simulate --db data/cge_pathways/.metabokg/cge.sqlite \
-    whatif --pathway cge00010 --knockout Ldha --name CHO_LDH_KO
+> **Enzyme name resolution** for CHO uses `data/cge_gene_names.tsv` (bundled). To refresh: `python scripts/download_kegg_names.py --genes cge`
+
+#### iCHO2441 Genome-Scale Metabolic Model (SBML)
+
+```bash
+metabokg-build --data ./data/icho_model
+
+# db_path     : data/icho_model/.metabokg/icho.sqlite
 ```
 
 ### Launch Web Explorer
@@ -105,70 +114,22 @@ metabokg-simulate --db data/cge_pathways/.metabokg/cge.sqlite \
 metabokg-viz --db data/hsa_pathways/.metabokg/hsa.sqlite --port 8500
 ```
 
-## CHO Support
+## Multi-Organism Support
 
-MetaboKG has a complete, validated CHO build. The `cge` KEGG organism code covers
-*Cricetulus griseus* — the species underlying all CHO cell lines.
+MetaboKG supports multiple organisms, each stored in its own database for federated cross-organism queries.
 
-| Entity | Human (hsa) | CHO (cge) |
-|--------|------------:|----------:|
-| Pathways | 369 | 366 |
-| Reactions | 2,139 | 2,099 |
-| Compounds | 5,115 | 5,105 |
-| Enzymes | 9,427 | 9,360 |
-| **Total nodes** | **17,050** | **16,930** |
-
-### CHO-Specific Kinetics
-
-`cho_kinetics.py` seeds **35 reactions** across 6 core pathways from published CHO
-culture literature (Ahn & Antoniewicz 2011; Zagari et al. 2013; Templeton et al. 2013),
-all at **pH 7.2, 37°C** (standard bioreactor conditions):
-
-| Pathway | Reactions |
-|---------|----------:|
-| Glycolysis (cge00010) | 12 |
-| TCA cycle (cge00020) | 8 |
-| Oxidative phosphorylation (cge00190) | 3 |
-| Glutaminolysis | 4 |
-| Amino acid metabolism | 4 |
-| Anaplerosis / PPP | 4 |
-
-Key CHO-specific differences vs. human defaults:
-
-| Reaction | Enzyme | CHO Detail |
-|----------|--------|-----------|
-| R00299 | Hexokinase | Km_glucose = 0.046 mM (high affinity) |
-| R00703 | LDH | Vmax = 350 mM/s — overflow lactate phenotype |
-| R00256 | GLS1 | Km_Gln = 1.5 mM; product-inhibited by glutamate |
-| R00756 | PFK | Recalibrated for pH 7.2 bioreactor conditions |
-
-### iCHO2441 Genome-Scale Model
+| Organism | Script | Output | Pathways |
+|----------|--------|--------|----------|
+| Human (*Homo sapiens*, `hsa`) | `download_human_kegg.py` | `data/hsa_pathways/` | 369 |
+| CHO (*C. griseus*, `cge`) | `download_cho_kegg.py` | `data/cge_pathways/` | 366 |
+| iCHO2441 GEM (SBML) | `download_icho_model.py` | `data/icho_model/` | 6,663 reactions |
 
 ```bash
-# Download iCHO2441 (Hefzi et al. 2016, BioModels MODEL2206100001)
-python scripts/download_icho_model.py --output data/icho_model
-
-# Build — SBML parser ingests directly
-metabokg-build --data data/icho_model
-# → data/icho_model/.metabokg/icho.sqlite  (6,663 reactions, 2,441 genes)
+# db and lancedb colocate automatically under each data dir
+metabokg-build --data data/hsa_pathways  # → data/hsa_pathways/.metabokg/hsa.sqlite
+metabokg-build --data data/cge_pathways  # → data/cge_pathways/.metabokg/cge.sqlite
+metabokg-build --data data/icho_model    # → data/icho_model/.metabokg/icho.sqlite
 ```
-
-### Multi-Corpus Queries
-
-```bash
-# Build all three corpora (each stored in its own data dir)
-metabokg-build --data data/hsa_pathways    # human
-metabokg-build --data data/cge_pathways    # CHO
-metabokg-build --data data/icho_model      # iCHO2441 GEM
-```
-
-| Corpus | DB path | Coverage |
-|--------|---------|---------|
-| Human | `data/hsa_pathways/.metabokg/hsa.sqlite` | 369 KEGG pathways |
-| CHO | `data/cge_pathways/.metabokg/cge.sqlite` | 366 KEGG pathways |
-| iCHO2441 | `data/icho_model/.metabokg/icho.sqlite` | GEM, 6,663 reactions |
-
-See [docs/cho_workflow.md](docs/cho_workflow.md) for the complete CHO build and simulation workflow.
 
 ## Architecture
 
@@ -219,7 +180,7 @@ metabokg/
 
 ## Commands
 
-### `metabokg-build`
+Quick reference — see **[CHEATSHEET.md](CHEATSHEET.md)** for full options and examples.
 
 Parse pathway files and build the knowledge graph. Database is automatically colocated
 inside `<data-dir>/.metabokg/` — derived from the data directory name.
@@ -380,6 +341,11 @@ kg.close()
 
 **Flux Balance Analysis (FBA):**
 ```python
+from metabokg import MetaKG
+
+kg = MetaKG(db_path="data/hsa_pathways/.metabokg/hsa.sqlite", lancedb_dir="data/hsa_pathways/.metabokg/lancedb")
+
+# Run steady-state optimization
 result = kg.simulate_fba(
     pathway_id="pwy:kegg:hsa00010",  # Glycolysis
     maximize=True,
@@ -440,21 +406,26 @@ result = kg.simulate_whatif(
 # Core functionality only
 poetry install
 
-# Web visualization
+# Metabolic simulations (FBA, ODE)
+poetry install --extras simulate
+
+# Web visualization (Streamlit)
 poetry install --extras viz
 
-# 3D visualization (includes PyVista, PyQt5)
+# 3D visualization (PyVista + PyQt5)
 poetry install --extras viz3d
 
 # BioPAX format support
 poetry install --extras biopax
 
-# MCP integration
-poetry install --extras mcp
-
-# Everything
-poetry install --all-extras
+# All public extras (simulate + viz + viz3d + biopax)
+poetry install --extras all
 ```
+
+> **Note:** The `kg` extra (`--extras kg`) installs PyCodeKG, DocKG, AgentKG, and other
+> knowledge-graph integrations from private Flux Frontiers repositories. These require
+> repository access and are not publicly available. Do not use `--extras kg` unless you
+> have been granted access.
 
 ## Configuration
 
@@ -497,6 +468,9 @@ metabokg-mcp                               # uses env vars
 
 - Default: `all-MiniLM-L6-v2` (384-dimensional, ~80 MB, downloaded once)
 - Override via `--model` flag or `METABOKG_MODEL` env var
+- **SQLite** — `<data-dir>/.metabokg/<org>.sqlite` (colocated with pathway data, e.g. `data/hsa_pathways/.metabokg/hsa.sqlite`)
+- **LanceDB** — `<data-dir>/.metabokg/lancedb`
+- **Embedding Model** — `all-MiniLM-L6-v2` (384-dimensional vectors)
 
 ## Performance Characteristics
 
