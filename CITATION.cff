@@ -1,0 +1,29 @@
+cff-version: "1.2.0"
+message: "If you use this software, please cite it using the metadata below."
+type: software
+title: "MetaboKG: Metabolic Pathway Knowledge Graph"
+abstract: >
+  MetaboKG is a comprehensive, extendable knowledge graph system for metabolic
+  pathways with semantic search, interactive visualization, and MCP integration.
+  It ingests pathway data from multiple formats (KGML, SBML, BioPAX, CSV),
+  builds a unified semantic knowledge graph, and provides powerful querying,
+  simulation (FBA, ODE), and visualization tools for exploring metabolic
+  relationships.
+authors:
+  - family-names: Suchanek
+    given-names: "Eric G."
+    name-suffix: PhD
+    email: suchanek@flux-frontiers.com
+    affiliation: "Flux-Frontiers"
+version: "0.6.0"
+license: "Elastic-2.0"
+repository-code: "https://github.com/flux-frontiers/metabo_kg"
+url: "https://github.com/flux-frontiers/metabo_kg"
+keywords:
+  - knowledge-graph
+  - metabolic-pathways
+  - bioinformatics
+  - semantic-search
+  - mcp
+  - sbml
+  - kgml
