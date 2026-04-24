@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+---
+
+## [0.7.0] - 2026-04-24
+
+### Added
+
 - **`MetaKG.stats()` — KGRAG adapter contract** (`src/metabokg/orchestrator.py`) — New method returns a flat `dict[str, Any]` with `node_count`, `total_edges`, `pathway_count`, `compound_count`, and `reaction_count`. Satisfies the adapter status contract so `kgrag probe` can render a meaningful status row for MetaboKG without calling the heavier `get_stats()` → `MetabolicRuntimeStats` path. Never raises; returns zeros on store error.
 
 - **Flat domain keys in `MetaStore.stats()`** (`src/metabokg/store.py`) — `stats()` now includes `pathway_count`, `compound_count`, and `reaction_count` as top-level int keys alongside the existing `node_counts` / `edge_counts` dicts. These are derived from `node_counts.get(kind, 0)` with no extra queries.

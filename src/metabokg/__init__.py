@@ -21,7 +21,7 @@ Last Revision: 2026-02-28 20:55:28
 
 """
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 from metabokg.orchestrator import (
     MetabolicBuildStats,
