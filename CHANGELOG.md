@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`MetaKG.stats()` — KGRAG adapter contract** (`src/metabokg/orchestrator.py`) — New method returns a flat `dict[str, Any]` with `node_count`, `total_edges`, `pathway_count`, `compound_count`, and `reaction_count`. Satisfies the adapter status contract so `kgrag probe` can render a meaningful status row for MetaboKG without calling the heavier `get_stats()` → `MetabolicRuntimeStats` path. Never raises; returns zeros on store error.
+
+- **Flat domain keys in `MetaStore.stats()`** (`src/metabokg/store.py`) — `stats()` now includes `pathway_count`, `compound_count`, and `reaction_count` as top-level int keys alongside the existing `node_counts` / `edge_counts` dicts. These are derived from `node_counts.get(kind, 0)` with no extra queries.
+
+- **Tests for `MetaStore.stats()` domain keys** (`tests/test_store.py`) — Two new tests in `TestMetaStoreBasic`: `test_stats_domain_keys_populated` (verifies counts against fixture data) and `test_stats_domain_keys_empty_store` (verifies zero-defaults on an empty DB).
+
+- **`TestMetaKGStats` test class** (`tests/test_orchestrator.py`) — Eight tests covering shape, envelope keys, domain keys, correct counts, empty-DB zeros, no-raise guarantee, and consistency between `stats()` and `get_stats()`.
+
+### Changed
+
 - **SBML Level 3 FBC v2 gene-association parser** (`src/metabokg/parsers/sbml.py`) — `SBMLParser` now handles the Flux Balance Constraints v2 package used by iCHO2441. `_parse_fbc_genes()` reads `<fbc:listOfGeneProducts>` into `enz:syn:…` nodes (with Entrez gene IDs stored in `xrefs`). `_attach_fbc_catalyzes()` recursively flattens `<fbc:or>` / `<fbc:and>` association trees and emits one `CATALYZES` edge per referenced gene product. Result: 2,441 enzyme nodes and 9,796 CATALYZES edges parsed from iCHO2441.
 
 - **`enrich_enzyme_names` support for `enz:syn:` (SBML FBC) nodes** (`src/metabokg/enrich.py`) — Phase 3 enrichment now handles two enzyme ID schemes. For `enz:kegg:{org}:{gene_id}` the existing org-specific TSV lookup is used. For `enz:syn:{hash}` nodes (produced by the FBC parser) the Entrez gene ID from `xrefs` is matched against all `*_gene_names.tsv` files in `data/`. Result: 1,942 / 2,441 iCHO enzymes (80%) resolved to gene symbols (e.g. `G_100762926` → `Aoc3`).

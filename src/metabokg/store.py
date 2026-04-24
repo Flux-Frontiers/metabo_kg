@@ -619,7 +619,9 @@ class MetaStore:
         Return node and edge counts broken down by kind and relation.
 
         :return: Dict with keys ``total_nodes``, ``total_edges``,
-                 ``node_counts`` (by kind), and ``edge_counts`` (by relation).
+                 ``node_counts`` (by kind), ``edge_counts`` (by relation),
+                 and flat domain keys ``pathway_count``, ``compound_count``,
+                 ``reaction_count``.
         """
         cur = self._conn.cursor()
 
@@ -634,6 +636,9 @@ class MetaStore:
             "total_edges": sum(edge_counts.values()),
             "node_counts": node_counts,
             "edge_counts": edge_counts,
+            "pathway_count": node_counts.get("pathway", 0),
+            "compound_count": node_counts.get("compound", 0),
+            "reaction_count": node_counts.get("reaction", 0),
         }
 
     def all_nodes(self, *, kind: str | None = None, category: str | None = None) -> list[dict]:

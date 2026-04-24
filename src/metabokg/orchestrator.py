@@ -883,6 +883,26 @@ class MetaKG:
             index_dim=index_dim,
         )
 
+    def stats(self) -> dict[str, Any]:
+        """
+        Return flat live statistics for the KGRAG adapter contract.
+
+        :return: Dict with ``node_count``, ``total_edges``, and domain keys
+            ``pathway_count``, ``compound_count``, ``reaction_count``.
+            Never raises; returns zeros for missing kinds.
+        """
+        try:
+            s = self.store.stats()
+        except Exception:
+            s = {}
+        return {
+            "node_count": s.get("total_nodes", 0),
+            "total_edges": s.get("total_edges", 0),
+            "pathway_count": s.get("pathway_count", 0),
+            "compound_count": s.get("compound_count", 0),
+            "reaction_count": s.get("reaction_count", 0),
+        }
+
     # ------------------------------------------------------------------
     # Lifecycle
     # ------------------------------------------------------------------

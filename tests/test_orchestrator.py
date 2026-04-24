@@ -278,9 +278,61 @@ class TestMetaKGGetStats:
         assert "edge_counts" in d
 
 
+class TestMetaKGStats:
+    """Tests for MetaKG.stats() — KGRAG adapter contract."""
+
+    def test_returns_dict(self, kg_with_data):
+        s = kg_with_data.stats()
+        assert isinstance(s, dict)
+
+    def test_standard_envelope_keys_present(self, kg_with_data):
+        s = kg_with_data.stats()
+        assert "node_count" in s
+        assert "total_edges" in s
+
+    def test_domain_keys_present(self, kg_with_data):
+        s = kg_with_data.stats()
+        assert "pathway_count" in s
+        assert "compound_count" in s
+        assert "reaction_count" in s
+
+    def test_domain_counts_correct(self, kg_with_data):
+        s = kg_with_data.stats()
+        assert s["pathway_count"] == 1
+        assert s["compound_count"] == 2
+        assert s["reaction_count"] == 1
+
+    def test_node_and_edge_counts_correct(self, kg_with_data):
+        s = kg_with_data.stats()
+        assert s["node_count"] == 5
+        assert s["total_edges"] == 4
+
+    def test_empty_kg_returns_zeros(self, empty_kg):
+        s = empty_kg.stats()
+        assert s["node_count"] == 0
+        assert s["total_edges"] == 0
+        assert s["pathway_count"] == 0
+        assert s["compound_count"] == 0
+        assert s["reaction_count"] == 0
+
+    def test_never_raises(self, empty_kg):
+        s = empty_kg.stats()
+        assert isinstance(s, dict)
+
+    def test_consistent_with_get_stats(self, kg_with_data):
+        flat = kg_with_data.stats()
+        runtime = kg_with_data.get_stats()
+        assert flat["node_count"] == runtime.total_nodes
+        assert flat["total_edges"] == runtime.total_edges
+        assert flat["pathway_count"] == runtime.node_counts.get("pathway", 0)
+        assert flat["compound_count"] == runtime.node_counts.get("compound", 0)
+        assert flat["reaction_count"] == runtime.node_counts.get("reaction", 0)
+
+
 # ---------------------------------------------------------------------------
 # Helpers for query tests — inject a mock index so no model load is needed
 # ---------------------------------------------------------------------------
+
 
 def _mock_index(hits: list[SeedHit]) -> MagicMock:
     idx = MagicMock()
@@ -298,10 +350,12 @@ class TestMetaKGQuery:
     def test_query_returns_seed_hits(self, kg_with_data):
         glucose_id = node_id(KIND_COMPOUND, "kegg", "C00031")
         pyruvate_id = node_id(KIND_COMPOUND, "kegg", "C00022")
-        kg_with_data._index = _mock_index([
-            _seed(glucose_id, KIND_COMPOUND, "D-Glucose"),
-            _seed(pyruvate_id, KIND_COMPOUND, "Pyruvate", distance=0.2),
-        ])
+        kg_with_data._index = _mock_index(
+            [
+                _seed(glucose_id, KIND_COMPOUND, "D-Glucose"),
+                _seed(pyruvate_id, KIND_COMPOUND, "Pyruvate", distance=0.2),
+            ]
+        )
         result = kg_with_data.query("glucose", k=2)
         assert len(result.hits) == 2
         ids = {h["id"] for h in result.hits}
@@ -310,7 +364,9 @@ class TestMetaKGQuery:
 
     def test_query_attaches_distance(self, kg_with_data):
         glucose_id = node_id(KIND_COMPOUND, "kegg", "C00031")
-        kg_with_data._index = _mock_index([_seed(glucose_id, KIND_COMPOUND, "D-Glucose", distance=0.42)])
+        kg_with_data._index = _mock_index(
+            [_seed(glucose_id, KIND_COMPOUND, "D-Glucose", distance=0.42)]
+        )
         result = kg_with_data.query("glucose", k=1)
         assert result.hits[0]["_distance"] == pytest.approx(0.42)
 
@@ -356,10 +412,12 @@ class TestMetaKGQueryPathway:
         glucose_id = node_id(KIND_COMPOUND, "kegg", "C00031")
         pwy_id = node_id(KIND_PATHWAY, "kegg", "hsa00010")
         # Index returns both; only the pathway node should survive the kind filter
-        kg_with_data._index = _mock_index([
-            _seed(glucose_id, KIND_COMPOUND, "D-Glucose"),
-            _seed(pwy_id, KIND_PATHWAY, "Glycolysis"),
-        ])
+        kg_with_data._index = _mock_index(
+            [
+                _seed(glucose_id, KIND_COMPOUND, "D-Glucose"),
+                _seed(pwy_id, KIND_PATHWAY, "Glycolysis"),
+            ]
+        )
         result = kg_with_data.query_pathway("glycolysis", k=2)
         assert all(h["kind"] == KIND_PATHWAY for h in result.hits)
         assert len(result.hits) == 1

@@ -108,6 +108,19 @@ class TestMetaStoreBasic:
         assert s["node_counts"]["compound"] == 2
         assert s["node_counts"]["reaction"] == 1
 
+    def test_stats_domain_keys_populated(self, store):
+        store.write(_make_nodes(), _make_edges())
+        s = store.stats()
+        assert s["pathway_count"] == 1
+        assert s["compound_count"] == 2
+        assert s["reaction_count"] == 1
+
+    def test_stats_domain_keys_empty_store(self, store):
+        s = store.stats()
+        assert s["pathway_count"] == 0
+        assert s["compound_count"] == 0
+        assert s["reaction_count"] == 0
+
     def test_wipe_clears_data(self, store):
         store.write(_make_nodes(), _make_edges())
         store.write([], [], wipe=True)
