@@ -17,6 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.1] - 2026-04-24
+
+### Fixed
+
+- **`CITATION.cff`** — Consolidated `given-names` / `name-suffix` into a single `given-names` field; replaced `license` key with `license-url` pointing to the Elastic License 2.0 page (CFF 1.2 schema compliance).
+
+---
+
 ## [0.7.0] - 2026-04-24
 
 ### Added
