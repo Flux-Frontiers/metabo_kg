@@ -1,3 +1,9 @@
+[![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/)
+[![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic%202.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
+[![Version](https://img.shields.io/badge/version-0.6.0-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
+[![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
+[![DOI](https://zenodo.org/badge/1184537477.svg)](https://zenodo.org/badge/latestdoi/1184537477)
+
 # MetaboKG — Metabolic Pathway Knowledge Graph
 
 A comprehensive, extendable knowledge graph system for metabolic pathways with semantic search, interactive visualization, and MCP integration.
@@ -15,10 +21,12 @@ A comprehensive, extendable knowledge graph system for metabolic pathways with s
 
 - **Multi-format Parser** — Ingest metabolic pathway data from KGML, SBML, BioPAX, and CSV formats
 - **Unified Knowledge Graph** — Normalize and merge pathways into a single semantic graph with compounds, reactions, enzymes, and pathways
-- **Semantic Search** — Vector-based similarity search using LanceDB and sentence-transformers
+- **Semantic Search** — Two-phase search: a local sentence-transformer model finds the closest nodes by vector similarity, then BFS graph expansion pulls in reaction context from connected edges. Falls back to substring search when no vector index is present.
+- **Runs Offline** — No cloud API required. Build, query, simulate, and visualize entirely on local storage (SQLite + LanceDB). The embedding model (~100 MB) downloads once from HuggingFace and runs locally from then on. Any compatible model — including a local filesystem path — works as a drop-in replacement.
 - **Interactive Visualization** — Explore pathways through Streamlit web interface or 3D PyVista viewer
 - **Metabolic Queries** — Find shortest paths between compounds, filter by reaction relationships
 - **Metabolic Simulations** — Flux balance analysis (FBA), kinetic ODE integration, and what-if perturbation analysis
+- **Context Packs for LLMs** — `metabokg-pack` assembles pathway context (reactions, substrates, enzymes) into structured Markdown or JSON. The output is designed for any LLM context window — cloud or local (e.g., Ollama).
 - **MCP Integration** — Expose the knowledge graph via Model Context Protocol for AI assistant integration
 - **Production-Ready** — SQLite persistence, comprehensive error handling, extensive test coverage
 
@@ -161,6 +169,18 @@ metabokg/
 │
 └── metabokg.py            # MetaKG: orchestrator
 ```
+
+### How Semantic Search Works
+
+Search proceeds in two phases:
+
+1. **Vector phase** — The query is embedded with the same local sentence-transformer model used at index time (`all-MiniLM-L6-v2` by default, 384-dimensional). LanceDB finds the `k` closest nodes by cosine similarity among all indexed compounds, enzymes, and pathways.
+
+2. **Graph expansion phase** — Each seed hit is expanded through `hop` BFS steps along the knowledge-graph edges (`SUBSTRATE_OF`, `PRODUCT_OF`, `CATALYZES`, `CONTAINS`). This pulls in reaction context that wouldn't surface from vector similarity alone — reactions are deliberately excluded from the vector index because their short names embed poorly.
+
+When no LanceDB index exists (built with `--no-index`, or queried with `--text-only`), both `metabokg-query` and the Streamlit app fall back to case-insensitive substring matching on node names and descriptions.
+
+The embedding text sent to the model includes the node kind, name, EC number (enzymes), molecular formula (compounds), cross-reference IDs, and description — giving the model enough context to distinguish e.g. `hexokinase` from `glucokinase` even if their names look similar.
 
 ### Data Model
 
@@ -427,6 +447,40 @@ export METABOKG_LANCEDB="/data/lancedb"
 - **LanceDB** — `<data-dir>/.metabokg/lancedb`
 - **Embedding Model** — `all-MiniLM-L6-v2` (384-dimensional vectors)
 
+### Custom Embedding Model
+
+Any `sentence-transformers`-compatible model works. Pass a HuggingFace model identifier or an absolute path to a locally downloaded model:
+
+```python
+from metabokg import MetaKG
+
+# Different HuggingFace model (larger, higher quality)
+kg = MetaKG(model="BAAI/bge-base-en-v1.5")
+
+# Fully offline: point to a local model directory
+kg = MetaKG(model="/models/bge-base-en-v1.5")
+```
+
+Or set the environment variable before building or querying:
+
+```bash
+export METABOKG_MODEL="BAAI/bge-base-en-v1.5"
+```
+
+The index and the query embedder must use the same model — if you rebuild with a different model, wipe the LanceDB directory first (`metabokg-build --data DIR` does this automatically).
+
+### Using Pack Output with a Local LLM
+
+`metabokg-pack` produces structured Markdown or JSON containing reactions, substrates, products, and enzymes for the matched pathways. This output is self-contained and works with any LLM:
+
+```bash
+# Write a context pack to file
+metabokg-pack "TCA cycle" -o tca_context.md
+
+# Pipe directly into Ollama
+metabokg-pack "fatty acid oxidation" | ollama run llama3 "Summarize what's unusual about this pathway"
+```
+
 ## Performance Characteristics
 
 | Operation | Time | Notes |
@@ -496,10 +550,10 @@ poetry run ruff format src/
 If you use MetaboKG in research, please cite:
 
 ```bibtex
-@software{flux_frontiers2024metabokg,
+@software{flux_frontiers2026metabokg,
   title={MetaboKG: Metabolic Pathway Knowledge Graph},
   author={Flux Frontiers Contributors},
-  year={2024},
+  year={2026},
   url={https://github.com/flux-frontiers/metabo_kg}
 }
 ```
