@@ -208,6 +208,13 @@ dmypy.json
 .pycodekg/graph.sqlite*
 .pycodekg/models
 
+# DocKG generated artifacts — databases are transient/reproducible, snapshots are tracked
+**/.dockg/lancedb/
+**/.dockg/lancedb-*
+**/.dockg/graph.sqlite
+**/.dockg/graph.sqlite*
+**/.dockg/models
+
 .agentkg/
 
 # Local MCP configuration (contains absolute paths)
