@@ -16,10 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
-
-# Default sentence-transformer model used throughout MetaKG
-DEFAULT_MODEL = "all-MiniLM-L6-v2"
-
+from kg_utils.embed import DEFAULT_MODEL as DEFAULT_MODEL
 
 # ---------------------------------------------------------------------------
 # Embedder interface (pluggable)

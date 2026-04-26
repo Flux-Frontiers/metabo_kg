@@ -1,101 +1,158 @@
+# pyproject.toml — MetaboKG package configuration (PEP 621)
+#
+# Author: Eric G. Suchanek, PhD
+# Last Revision: 2026-04-24
+#
+# Build system : Poetry 2.x with PEP 621 [project] table
+#
+# Quick install (pip)
+# -------------------
+#   pip install -e ".[dev]"             core + dev tools (pytest, ruff, mypy, etc.)
+#   pip install -e ".[viz]"             core + Streamlit/PyVis visualizer
+#   pip install -e ".[viz3d]"           core + PyVista 3D visualizer
+#   pip install -e ".[simulate]"        core + scipy ODE/FBA simulation
+#   pip install -e ".[biopax]"          core + RDFLib BioPAX parser
+#   pip install -e ".[kg]"              core + KG integrations (pycode-kg, doc-kg, etc.)
+#   pip install -e ".[all]"             everything above
+#   pip install -e "."                  core runtime only
+#
+# Quick install (poetry)
+# ----------------------
+#   poetry install --all-extras         everything
+#   poetry install --extras "dev"       core + dev tools only
+#   poetry install --extras "viz"       core + Streamlit/PyVis only
+#   poetry install --extras "viz3d"     core + 3D visualizer only
+#   poetry install --extras "simulate"  core + simulation only
+#   poetry install                      core runtime only
+#
+# First-time setup
+# ----------------
+#   python -m venv .venv
+#   source .venv/bin/activate       # Windows: .venv\Scripts\activate
+#   pip install -e ".[dev]"
+#
+# Run tests
+# ---------
+#   pytest                          uses pytest.ini (testpaths = tests/)
+#   pytest -m "not slow"            skip slow tests
+#   pytest --cov=metabokg           with coverage
+#
+# Build KG indices (after code changes)
+# --------------------------------------
+#   metabokg-build --data ./data/hsa_pathways
+
 [build-system]
 requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+[[tool.poetry.source]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+priority = "supplemental"
+
 [tool.poetry]
+packages = [{ include = "metabokg", from = "src" }]
+
+[tool.poetry.group.dev.dependencies]
+detect-secrets = ">=1.5.0"
+mypy           = ">=1.10.0"
+pre-commit     = ">=4.0.0"
+pylint         = ">=4.0.5"
+pytest         = ">=8.0.0"
+pytest-cov     = ">=5.0.0"
+pytest-timeout = ">=2.4.0"
+ruff           = ">=0.4.0"
+
+# ---------------------------------------------------------------------------
+# PEP 621 project metadata
+# ---------------------------------------------------------------------------
+[project]
 name = "metabo-kg"
 version = "0.7.1"
 description = "Metabolic pathway parser and semantic knowledge graph with MCP support"
-authors = ["Eric G. Suchanek, PhD <suchanek@mac.com>"]
+readme = "README.md"
 license = "Elastic-2.0"
-keywords = ["metabolic-pathways", "knowledge-graph", "bioinformatics", "semantic-search", "mcp"]
+authors = [
+    { name = "Eric G. Suchanek, PhD", email = "suchanek@mac.com" }
+]
+keywords = ["metabolic-pathways", "knowledge-graph", "bioinformatics", "semantic-search", "mcp", "sbml", "kgml"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
-packages = [{ include = "metabokg", from = "src" }]
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "click>=8.0",
+    "lancedb>=0.29.0",
+    "mcp>=1.0.0",
+    "numpy>=1.24.0",
+    "sentence-transformers>=5.4.1",
+    "watchdoc>=0.0.1",
+    "kg-snapshot>=0.3.0",
+    "kg-utils @ git+https://github.com/Flux-Frontiers/KG_utils.git",
+]
 
-[tool.poetry.dependencies]
-python     = ">=3.12,<3.14"
-lancedb    = ">=0.29.0"
-numpy      = ">=1.24.0"
-sentence-transformers = "^5.4.1"
-click      = ">=8.0"
-mcp        = ">=1.0.0"
+[project.optional-dependencies]
+biopax   = ["rdflib>=6.0.0"]
+simulate = ["scipy>=1.11.0"]
+viz = [
+    "matplotlib>=3.8.0",
+    "pandas>=2.0.0",
+    "pyvis>=0.3.2",
+    "streamlit>=1.35.0",
+]
+viz3d = [
+    "param>=2.0.0",
+    "PyQt5>=5.15.0",
+    "pyvista>=0.44.0",
+    "pyvistaqt>=0.11.0",
+]
+# note: agent-kg, ftree-kg, memory-kg not yet on PyPI — install from git
+kg = [
+    "doc-kg>=0.11.0",
+    "pycode-kg @ git+https://github.com/Flux-Frontiers/pycode_kg.git",
+    "agent-kg @ git+https://github.com/Flux-Frontiers/agent_kg.git",
+    "ftree-kg @ git+https://github.com/Flux-Frontiers/ftree_kg.git",
+    "memory-kg @ git+https://github.com/Flux-Frontiers/memory_kg.git",
+]
+dev = [
+    "detect-secrets>=1.5.0",
+    "mypy>=1.10.0",
+    "pre-commit>=4.0.0",
+    "pylint>=4.0.5",
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+    "pytest-timeout>=2.4.0",
+    "ruff>=0.4.0",
+]
+all = [
+    "matplotlib>=3.8.0",
+    "pandas>=2.0.0",
+    "param>=2.0.0",
+    "PyQt5>=5.15.0",
+    "pyvis>=0.3.2",
+    "pyvista>=0.44.0",
+    "pyvistaqt>=0.11.0",
+    "rdflib>=6.0.0",
+    "scipy>=1.11.0",
+    "streamlit>=1.35.0",
+    "doc-kg>=0.11.0",
+    "pycode-kg @ git+https://github.com/Flux-Frontiers/pycode_kg.git",
+    "agent-kg @ git+https://github.com/Flux-Frontiers/agent_kg.git",
+    "ftree-kg @ git+https://github.com/Flux-Frontiers/ftree_kg.git",
+    "memory-kg @ git+https://github.com/Flux-Frontiers/memory_kg.git",
+]
 
-# our own adaptors
-kg-snapshot = { git = "https://github.com/Flux-Frontiers/kg_snapshot.git" }
-pycode-kg = {git = "https://github.com/Flux-Frontiers/pycode_kg.git", optional=true}
-agent-kg = {git = "https://github.com/Flux-Frontiers/agent_kg.git", optional=true}
-ftree-kg = {git = "https://github.com/Flux-Frontiers/ftree_kg.git", optional=true}
-doc-kg = {git = "https://github.com/Flux-Frontiers/doc_kg.git", optional=true}
-memory-kg = {git = "https://github.com/Flux-Frontiers/memory_kg.git", optional=true}
-watchdoc = "^0.0.1"
+[project.urls]
+Homepage   = "https://github.com/Flux-Frontiers/metabo_kg"
+Repository = "https://github.com/Flux-Frontiers/metabo_kg"
 
-[tool.poetry.dependencies.scipy]
-version  = ">=1.11.0"
-optional = true
-
-[tool.poetry.dependencies.rdflib]
-version  = ">=6.0.0"
-optional = true
-
-[tool.poetry.dependencies.streamlit]
-version  = ">=1.35.0"
-optional = true
-
-[tool.poetry.dependencies.matplotlib]
-version  = ">=3.8.0"
-optional = true
-
-[tool.poetry.dependencies.pandas]
-version  = ">=2.0.0"
-optional = true
-
-[tool.poetry.dependencies.pyvis]
-version  = ">=0.3.2"
-optional = true
-
-[tool.poetry.dependencies.pyvista]
-version  = ">=0.44.0"
-optional = true
-
-[tool.poetry.dependencies.pyvistaqt]
-version  = ">=0.11.0"
-optional = true
-
-[tool.poetry.dependencies.PyQt5]
-version  = ">=5.15.0"
-optional = true
-
-[tool.poetry.dependencies.param]
-version  = ">=2.0.0"
-optional = true
-
-[tool.poetry.extras]
-biopax   = ["rdflib"]
-simulate = ["scipy"]
-viz      = ["streamlit", "pyvis", "matplotlib", "pandas"]
-viz3d    = ["pyvista", "pyvistaqt", "PyQt5", "param"]
-all      = ["rdflib", "scipy", "streamlit", "pyvis", "matplotlib", "pandas", "pyvista", "pyvistaqt", "PyQt5", "param"]
-kg = ["pycode-kg", "agent-kg", "ftree-kg", "doc-kg", "memory-kg"]
-
-[tool.poetry.group.dev.dependencies]
-pytest     = ">=8.0.0"
-pytest-cov = ">=5.0.0"
-ruff       = ">=0.4.0"
-mypy       = ">=1.10.0"
-pytest-timeout = "^2.4.0"
-pre-commit     = ">=4.0.0"
-detect-secrets = "^1.5.0"
-pylint = "^4.0.5"
-
-[tool.poetry.scripts]
-
-# metabokg metabolic pathway cli entrypoints
-
+[project.scripts]
 metabokg                = "metabokg.cli.main:cli"
 metabokg-info           = "metabokg.cli:info_main"
 metabokg-build          = "metabokg.cli:build_main"
@@ -111,6 +168,9 @@ metabokg-analyze-basic  = "metabokg.cli:analyze_basic_main"
 metabokg-simulate       = "metabokg.cli:simulate_main"
 metabokg-snapshot       = "metabokg.cli:snapshot_main"
 
+# ---------------------------------------------------------------------------
+# Tool configuration
+# ---------------------------------------------------------------------------
 [tool.ruff]
 line-length    = 100
 target-version = "py312"
@@ -120,13 +180,38 @@ select = ["E", "F", "W", "I", "UP"]
 ignore = ["E501"]
 
 [tool.mypy]
-python_version      = "3.12"
-strict              = false
+python_version         = "3.12"
+strict                 = false
 ignore_missing_imports = true
+mypy_path              = "src"
+explicit_package_bases = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts   = "-v --tb=short"
+markers = [
+    "slow: marks tests as slow (deselect with '-m not slow')",
+    "integration: marks tests that exercise real external dependencies (model, LanceDB)",
+]
 
+[tool.pylint.messages_control]
+disable = ["all"]
+enable = [
+    "broad-exception-caught",   # W0718
+    "cell-var-from-loop",       # W0640
+    "cyclic-import",            # R0401
+    "import-outside-toplevel",  # C0415
+    "undefined-variable",       # E0602
+]
+
+# ---------------------------------------------------------------------------
+# MetaboKG / PyCodeKG index configuration
+# ---------------------------------------------------------------------------
 [tool.pycodekg]
 include = ["src"]
+
+[tool.dockg]
+exclude = [
+    ".dockg", ".pycodekg", ".git", ".mypy_cache", ".pytest_cache", ".venv",
+    "__pycache__", "bundles", "dist", "src", "venv",
+]
