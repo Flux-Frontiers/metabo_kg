@@ -1808,9 +1808,10 @@ resolved_reference = "2fbdf488b55b382ae625300b1cbbfc4cf32296c2"
 name = "kg-utils"
 version = "0.1.0"
 description = "Shared types and snapshot infrastructure for the KGModule SDK"
-optional = false
+optional = true
 python-versions = ">=3.12,<3.14"
 groups = ["main"]
+markers = "extra == \"kg\" or extra == \"all\""
 files = []
 develop = false
 
@@ -1819,6 +1820,18 @@ type = "git"
 url = "https://github.com/Flux-Frontiers/KG_utils.git"
 reference = "HEAD"
 resolved_reference = "b19b2f7acc1c1e56c155eab190a1a9ebafd06f0e"
+
+[[package]]
+name = "kgmodule-utils"
+version = "0.2.0"
+description = "Shared types and snapshot infrastructure for the KGModule SDK"
+optional = false
+python-versions = "<3.14,>=3.12"
+groups = ["main"]
+files = [
+    {file = "kgmodule_utils-0.2.0-py3-none-any.whl", hash = "sha256:94de2ae1b526de75b0db4e3c2b9d29d5413220bd6e03e4c53b88e6fd6170e7d9"},
+    {file = "kgmodule_utils-0.2.0.tar.gz", hash = "sha256:445fbd2f6506d66727e42217fb57dc8426108a0cb1d14983ff8e2535e1f5edf9"},
+]
 
 [[package]]
 name = "kiwisolver"
@@ -6104,4 +6117,4 @@ viz3d = ["PyQt5", "param", "pyvista", "pyvistaqt"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "e89e34fefbdef7c497cb5be11587fc64ce04cacaa796266780b2546a1fc2f3d1"
+content-hash = "2ee899648f38cea31528bdf54aa887637202c7bd7b54f3772bdffef2f593a0b5"

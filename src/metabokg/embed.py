@@ -17,6 +17,7 @@ from dataclasses import dataclass
 
 import numpy as np
 from kg_utils.embed import DEFAULT_MODEL as DEFAULT_MODEL
+from kg_utils.embed import KNOWN_MODELS, resolve_model_path
 
 # ---------------------------------------------------------------------------
 # Embedder interface (pluggable)
@@ -67,11 +68,17 @@ class SentenceTransformerEmbedder(Embedder):
         """
         Load the sentence-transformer model.
 
-        :param model_name: HuggingFace model name or local path.
+        :param model_name: HuggingFace model name, known alias, or local path.
+            Resolved against the shared KGModule model cache
+            (``~/.kgrag/models/`` or ``$KGRAG_MODEL_DIR``).
         """
         from sentence_transformers import SentenceTransformer
 
-        self.model = SentenceTransformer(model_name)
+        resolved = KNOWN_MODELS.get(model_name, model_name)
+        cache_path = resolve_model_path(model_name)
+        load_from = str(cache_path) if cache_path.exists() else resolved
+
+        self.model = SentenceTransformer(load_from)
         self.model_name = model_name
         self.dim: int = self.model.get_embedding_dimension() or 384
 

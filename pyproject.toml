@@ -94,7 +94,7 @@ dependencies = [
     "sentence-transformers>=5.4.1",
     "watchdoc>=0.0.1",
     "kg-snapshot>=0.3.0",
-    "kg-utils @ git+https://github.com/Flux-Frontiers/KG_utils.git",
+    "kgmodule-utils>=0.2.0",
 ]
 
 [project.optional-dependencies]
@@ -187,8 +187,9 @@ mypy_path              = "src"
 explicit_package_bases = true
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts   = "-v --tb=short"
+testpaths  = ["tests"]
+addopts    = "-v --tb=short"
+pythonpath = ["src"]
 markers = [
     "slow: marks tests as slow (deselect with '-m not slow')",
     "integration: marks tests that exercise real external dependencies (model, LanceDB)",
