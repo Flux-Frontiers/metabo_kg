@@ -11,9 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **`pycode-kg` promoted from git source to PyPI** (`pyproject.toml`) — `pycode-kg` is now published on PyPI at `>=0.18.1`; removed the `git+https` source reference and the testpypi supplemental source entry. Both `kg` and `all` extras now resolve from PyPI.
+- **`doc-kg` bumped to `>=0.12.3`** (`pyproject.toml`) — Updated minimum version in `kg` and `all` extras (was `>=0.11.0`).
+- **`kgmodule-utils` bumped to `>=0.2.3`** (`pyproject.toml`) — Updated minimum version in core dependencies (was `>=0.2.0`).
+- **`dev` extra merged into `kg` extra** (`pyproject.toml`) — Development tools (`detect-secrets`, `mypy`, `pre-commit`, `ruff`, `pytest`, etc.) consolidated under the `kg` extra; the separate `dev` extra is removed.
+- **Code style in `embed.py`** (`src/metabokg/embed.py`) — `model.encode()` call wrapped to 88-character line limit; no functional change.
+
 ### Fixed
 
 ### Removed
+
+- **`agent-kg`, `ftree-kg`, `memory-kg` removed from `kg` and `all` extras** (`pyproject.toml`) — These git-only packages are no longer listed in optional extras. Install directly from their git repositories when needed.
+- **testpypi supplemental source removed** (`pyproject.toml`) — No longer needed now that `pycode-kg` is on PyPI.
 
 ---
 

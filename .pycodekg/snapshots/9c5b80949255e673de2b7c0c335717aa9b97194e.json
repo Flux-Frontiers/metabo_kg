@@ -1,35 +1,40 @@
 {
-  "key": "2c2ef63d4a2d3b317c6a348e94125129a9cb9da6",
-  "branch": "claude/analyze-streamlit-state-performance-7APrU",
-  "timestamp": "2026-04-20T15:12:55.853642+00:00",
-  "version": "0.14.0",
+  "key": "9c5b80949255e673de2b7c0c335717aa9b97194e",
+  "branch": "main",
+  "timestamp": "2026-04-30T00:27:23.159118+00:00",
+  "version": "0.18.1",
   "metrics": {
     "db_path": ".pycodekg/graph.sqlite",
-    "total_nodes": 5712,
-    "meaningful_nodes": 391,
-    "total_edges": 5303,
+    "total_nodes": 5948,
+    "meaningful_nodes": 401,
+    "total_edges": 5543,
     "node_counts": {
       "class": 48,
-      "function": 151,
-      "method": 151,
+      "function": 158,
+      "method": 154,
       "module": 41,
-      "symbol": 5321
+      "symbol": 5547
     },
     "edge_counts": {
-      "ATTR_ACCESS": 1770,
-      "CALLS": 1798,
-      "CONTAINS": 350,
-      "IMPORTS": 356,
+      "ATTR_ACCESS": 1845,
+      "CALLS": 1906,
+      "CONTAINS": 360,
+      "IMPORTS": 360,
       "INHERITS": 11,
-      "RESOLVES_TO": 1018
+      "RESOLVES_TO": 1061
     },
-    "docstring_coverage": 0.841,
-    "critical_issues": 1,
+    "module_count": 41,
+    "class_count": 48,
+    "function_count": 158,
+    "method_count": 154,
+    "docstring_coverage": 0.843,
+    "snapshot_count": 14,
+    "critical_issues": 3,
     "complexity_median": 6,
     "module_node_counts": {
       "src/metabokg/__init__.py": 3,
       "src/metabokg/analyze.py": 309,
-      "src/metabokg/app.py": 367,
+      "src/metabokg/app.py": 487,
       "src/metabokg/cho_kinetics.py": 47,
       "src/metabokg/cli/__init__.py": 3,
       "src/metabokg/cli/_utils.py": 23,
@@ -46,8 +51,8 @@
       "src/metabokg/cli/cmd_viz3d.py": 10,
       "src/metabokg/cli/main.py": 2,
       "src/metabokg/cli/options.py": 19,
-      "src/metabokg/embed.py": 42,
-      "src/metabokg/enrich.py": 228,
+      "src/metabokg/embed.py": 49,
+      "src/metabokg/enrich.py": 246,
       "src/metabokg/graph.py": 64,
       "src/metabokg/index.py": 123,
       "src/metabokg/kinetics_fetch.py": 43,
@@ -55,17 +60,17 @@
       "src/metabokg/mcp_tools.py": 293,
       "src/metabokg/metabokg_viz.py": 22,
       "src/metabokg/metabokg_viz3d.py": 17,
-      "src/metabokg/orchestrator.py": 368,
+      "src/metabokg/orchestrator.py": 373,
       "src/metabokg/parsers/__init__.py": 2,
       "src/metabokg/parsers/base.py": 9,
       "src/metabokg/parsers/biopax.py": 130,
       "src/metabokg/parsers/csv_tsv.py": 101,
       "src/metabokg/parsers/kgml.py": 105,
-      "src/metabokg/parsers/sbml.py": 115,
+      "src/metabokg/parsers/sbml.py": 166,
       "src/metabokg/primitives.py": 88,
       "src/metabokg/simulate.py": 351,
       "src/metabokg/snapshots.py": 264,
-      "src/metabokg/store.py": 403,
+      "src/metabokg/store.py": 404,
       "src/metabokg/thorough_analysis.py": 94,
       "src/metabokg/viz3d.py": 450
     }
@@ -79,25 +84,25 @@
     },
     {
       "name": "m:src/metabokg/analyze.py:PathwayAnalyzer.close",
-      "callers": 12,
+      "callers": 13,
       "callees": 1,
       "risk_level": "low"
     },
     {
       "name": "m:src/metabokg/orchestrator.py:MetaKG.close",
-      "callers": 12,
+      "callers": 13,
       "callees": 1,
       "risk_level": "low"
     },
     {
       "name": "m:src/metabokg/store.py:MetaStore.close",
-      "callers": 12,
+      "callers": 13,
       "callees": 1,
       "risk_level": "low"
     },
     {
       "name": "m:src/metabokg/orchestrator.py:MetaKG.store",
-      "callers": 11,
+      "callers": 12,
       "callees": 1,
       "risk_level": "low"
     },
@@ -133,13 +138,15 @@
     }
   ],
   "issues": [
-    "[WARN] 1 orphaned functions found (`snapshot_diff`) -- consider archiving or documenting"
+    "[WARN] 1 orphaned functions found (`snapshot_diff`) -- consider archiving or documenting",
+    "[WARN] `store.py` has 38 functions/methods/classes -- consider splitting into focused submodules",
+    "[WARN] `orchestrator.py` has 35 functions/methods/classes -- consider splitting into focused submodules"
   ],
   "vs_previous": null,
   "vs_baseline": {
-    "nodes": 568,
-    "edges": 628,
-    "coverage_delta": 0.0019999999999998908,
-    "critical_issues_delta": 0
+    "nodes": 804,
+    "edges": 868,
+    "coverage_delta": 0.0039999999999998925,
+    "critical_issues_delta": 2
   }
 }

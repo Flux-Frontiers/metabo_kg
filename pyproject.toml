@@ -1,7 +1,7 @@
 # pyproject.toml — MetaboKG package configuration (PEP 621)
 #
 # Author: Eric G. Suchanek, PhD
-# Last Revision: 2026-04-24
+# Last Revision: 2026-04-29 19:08:48
 #
 # Build system : Poetry 2.x with PEP 621 [project] table
 #
@@ -44,11 +44,6 @@
 [build-system]
 requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[[tool.poetry.source]]
-name = "testpypi"
-url = "https://test.pypi.org/simple/"
-priority = "supplemental"
 
 [tool.poetry]
 packages = [{ include = "metabokg", from = "src" }]
@@ -94,7 +89,7 @@ dependencies = [
     "sentence-transformers>=5.4.1",
     "watchdoc>=0.0.1",
     "kg-snapshot>=0.3.0",
-    "kgmodule-utils>=0.2.0",
+    "kgmodule-utils>=0.2.3",
 ]
 
 [project.optional-dependencies]
@@ -112,15 +107,10 @@ viz3d = [
     "pyvista>=0.44.0",
     "pyvistaqt>=0.11.0",
 ]
-# note: agent-kg, ftree-kg, memory-kg not yet on PyPI — install from git
+# note: agent-kg, ftree-kg, memory-kg not yet on PyPI — install from git; pycode-kg and doc-kg now on PyPI
 kg = [
-    "doc-kg>=0.11.0",
-    "pycode-kg @ git+https://github.com/Flux-Frontiers/pycode_kg.git",
-    "agent-kg @ git+https://github.com/Flux-Frontiers/agent_kg.git",
-    "ftree-kg @ git+https://github.com/Flux-Frontiers/ftree_kg.git",
-    "memory-kg @ git+https://github.com/Flux-Frontiers/memory_kg.git",
-]
-dev = [
+    "doc-kg>=0.12.3",
+    "pycode-kg>=0.18.1",
     "detect-secrets>=1.5.0",
     "mypy>=1.10.0",
     "pre-commit>=4.0.0",
@@ -141,11 +131,8 @@ all = [
     "rdflib>=6.0.0",
     "scipy>=1.11.0",
     "streamlit>=1.35.0",
-    "doc-kg>=0.11.0",
-    "pycode-kg @ git+https://github.com/Flux-Frontiers/pycode_kg.git",
-    "agent-kg @ git+https://github.com/Flux-Frontiers/agent_kg.git",
-    "ftree-kg @ git+https://github.com/Flux-Frontiers/ftree_kg.git",
-    "memory-kg @ git+https://github.com/Flux-Frontiers/memory_kg.git",
+    "doc-kg>=0.12.3",
+    "pycode-kg>=0.18.1",
 ]
 
 [project.urls]
