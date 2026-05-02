@@ -1,6 +1,6 @@
 [![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/)
-[![License: PolyForm-NC-1.0.0](https://img.shields.io/badge/License-PolyForm--NC--1.0.0-blue.svg)](https://polyformproject.org/licenses/noncommercial/1.0.0/)
-[![Version](https://img.shields.io/badge/version-0.7.0-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
+[![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic--2.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
+[![Version](https://img.shields.io/badge/version-0.8.0-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 [![DOI](https://zenodo.org/badge/1184537477.svg)](https://zenodo.org/badge/latestdoi/1184537477)
 
@@ -153,7 +153,7 @@ metabokg/
 └── visualization/   # Streamlit + PyVista (2D/3D)
 ```
 
-The MCP server and CLI are thin wrappers over the same `MetaKG` orchestrator that the Python API exposes — there's exactly one code path for each capability. Architectural deep-dives (complexity, coupling, hotspots, and the PageRank/centrality of the Python codebase itself) live in [docs/analysis_v0.7.0.md](docs/analysis_v0.7.0.md), [docs/meta_kg_analysis_20260306.md](docs/meta_kg_analysis_20260306.md), and [docs/metakg-codekg-analysis-2026-03-03.md](docs/metakg-codekg-analysis-2026-03-03.md).
+The MCP server and CLI are thin wrappers over the same `MetaKG` orchestrator that the Python API exposes — there's exactly one code path for each capability. Architectural deep-dives (complexity, coupling, hotspots, and the PageRank/centrality of the Python codebase itself) live in [docs/analysis_v0.8.0.md](docs/analysis_v0.8.0.md), [docs/meta_kg_analysis_20260306.md](docs/meta_kg_analysis_20260306.md), and [docs/metakg-codekg-analysis-2026-03-03.md](docs/metakg-codekg-analysis-2026-03-03.md).
 
 ---
 
@@ -175,9 +175,11 @@ The MCP server and CLI are thin wrappers over the same `MetaKG` orchestrator tha
 
 ---
 
-## Contributing
+## Feedback & contributions
 
-Fork, branch from `main`, follow [ruff](https://docs.astral.sh/ruff/) + [mypy](https://mypy.readthedocs.io/), use `:param:` docstrings, write tests, open a PR. Code-quality commands and the testing layout are in [docs/INSTALL.md](docs/INSTALL.md) (contributor section) and [docs/CAPABILITIES.md §12](docs/CAPABILITIES.md).
+Bug reports, feature requests, and discussion are very welcome — please open an [issue](https://github.com/flux-frontiers/metabo_kg/issues) or start a [discussion](https://github.com/flux-frontiers/metabo_kg/discussions).
+
+External pull requests are not currently being accepted while contribution licensing is being finalized. If you have a patch you'd like to share, please open an issue describing it and we can figure out the right path together.
 
 ---
 
@@ -206,7 +208,7 @@ Full citation metadata in [`CITATION.cff`](CITATION.cff).
 
 ## License
 
-**PolyForm Noncommercial License 1.0.0** — free for academic research, education, personal projects, and evaluation. Commercial use requires a separate license; contact the author.
+**Elastic License 2.0** — free to use, modify, and redistribute, with two restrictions: you may not provide the software as a hosted/managed service to third parties, and you may not circumvent license-key or copyright-notice mechanisms. See [LICENSE](LICENSE) for the full text.
 
 ---
 
