@@ -9,11 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **CI and PyPI badges in README** (`README.md`) — Live CI status badge for the new `.github/workflows/ci.yml` workflow and a PyPI version badge linking to `https://pypi.org/project/metabo-kg/` (resolves once the package is published).
+
 ### Changed
+
+- **`/release` slash command no longer maintains `release-notes.md`** (`.claude/commands/release.md`) — GitHub Release pages are the single source of release notes; the repo no longer carries a `release-notes.md` file. The script now uses `gh release create … --generate-notes`, which auto-builds the release body from commits/PRs since the previous tag, and the artifact glob has been tightened to `dist/metabo_kg-<new_version>.*` to avoid attaching stale builds.
 
 ### Fixed
 
 ### Removed
+
+- **`release-notes.md` removed** — The repo no longer keeps a tracked release-notes file. Notes for each tagged release live only on the corresponding GitHub Release page.
 
 ---
 
