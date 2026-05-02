@@ -1,573 +1,193 @@
 [![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/)
-[![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic%202.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
+[![License: PolyForm-NC-1.0.0](https://img.shields.io/badge/License-PolyForm--NC--1.0.0-blue.svg)](https://polyformproject.org/licenses/noncommercial/1.0.0/)
 [![Version](https://img.shields.io/badge/version-0.7.0-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 [![DOI](https://zenodo.org/badge/1184537477.svg)](https://zenodo.org/badge/latestdoi/1184537477)
 
 # MetaboKG — Metabolic Pathway Knowledge Graph
 
-A comprehensive, extendable knowledge graph system for metabolic pathways with semantic search, interactive visualization, and MCP integration.
+**MetaboKG turns the world's metabolic pathway databases into a single, local, queryable knowledge graph — and then lets you ask it questions in English, simulate flux through it, and hand it to an LLM as structured context.**
 
-**MetaboKG** ingests pathway data from multiple formats (KGML, SBML, BioPAX, CSV), builds a unified semantic knowledge graph, and provides powerful querying and visualization tools for exploring metabolic relationships.
+It ingests pathways in the formats biology actually publishes in (KGML, SBML, BioPAX, CSV), normalizes them into a unified compound/reaction/enzyme/pathway graph backed by SQLite, and indexes the nodes in LanceDB so that *"glucose metabolism"* and *"hexokinase"* both find the right places to start exploring. From there you can trace shortest paths between metabolites, run flux balance analysis or kinetic ODE simulations, knock out enzymes to see what changes, render the result in 2D or 3D, or expose the whole thing to Claude over MCP.
 
-**Sister Projects:**
-- [PyCodeKG](https://github.com/flux-frontiers/pycode_kg) — A codebase knowledge graph system for Python repositories. PyCodeKG provides the semantic analysis capabilities that make it possible to explore MetaboKG's own architecture and implementation.
-- [DocKG](https://github.com/flux-frontiers/doc_kg) — A document knowledge graph system for Markdown and text corpora. DocKG indexes documentation chunks, sections, topics, and entities, enabling semantic + structural queries across MetaboKG's docs and any related literature.
-
-[![Python 3.12 | 3.13](https://img.shields.io/badge/Python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/downloads/)
-[![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic%202.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
-[![Version](https://img.shields.io/badge/Version-0.5.0-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
-[![Poetry](https://img.shields.io/badge/Poetry-2.0+-blue.svg)](https://python-poetry.org/)
-
-## Features
-
-- **Multi-format Parser** — Ingest metabolic pathway data from KGML, SBML, BioPAX, and CSV formats
-- **Unified Knowledge Graph** — Normalize and merge pathways into a single semantic graph with compounds, reactions, enzymes, and pathways
-- **Semantic Search** — Two-phase search: a local sentence-transformer model finds the closest nodes by vector similarity, then BFS graph expansion pulls in reaction context from connected edges. Falls back to substring search when no vector index is present.
-- **Runs Offline** — No cloud API required. Build, query, simulate, and visualize entirely on local storage (SQLite + LanceDB). The embedding model (~100 MB) downloads once from HuggingFace and runs locally from then on. Any compatible model — including a local filesystem path — works as a drop-in replacement.
-- **Interactive Visualization** — Explore pathways through Streamlit web interface or 3D PyVista viewer
-- **Metabolic Queries** — Find shortest paths between compounds, filter by reaction relationships
-- **Metabolic Simulations** — Flux balance analysis (FBA), kinetic ODE integration, and what-if perturbation analysis
-- **Context Packs for LLMs** — `metabokg-pack` assembles pathway context (reactions, substrates, enzymes) into structured Markdown or JSON. The output is designed for any LLM context window — cloud or local (e.g., Ollama).
-- **MCP Integration** — Expose the knowledge graph via Model Context Protocol for AI assistant integration
-- **Production-Ready** — SQLite persistence, comprehensive error handling, extensive test coverage
-
-## Quick Start
-
-### Installation
-
-```bash
-# Clone and navigate to the repository
-git clone https://github.com/flux-frontiers/metabo_kg.git
-cd metabo_kg
-
-# Create a Python 3.12+ virtual environment
-python3.12 -m venv .venv
-source .venv/bin/activate
-
-# Install with all public extras (viz, viz3d, simulate, biopax)
-poetry install --extras all
-```
-
-### One-Shot Initialization
-
-```bash
-# Builds all three corpora (hsa, cge, icho), checks TSV integrity,
-# auto-downloads anything missing, and seeds kinetic parameters.
-metabokg-init
-```
-
-That's it — `metabokg-init` is the recommended path for first-time setup. Everything below is the manual equivalent.
-
-### Pathway Data
-
-**All pathway data is bundled in the repository** — no download required:
-
-| Data | Location | Count |
-|---|---|---|
-| Human KEGG (`hsa`) | `data/hsa_pathways/` | 369 `.kgml` files |
-| CHO *C. griseus* KEGG (`cge`) | `data/cge_pathways/` | 366 `.kgml` files |
-| iCHO2441 GEM (SBML) | `data/icho_model/` | 1 `.xml` file |
-| KEGG/CHO TSV annotations | `data/*.tsv` | bundled — auto-fetched if missing |
-
-To refresh from source:
-
-```bash
-poetry run python scripts/download_human_kegg.py --output data/hsa_pathways
-poetry run python scripts/download_cho_kegg.py --output data/cge_pathways
-poetry run python scripts/download_icho_model.py --output data/icho_model
-```
-
-### Build the Metabolic Knowledge Graphs
-
-The `--data` directory drives automatic colocation — no `--db` or `--lancedb` flags needed.
-
-#### Human (*Homo sapiens*, `hsa`)
-
-```bash
-metabokg-build --data ./data/hsa_pathways
-
-# Output:
-# Building MetaboKG from ./data/hsa_pathways...
-# data_root   : ./data/hsa_pathways
-# db_path     : data/hsa_pathways/.metabokg/hsa.sqlite
-# nodes       : 17050  {'compound': 5115, 'reaction': 2139, 'enzyme': 9427, 'pathway': 369}
-# edges       : 40166  {'SUBSTRATE_OF': 2551, 'PRODUCT_OF': 2532, 'CATALYZES': 2394, 'CONTAINS': 32689}
-# isolated    : 0
-# indexed     : 14911 vectors  dim=384
-```
-
-**Complete Human Metabolome:** All 369 KEGG metabolic and regulatory pathways in a single queryable knowledge graph with 17K+ fully-connected nodes and 40K+ edges.
-
-#### Chinese Hamster Ovary (*C. griseus*, `cge`)
-
-```bash
-metabokg-build --data ./data/cge_pathways
-
-# Output:
-# Building MetaboKG from ./data/cge_pathways...
-# data_root   : ./data/cge_pathways
-# db_path     : data/cge_pathways/.metabokg/cge.sqlite
-# nodes       : ~16800  {'compound': ..., 'reaction': ..., 'enzyme': ..., 'pathway': 366}
-# edges       : ~39000  {'SUBSTRATE_OF': ..., 'PRODUCT_OF': ..., 'CATALYZES': ..., 'CONTAINS': ...}
-# isolated    : 0
-```
-
-> **Enzyme name resolution** for CHO uses `data/cge_gene_names.tsv` (bundled). If missing, `metabokg-init` will fetch it automatically from KEGG.
-
-#### iCHO2441 Genome-Scale Metabolic Model (SBML)
-
-```bash
-metabokg-build --data ./data/icho_model
-
-# db_path     : data/icho_model/.metabokg/icho.sqlite
-```
-
-### Launch Web Explorer
-
-```bash
-metabokg-viz --port 8500
-
-# Opens interactive browser at http://localhost:8500
-```
-
-## Multi-Organism Support
-
-MetaboKG supports multiple organisms, each stored in its own database for federated cross-organism queries.
-
-| Organism | Script | Output | Pathways |
-|----------|--------|--------|----------|
-| Human (*Homo sapiens*, `hsa`) | `download_human_kegg.py` | `data/hsa_pathways/` | 369 |
-| CHO (*C. griseus*, `cge`) | `download_cho_kegg.py` | `data/cge_pathways/` | 366 |
-| iCHO2441 GEM (SBML) | `download_icho_model.py` | `data/icho_model/` | 6,663 reactions |
-
-```bash
-# db and lancedb colocate automatically under each data dir
-metabokg-build --data data/hsa_pathways  # → data/hsa_pathways/.metabokg/hsa.sqlite
-metabokg-build --data data/cge_pathways  # → data/cge_pathways/.metabokg/cge.sqlite
-metabokg-build --data data/icho_model    # → data/icho_model/.metabokg/icho.sqlite
-```
-
-## Architecture
+Everything runs on your laptop. No cloud APIs, no quotas, no data leaving the machine.
 
 ![MetaboKG Architecture Diagram](docs/metaKG_arch.png)
 
+---
+
+## Sister projects
+
+MetaboKG is part of a small family of knowledge-graph systems that share the same hybrid semantic-plus-structural design:
+
+- **[PyCodeKG](https://github.com/flux-frontiers/pycode_kg)** — the same idea applied to Python source code. It's what lets MetaboKG understand its own architecture.
+- **[DocKG](https://github.com/flux-frontiers/doc_kg)** — the same idea applied to Markdown and prose. It indexes MetaboKG's own documentation, so the docs you're reading now are themselves a queryable graph.
+
+Together they form **KGRAG**, a federated retrieval layer where one query can span code, documentation, and pathway data simultaneously.
+
+---
+
+## What you can actually do with it
+
+The system is organized around five things, each documented in its own file:
+
+| If you want to… | Start here |
+|---|---|
+| **Install it** | [docs/INSTALL.md](docs/INSTALL.md) — minimal, simulation, viz, viz3d, BioPAX, and `all` extras |
+| **Build a graph from your data** | [docs/WORKFLOW.md](docs/WORKFLOW.md) — the full ingest → enrich → index pipeline, stage by stage |
+| **Understand what the graph contains** | [docs/FEATURES.md](docs/FEATURES.md) and [docs/HSA_SUMMARY.md](docs/HSA_SUMMARY.md) — coverage tables for each corpus |
+| **Use the Python API or CLI** | [docs/EXAMPLES.md](docs/EXAMPLES.md) — worked examples for every public capability |
+| **Simulate metabolism** | [docs/CAPABILITIES.md §7](docs/CAPABILITIES.md) — FBA, ODE kinetics, what-if perturbations, with the math |
+| **Look up a command** | [docs/CHEATSHEET.md](docs/CHEATSHEET.md) — every CLI flag and every MCP tool in one page |
+| **Expose the graph to an LLM** | [docs/MCP.md](docs/MCP.md) — MCP server setup, tool reference, agent workflows |
+| **See the full capability map** | [docs/CAPABILITIES.md](docs/CAPABILITIES.md) — the deep reference for everything below |
+
+If you only read one file after this one, read [docs/CAPABILITIES.md](docs/CAPABILITIES.md). It's the canonical tour.
+
+---
+
+## Get started in 60 seconds
+
+All pathway data is bundled in the repo — there's nothing to download to get going.
+
+```bash
+git clone https://github.com/flux-frontiers/metabo_kg.git
+cd metabo_kg
+python3.12 -m venv .venv && source .venv/bin/activate
+poetry install --extras all
+
+# One-shot: integrity check, fetch missing TSVs, build hsa + cge + icho, seed kinetics
+metabokg-init
+
+# Look around
+metabokg-info             # what got built and where
+metabokg-viz              # 2D Streamlit explorer at http://localhost:8500
+```
+
+That's the recommended path. [docs/INSTALL.md](docs/INSTALL.md) has the variant installs (simulation-only, viz-only, contributor setup); [docs/WORKFLOW.md](docs/WORKFLOW.md) has the manual stage-by-stage equivalent if you want to see what `metabokg-init` is actually doing.
+
+---
+
+## The three bundled corpora
+
+MetaboKG ships with three production-grade metabolic models, each built into its own colocated database. The same CLI, API, and MCP tools work against any of them — and KGRAG can federate queries across all three at once.
+
+| Corpus | What it is | Detail doc |
+|---|---|---|
+| **`metabokg-hsa`** | 369 KEGG pathways for *Homo sapiens* — the complete human metabolome (17K+ nodes, 40K+ edges) | [docs/HSA_SUMMARY.md](docs/HSA_SUMMARY.md) |
+| **`metabokg-cge`** | 366 KEGG pathways for *C. griseus* (Chinese Hamster Ovary) — the workhorse of biopharma | [docs/cho_workflow.md](docs/cho_workflow.md) |
+| **`metabokg-icho`** | iCHO2441 genome-scale model (SBML/FBC v2): 6,663 reactions, 4,456 metabolites, 2,441 gene products | [docs/icho_workflow.md](docs/icho_workflow.md) |
+
+Each corpus is a drop-in target:
+
+```bash
+metabokg-build --data data/hsa_pathways    # → data/hsa_pathways/.metabokg/hsa.sqlite
+metabokg-build --data data/cge_pathways    # → data/cge_pathways/.metabokg/cge.sqlite
+metabokg-build --data data/icho_model      # → data/icho_model/.metabokg/icho.sqlite
+```
+
+To bring your own data, drop KGML / SBML / BioPAX / CSV files in a directory and point `--data` at it. Format detection is automatic; see [docs/CAPABILITIES.md §2](docs/CAPABILITIES.md) for parser specifics.
+
+---
+
+## How retrieval works
+
+Search is hybrid by design. A query like *"hexokinase"* runs in two phases:
+
+1. **Vector phase** — the query is embedded with a local sentence-transformer (`BAAI/bge-small-en-v1.5` by default, 384-dim, ~130 MB cached after first use) and LanceDB returns the `k` closest compounds, enzymes, and pathways by cosine similarity.
+2. **Graph expansion phase** — each seed hit is expanded `hop` BFS steps along the typed edges (`SUBSTRATE_OF`, `PRODUCT_OF`, `CATALYZES`, `CONTAINS`, `INHIBITS`, `ACTIVATES`, `XREF`) so reaction context surfaces alongside the names that matched.
+
+When no LanceDB index exists (`--no-index`, or `--text-only` at query time), both the CLI and the Streamlit app fall back to case-insensitive substring matching. The embedding model is swappable — any `sentence-transformers`-compatible HuggingFace ID or local model directory works as a drop-in replacement; just rebuild the index against the new model.
+
+The graph itself is built around four node kinds (compound, reaction, enzyme, pathway) and seven edge relations. Full schema, edge semantics, and enrichment behaviour live in [docs/CAPABILITIES.md §3–§5](docs/CAPABILITIES.md).
+
+---
+
+## Simulation
+
+With `--extras simulate` installed, the same graph becomes a simulation substrate:
+
+- **FBA** — steady-state flux optimization via `scipy.optimize.linprog` (HiGHS backend)
+- **ODE kinetics** — time-course concentration dynamics under Michaelis-Menten rate laws, integrated with `scipy.integrate.solve_ivp` using **BDF** (metabolic systems are stiff; RK45 will hang)
+- **What-if perturbations** — enzyme knockouts, partial inhibitions, substrate pulses, with delta flux or delta concentration sorted by magnitude
+
+Kinetic parameters are seeded from BRENDA / SABIO-RK literature values via `metabokg-init` (or `kg.seed_kinetics()` from the API). The math, the rate equations (including the Haldane reversible extension), and the recommended solver settings are in [docs/CAPABILITIES.md §7](docs/CAPABILITIES.md); worked examples are in [docs/EXAMPLES.md §6–§8](docs/EXAMPLES.md).
+
+---
+
+## Use it from Claude (or any LLM)
+
+Two integration paths, depending on the LLM:
+
+- **Claude / MCP-aware clients** — `metabokg-mcp` exposes the graph as MCP tools (`pack`, `query_pathway`, `get_compound`, `get_reaction`, `find_path`, `seed_kinetics`, `simulate_fba`, `simulate_ode`, `simulate_whatif`). Setup for Claude Code, Claude Desktop, Kilo Code, and Copilot is in [docs/MCP.md](docs/MCP.md).
+- **Anything else (Ollama, OpenAI, local llamas)** — `metabokg-pack "TCA cycle"` produces self-contained Markdown or JSON with reactions, substrates, products, and enzymes already wired together. Pipe it into any context window:
+
+  ```bash
+  metabokg-pack "fatty acid oxidation" | ollama run llama3 "Summarize what's unusual about this pathway"
+  ```
+
+---
+
+## Visualization
+
+- **`metabokg-viz`** — Streamlit web explorer (2D, filterable, search-driven)
+- **`metabokg-viz3d --layout allium|cake`** — PyVista 3D viewer with two layout modes (hub-and-spoke, or concentric rings by topological distance)
+
+Both read from whatever corpus is active. UI walkthroughs and layout tradeoffs are in [docs/CAPABILITIES.md §6](docs/CAPABILITIES.md).
+
+---
+
+## Architecture
+
 ```
 metabokg/
-├── parsers/              # Format-specific parsers
-│   ├── kgml.py          # KEGG KGML parser
-│   ├── sbml.py          # SBML format parser
-│   ├── biopax.py        # BioPAX format parser
-│   └── csv_tsv.py       # CSV/TSV table parser
-│
-├── graph.py             # MetabolicGraph: file discovery & dispatch
-├── primitives.py        # MetaNode, MetaEdge: core data types
-├── store.py             # MetaStore: SQLite persistence layer
-├── index.py             # MetaIndex: LanceDB vector indexing
-├── embed.py             # Embedding utilities
-│
-├── cli.py               # Command-line entry points
-├── mcp_tools.py         # MCP server implementation
-│
-├── visualization/
-│   ├── app.py           # Streamlit web explorer
-│   ├── metabokg_viz.py    # Streamlit launcher
-│   ├── layout3d.py      # 3D layout algorithms (Allium, LayerCake)
-│   ├── viz3d.py         # PyVista 3D viewer
-│   └── metabokg_viz3d.py  # 3D visualizer launcher
-│
-└── metabokg.py            # MetaKG: orchestrator
+├── parsers/         # kgml, sbml, biopax, csv_tsv — format-specific
+├── graph.py         # MetabolicGraph: file discovery + dispatch
+├── primitives.py    # MetaNode, MetaEdge — core data types
+├── store.py         # MetaStore — SQLite persistence + graph queries
+├── index.py         # MetaIndex — LanceDB vector indexing
+├── embed.py         # embedding utilities
+├── orchestrator.py  # MetaKG — the public façade
+├── cli.py           # all metabokg-* command entry points
+├── mcp_tools.py     # MCP server
+└── visualization/   # Streamlit + PyVista (2D/3D)
 ```
 
-### How Semantic Search Works
-
-Search proceeds in two phases:
-
-1. **Vector phase** — The query is embedded with the same local sentence-transformer model used at index time (`all-MiniLM-L6-v2` by default, 384-dimensional). LanceDB finds the `k` closest nodes by cosine similarity among all indexed compounds, enzymes, and pathways.
-
-2. **Graph expansion phase** — Each seed hit is expanded through `hop` BFS steps along the knowledge-graph edges (`SUBSTRATE_OF`, `PRODUCT_OF`, `CATALYZES`, `CONTAINS`). This pulls in reaction context that wouldn't surface from vector similarity alone — reactions are deliberately excluded from the vector index because their short names embed poorly.
-
-When no LanceDB index exists (built with `--no-index`, or queried with `--text-only`), both `metabokg-query` and the Streamlit app fall back to case-insensitive substring matching on node names and descriptions.
-
-The embedding text sent to the model includes the node kind, name, EC number (enzymes), molecular formula (compounds), cross-reference IDs, and description — giving the model enough context to distinguish e.g. `hexokinase` from `glucokinase` even if their names look similar.
-
-### Data Model
-
-**Nodes** (4 kinds):
-- **Compound** — Small molecule metabolites (e.g., glucose, ATP)
-- **Reaction** — Biochemical transformations
-- **Enzyme** — Proteins that catalyze reactions
-- **Pathway** — Organized sets of reactions (e.g., glycolysis)
-
-**Edges** (7 relation types):
-- `SUBSTRATE_OF` — Compound is consumed in reaction
-- `PRODUCT_OF` — Compound is produced by reaction
-- `CATALYZES` — Enzyme catalyzes reaction
-- `INHIBITS` — Compound inhibits reaction
-- `ACTIVATES` — Compound activates reaction
-- `CONTAINS` — Pathway contains reaction/compound
-- `XREF` — Cross-reference to external database
-
-## Commands
-
-Quick reference — see **[CHEATSHEET.md](CHEATSHEET.md)** for full options and examples.
-
-| Command | Purpose |
-|---------|---------|
-| `metabokg-init` | One-shot setup: integrity check + fetch + build + seed for all corpora |
-| `metabokg-init --check` | Status only — show TSV integrity and corpus build state |
-| `metabokg-info` | Show active corpus and resolved db/lancedb paths |
-| `metabokg-build --data DIR` | Parse pathways → SQLite + LanceDB |
-| `metabokg-update --data DIR` | Incremental add (no wipe) |
-| `metabokg-enrich` | Re-run name enrichment only |
-| `metabokg-query QUERY` | Semantic search, ranked hits |
-| `metabokg-pack QUERY` | Context-rich Markdown/JSON pack for LLM use |
-| `metabokg-analyze` | 7-phase pathway analysis report |
-| `metabokg-simulate` | FBA / ODE / what-if simulations |
-| `metabokg-viz` | 2D Streamlit explorer |
-| `metabokg-viz3d` | 3D PyVista viewer |
-| `metabokg-mcp` | MCP server for Claude |
-| `metabokg-snapshot` | Save / list / diff graph metric snapshots |
-
-## Python API
-
-### Basic Usage
-
-```python
-from metabokg import MetaKG
-
-# Build the knowledge graph
-kg = MetaKG(db_path="data/hsa_pathways/.metabokg/hsa.sqlite", lancedb_dir="data/hsa_pathways/.metabokg/lancedb")
-stats = kg.build(data_dir="./data/hsa_pathways", wipe=True, build_index=True)
-print(stats)
-
-# Query a single node
-compound = kg.store.node("cpd:kegg:C00022")  # Pyruvate
-print(f"Name: {compound['name']}")
-print(f"Formula: {compound['formula']}")
-
-# Find neighbors
-neighbors = kg.store.neighbours("cpd:kegg:C00022", rels=("SUBSTRATE_OF",))
-
-# Get reaction with full context
-rxn = kg.store.reaction_detail("rxn:kegg:R00200")
-print(f"Substrates: {rxn['substrates']}")
-print(f"Products: {rxn['products']}")
-print(f"Enzymes: {rxn['enzymes']}")
-
-# Find shortest metabolic path
-path = kg.store.find_shortest_path(
-    from_id="cpd:kegg:C00022",  # Pyruvate
-    to_id="cpd:kegg:C00084",    # Acetyl-CoA
-    max_hops=6
-)
-print(f"Path: {[n['name'] for n in path['path']]}")
-print(f"Hops: {path['hops']}")
-
-kg.close()
-```
-
-### Semantic Search
-
-```python
-from metabokg import MetaKG
-
-kg = MetaKG(db_path="data/hsa_pathways/.metabokg/hsa.sqlite", lancedb_dir="data/hsa_pathways/.metabokg/lancedb")
-
-# General semantic search (all node kinds: pathway, compound, enzyme, reaction)
-results = kg.query("glucose metabolism", k=10)
-for hit in results.hits:
-    print(f"[{hit['kind']}] {hit['name']}: {hit['description'][:80]}")
-
-# Pathway-only search
-results = kg.query_pathway("glycolysis", k=5)
-for hit in results.hits:
-    print(f"{hit['name']} ({hit['member_count']} reactions)")
-
-# Graph expansion — include immediate graph neighbours of seed hits
-results = kg.query("hexokinase", k=5, hop=1)
-
-# Context-rich pack for LLM use
-from metabokg import MetaKG, MetabolicPack
-
-pack = kg.pack("TCA cycle", k=8, hop=1)
-print(pack.to_markdown())      # Markdown with reactions, substrates, enzymes
-pack.save("tca_context.md")   # Write to file
-pack.save("tca_context.json", fmt="json")  # JSON format
-
-kg.close()
-```
-
-### Metabolic Simulations
-
-**Flux Balance Analysis (FBA):**
-```python
-from metabokg import MetaKG
-
-kg = MetaKG(db_path="data/hsa_pathways/.metabokg/hsa.sqlite", lancedb_dir="data/hsa_pathways/.metabokg/lancedb")
-
-# Run steady-state optimization
-result = kg.simulate_fba(
-    pathway_id="pwy:kegg:hsa00010",  # Glycolysis
-    maximize=True
-)
-print(f"Status: {result['status']}")
-print(f"Objective value: {result['objective_value']}")
-
-kg.close()
-```
-
-**Kinetic ODE Simulation:**
-```python
-# Time-course with Michaelis-Menten kinetics
-result = kg.simulate_ode(
-    pathway_id="pwy:kegg:hsa00010",
-    t_end=20,
-    t_points=50,
-    initial_concentrations={"cpd:kegg:C00031": 5.0},  # Glucose: 5 mM
-    ode_method="BDF",      # Stiff ODE solver (recommended)
-    ode_rtol=1e-3,         # Relative tolerance
-    ode_atol=1e-5,         # Absolute tolerance
-    ode_max_step=None,     # Let solver choose step size
-)
-print(f"Status: {result['status']}")
-print(f"Final concentrations: {result['concentrations']}")
-```
-
-**What-If Analysis (Perturbations):**
-```python
-import json
-
-# Compare baseline vs. enzyme knockout
-scenario = {
-    "name": "hexokinase_knockout",
-    "enzyme_knockouts": ["enz:kegg:hsa:2539"]
-}
-result = kg.simulate_whatif(
-    pathway_id="pwy:kegg:hsa00010",
-    scenario_json=json.dumps(scenario),
-    mode="fba"
-)
-baseline = result["baseline"]["objective_value"]
-perturbed = result["perturbed"]["objective_value"]
-print(f"Change: {100 * (perturbed - baseline) / baseline:+.1f}%")
-```
-
-**ODE Solver Notes:**
-- Default solver is **BDF** (stiff-optimized) for metabolic systems
-- Metabolic ODEs are inherently stiff (fast enzyme kinetics + slow substrate dynamics)
-- Use `ode_method="BDF"` (default) for metabolic pathways
-- `ode_method="RK45"` (explicit, non-stiff) will hang on stiff systems—do not use
-- Set `ode_max_step=None` (default) to let solver adapt; never force small steps on stiff systems
-
-### Visualization in Code
-
-```python
-from metabokg.store import GraphStore
-from metabokg.layout3d import AlliumLayout, LayoutNode, LayoutEdge
-
-# Load graph
-store = GraphStore("data/hsa_pathways/.metabokg/hsa.sqlite")
-nodes_data = store.query_nodes()
-edges_data = store.query_edges()
-
-# Convert to layout nodes/edges
-layout_nodes = [LayoutNode.from_dict(n) for n in nodes_data]
-layout_edges = [LayoutEdge.from_dict(e) for e in edges_data]
-
-# Compute 3D positions
-layout = AlliumLayout()
-positions = layout.compute(layout_nodes, layout_edges)
-
-# positions is now a dict mapping node_id -> [x, y, z]
-for node in layout_nodes[:5]:
-    pos = positions[node.id]
-    print(f"{node.name}: ({pos[0]:.2f}, {pos[1]:.2f}, {pos[2]:.2f})")
-
-store.close()
-```
-
-## Supported Input Formats
-
-### KGML (KEGG Markup Language)
-- Native KEGG pathway format
-- Requires pathway XML files from KEGG database
-- Automatically detects via root element check
-
-### SBML (Systems Biology Markup Language)
-- Standard for computational models
-- Supports Level 3 Version 1+ formats
-- Includes stoichiometry and compartment information
-
-### BioPAX (Biological Pathway Exchange)
-- OWL-based RDF format
-- Supports pathways from databases like Reactome
-- Requires `rdflib` extra: `poetry install --extras biopax`
-
-### CSV/TSV
-- Simple tab-separated or comma-separated tables
-- Columns: `source_id`, `source_name`, `target_id`, `target_name`, `relationship`, `relationship_type`
-- Useful for custom pathway data
-
-## Installation Variants
-
-```bash
-# Core functionality only
-poetry install
-
-# Metabolic simulations (FBA, ODE)
-poetry install --extras simulate
-
-# Web visualization (Streamlit)
-poetry install --extras viz
-
-# 3D visualization (PyVista + PyQt5)
-poetry install --extras viz3d
-
-# BioPAX format support
-poetry install --extras biopax
-
-# All public extras (simulate + viz + viz3d + biopax)
-poetry install --extras all
-```
-
-> **Note:** The `kg` extra (`--extras kg`) installs PyCodeKG, DocKG, AgentKG, and other
-> knowledge-graph integrations from private Flux Frontiers repositories. These require
-> repository access and are not publicly available. Do not use `--extras kg` unless you
-> have been granted access.
-
-## Configuration
-
-### Environment Variables
-
-```bash
-# Visualization
-export METABOKG_DB="data/hsa_pathways/.metabokg/hsa.sqlite"
-export METABOKG_LANCEDB="data/hsa_pathways/.metabokg/lancedb"
-
-# Embedding model
-export METABOKG_MODEL="all-MiniLM-L6-v2"
-
-# Docker deployment
-export METABOKG_DB="/data/hsa.sqlite"
-export METABOKG_LANCEDB="/data/lancedb"
-```
-
-### Database Defaults
-
-- **SQLite** — `<data-dir>/.metabokg/<org>.sqlite` (colocated with pathway data, e.g. `data/hsa_pathways/.metabokg/hsa.sqlite`)
-- **LanceDB** — `<data-dir>/.metabokg/lancedb`
-- **Embedding Model** — `all-MiniLM-L6-v2` (384-dimensional vectors)
-
-### Custom Embedding Model
-
-Any `sentence-transformers`-compatible model works. Pass a HuggingFace model identifier or an absolute path to a locally downloaded model:
-
-```python
-from metabokg import MetaKG
-
-# Different HuggingFace model (larger, higher quality)
-kg = MetaKG(model="BAAI/bge-base-en-v1.5")
-
-# Fully offline: point to a local model directory
-kg = MetaKG(model="/models/bge-base-en-v1.5")
-```
-
-Or set the environment variable before building or querying:
-
-```bash
-export METABOKG_MODEL="BAAI/bge-base-en-v1.5"
-```
-
-The index and the query embedder must use the same model — if you rebuild with a different model, wipe the LanceDB directory first (`metabokg-build --data DIR` does this automatically).
-
-### Using Pack Output with a Local LLM
-
-`metabokg-pack` produces structured Markdown or JSON containing reactions, substrates, products, and enzymes for the matched pathways. This output is self-contained and works with any LLM:
-
-```bash
-# Write a context pack to file
-metabokg-pack "TCA cycle" -o tca_context.md
-
-# Pipe directly into Ollama
-metabokg-pack "fatty acid oxidation" | ollama run llama3 "Summarize what's unusual about this pathway"
-```
-
-## Performance Characteristics
-
-| Operation | Time | Notes |
-|-----------|------|-------|
-| Parse 100 KGML files | ~30s | Varies by complexity |
-| Build vector index | ~2min | For ~1000 nodes at 384-dim |
-| Semantic search | <100ms | LanceDB approximate nearest neighbor |
-| Shortest path (6 hops) | <50ms | BFS with ~1000 nodes |
-| Full graph load | <500ms | SQLite with indices |
-
-## Testing
-
-```bash
-# Run all tests
-poetry run pytest
-
-# Run with coverage
-poetry run pytest --cov=metabokg --cov-report=html
-
-# Run specific test
-poetry run pytest tests/test_parsers.py::test_kgml_parser
-```
-
-Test coverage includes:
-- Parser correctness (KGML, SBML, BioPAX, CSV)
-- Data model validation
-- Store operations
-- Semantic search accuracy
-- Graph queries (shortest path, neighbors)
+The MCP server and CLI are thin wrappers over the same `MetaKG` orchestrator that the Python API exposes — there's exactly one code path for each capability. Architectural deep-dives (complexity, coupling, hotspots, and the PageRank/centrality of the Python codebase itself) live in [docs/analysis_v0.7.0.md](docs/analysis_v0.7.0.md), [docs/meta_kg_analysis_20260306.md](docs/meta_kg_analysis_20260306.md), and [docs/metakg-codekg-analysis-2026-03-03.md](docs/metakg-codekg-analysis-2026-03-03.md).
+
+---
+
+## Documentation map
+
+| Doc | What it covers |
+|---|---|
+| [docs/INSTALL.md](docs/INSTALL.md) | All install variants, extras, contributor setup, troubleshooting |
+| [docs/WORKFLOW.md](docs/WORKFLOW.md) | The build pipeline, stage by stage; what each `metabokg-*` command does |
+| [docs/CAPABILITIES.md](docs/CAPABILITIES.md) | The canonical reference: parsers, store, retrieval, simulation, MCP, CLI |
+| [docs/FEATURES.md](docs/FEATURES.md) | Feature inventory and per-corpus coverage tables |
+| [docs/EXAMPLES.md](docs/EXAMPLES.md) | Worked examples for every public capability — Python and CLI |
+| [docs/MCP.md](docs/MCP.md) | MCP server setup for Claude / Kilo / Copilot, tool reference, agent flows |
+| [docs/HSA_SUMMARY.md](docs/HSA_SUMMARY.md) | The human metabolome corpus in detail |
+| [docs/cho_workflow.md](docs/cho_workflow.md) | The CHO (`cge`) corpus build and quirks |
+| [docs/icho_workflow.md](docs/icho_workflow.md) | The iCHO2441 genome-scale model (SBML/FBC v2) |
+| [docs/CHEATSHEET.md](docs/CHEATSHEET.md) | Every command, every flag, every MCP tool — one page |
+| [CHANGELOG.md](CHANGELOG.md) | Release history |
+
+---
 
 ## Contributing
 
-Contributions are welcome! Please follow these guidelines:
+Fork, branch from `main`, follow [ruff](https://docs.astral.sh/ruff/) + [mypy](https://mypy.readthedocs.io/), use `:param:` docstrings, write tests, open a PR. Code-quality commands and the testing layout are in [docs/INSTALL.md](docs/INSTALL.md) (contributor section) and [docs/CAPABILITIES.md §12](docs/CAPABILITIES.md).
 
-1. **Fork and branch** — Create a feature branch from `main`
-2. **Follow style** — Use [ruff](https://docs.astral.sh/ruff/) and [mypy](https://mypy.readthedocs.io/) for type checking
-3. **Write tests** — Add tests for new features in `tests/`
-4. **Document** — Update docstrings using `:param:` style (per project conventions)
-5. **Commit clearly** — Use descriptive commit messages
-6. **Submit PR** — Include description of changes and rationale
-
-### Code Quality
-
-```bash
-# Lint and format
-poetry run ruff check --fix src/
-
-# Type checking
-poetry run mypy src/metabokg/
-
-# Format with ruff
-poetry run ruff format src/
-```
-
-## Roadmap
-
-- [ ] GPU-accelerated embedding for large datasets
-- [ ] GraphQL query API
-- [ ] Advanced graph algorithms (centrality, community detection)
-- [ ] Drug-gene interaction networks
-- [ ] Integration with UniProt and ChEBI APIs
-- [ ] Differential pathway analysis
-- [ ] Export to Cytoscape format
+---
 
 ## Citation
 
-If you use MetaboKG in your research or project, please cite it:
+If you use MetaboKG in your research, please cite it:
 
 [![DOI](https://zenodo.org/badge/1184537477.svg)](https://zenodo.org/badge/latestdoi/1184537477)
 
-**APA**
-
 > Suchanek, E. G. (2026). *MetaboKG: Metabolic Pathway Knowledge Graph* (Version 0.7.0) [Software]. Flux-Frontiers. https://github.com/flux-frontiers/metabo_kg
-
-**BibTeX**
 
 ```bibtex
 @software{suchanek_metabo_kg,
@@ -580,35 +200,25 @@ If you use MetaboKG in your research or project, please cite it:
 }
 ```
 
-Full citation metadata is available in [`CITATION.cff`](CITATION.cff).
-
-## License
-
-MetaboKG is licensed under the **PolyForm Noncommercial License 1.0.0**.
-
-This means:
-- ✅ Free for **academic research** and **educational** use
-- ✅ Free for **personal projects**
-- ✅ Free for **evaluation**
-- ❌ Not permitted for **commercial use**
-
-For commercial licensing inquiries, please contact the author.
-
-## Support
-
-- **Documentation** — See docstrings and examples above
-- **Issues** — Report bugs on [GitHub Issues](https://github.com/flux-frontiers/metabo_kg/issues)
-- **Discussions** — Ask questions on [GitHub Discussions](https://github.com/flux-frontiers/metabo_kg/discussions)
-
-## Acknowledgments
-
-- [PyCodeKG](https://github.com/flux-frontiers/pycode_kg) — Provides semantic analysis and knowledge graph capabilities for this codebase
-- Layout algorithms adapted from [repo_vis](https://github.com/Suchanek/repo_vis)
-- KEGG, Reactome, and MetaCyc teams for pathway data standards
-- PyVista, Streamlit, and LanceDB communities for visualization and indexing
+Full citation metadata in [`CITATION.cff`](CITATION.cff).
 
 ---
 
-**Built with ❤️ for computational biology research -egs- **
+## License
 
-*Last updated: April 2026*
+**PolyForm Noncommercial License 1.0.0** — free for academic research, education, personal projects, and evaluation. Commercial use requires a separate license; contact the author.
+
+---
+
+## Support & acknowledgments
+
+- **Issues** — [GitHub Issues](https://github.com/flux-frontiers/metabo_kg/issues)
+- **Discussions** — [GitHub Discussions](https://github.com/flux-frontiers/metabo_kg/discussions)
+- Sister projects [PyCodeKG](https://github.com/flux-frontiers/pycode_kg) and [DocKG](https://github.com/flux-frontiers/doc_kg) for the semantic analysis that made this codebase legible to itself
+- Layout algorithms adapted from [repo_vis](https://github.com/Suchanek/repo_vis)
+- KEGG, Reactome, MetaCyc, and the iCHO2441 authors (Hefzi et al. 2016) for pathway data
+- PyVista, Streamlit, LanceDB, and sentence-transformers for the foundations
+
+---
+
+*Built for computational biology research — egs · Last updated April 2026*

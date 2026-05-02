@@ -321,7 +321,7 @@ metabokg-build \
   --data     ./data/hsa_pathways \
   --db       .metabokg/hsa.sqlite \
   --lancedb  .metabokg/lancedb \
-  --model    all-MiniLM-L6-v2
+  --model    bge-small-en-v1.5
 ```
 
 **Options:**
@@ -331,7 +331,7 @@ metabokg-build \
 | `--data PATH` | *(required)* | Directory containing pathway files |
 | `--db PATH` | `.metabokg/hsa.sqlite` | SQLite output path |
 | `--lancedb PATH` | `.metabokg/lancedb` | LanceDB vector index directory |
-| `--model NAME` | `all-MiniLM-L6-v2` | Sentence-transformer model for embeddings |
+| `--model NAME` | `bge-small-en-v1.5` | Sentence-transformer model for embeddings |
 | `--no-index` | off | Skip building the LanceDB vector index |
 | `--no-wipe` | off | Keep existing data instead of wiping before build |
 | `--no-enrich` | off | Skip name enrichment (on by default) |
@@ -349,7 +349,7 @@ isolated    : 0
 indexed     : 14911 vectors  dim=384
 ```
 
-> **First build note:** The sentence-transformer model (`all-MiniLM-L6-v2`, ~80 MB) is downloaded automatically on first use and cached in `~/.cache/huggingface/`. Subsequent builds are much faster.
+> **First build note:** The sentence-transformer model (`BAAI/bge-small-en-v1.5`, ~130 MB) is downloaded automatically on first use and cached in `~/.cache/huggingface/`. Subsequent builds are much faster.
 
 ### Rebuilding
 
@@ -518,7 +518,7 @@ metabokg-mcp --db .metabokg/hsa.sqlite --transport stdio
 |---|---|---|
 | `--db PATH` | `.metabokg/hsa.sqlite` | SQLite database path |
 | `--lancedb PATH` | `.metabokg/lancedb` | LanceDB vector index directory |
-| `--model NAME` | `all-MiniLM-L6-v2` | Embedding model |
+| `--model NAME` | `bge-small-en-v1.5` | Embedding model |
 | `--transport` | `stdio` | `stdio` (Claude Desktop/Code) or `sse` (HTTP) |
 
 ### Connecting to Claude Desktop
@@ -710,7 +710,7 @@ All CLI defaults can be overridden with environment variables:
 |---|---|---|
 | `METABOKG_DB` | `.metabokg/hsa.sqlite` | SQLite database path |
 | `METABOKG_LANCEDB` | `.metabokg/lancedb` | LanceDB vector index directory |
-| `METABOKG_MODEL` | `all-MiniLM-L6-v2` | Sentence-transformer model name |
+| `METABOKG_MODEL` | `bge-small-en-v1.5` | Sentence-transformer model name |
 
 Example for a Docker deployment:
 
@@ -783,7 +783,7 @@ The model is downloaded from Hugging Face on first use. If you're offline or beh
 ```bash
 poetry run python -c "
 from sentence_transformers import SentenceTransformer
-SentenceTransformer('all-MiniLM-L6-v2')
+SentenceTransformer('BAAI/bge-small-en-v1.5')
 print('Model cached.')
 "
 ```

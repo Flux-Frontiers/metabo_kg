@@ -233,7 +233,7 @@ metabokg-build \
   --data     <DIR>                    # required: directory of pathway files
   --db       .metabokg/hsa.sqlite      # SQLite output path
   --lancedb  .metabokg/lancedb         # LanceDB vector index directory
-  --model    all-MiniLM-L6-v2        # SentenceTransformer model
+  --model    bge-small-en-v1.5       # SentenceTransformer model
   --no-index                         # skip LanceDB index build
   --no-wipe                          # keep existing data (default: wipe before build)
   --enrich                           # run name enrichment after build
@@ -460,7 +460,7 @@ substrate of the TCA cycle via pyruvate dehydrogenase.
 
 ### 6.2 Default model
 
-`sentence-transformers/all-MiniLM-L6-v2` — 384-dim, MIT licence, ~80 MB.  Any Sentence Transformers model can be substituted via `--model`.
+`BAAI/bge-small-en-v1.5` — 384-dim, MIT licence, ~130 MB.  Any Sentence Transformers model can be substituted via `--model`.
 
 ### 6.3 Python usage
 
@@ -918,7 +918,7 @@ print(md)
 ```bash
 metabokg-mcp --db .metabokg/hsa.sqlite \
            --lancedb .metabokg/lancedb \
-           --model all-MiniLM-L6-v2 \
+           --model bge-small-en-v1.5 \
            --transport stdio   # or sse
 ```
 
@@ -1109,7 +1109,7 @@ All commands use [Click](https://click.palletsprojects.com/) and support `--help
 metabokg-build --data <DIR>
              [--db   .metabokg/hsa.sqlite]
              [--lancedb .metabokg/lancedb]
-             [--model all-MiniLM-L6-v2]
+             [--model bge-small-en-v1.5]
              [--no-index]          skip LanceDB index
              [--no-wipe]           keep existing data (default: wipe before build)
              [--enrich]            run name enrichment after building
@@ -1124,7 +1124,7 @@ Incrementally merge new pathway files into an existing database without wiping.
 metabokg-update --data <DIR>
               [--db   .metabokg/hsa.sqlite]
               [--lancedb .metabokg/lancedb]
-              [--model all-MiniLM-L6-v2]
+              [--model bge-small-en-v1.5]
               [--no-index]
               [--enrich]
               [--enrich-data DIR]
@@ -1154,7 +1154,7 @@ python scripts/download_kegg_reactions.py --kgml-dir data/hsa_pathways [--force]
 ```
 metabokg-mcp [--db   .metabokg/hsa.sqlite]
            [--lancedb .metabokg/lancedb]
-           [--model all-MiniLM-L6-v2]
+           [--model bge-small-en-v1.5]
            [--transport stdio|sse]
 ```
 
@@ -1243,7 +1243,7 @@ from metabokg import MetaKG
 kg = MetaKG(
     db_path     = ".metabokg/hsa.sqlite",
     lancedb_dir = ".metabokg/lancedb",
-    model       = "all-MiniLM-L6-v2",
+    model       = "bge-small-en-v1.5",
     table       = "metabokg_nodes",
 )
 

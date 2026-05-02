@@ -61,7 +61,7 @@ metabokg install-hooks
 | `--data PATH` | (required) | Directory containing pathway files |
 | `--db PATH` | `<data>/.metabokg/<org>.sqlite` | SQLite output path |
 | `--lancedb PATH` | `<data>/.metabokg/lancedb` | LanceDB output directory |
-| `--model NAME` | `all-MiniLM-L6-v2` | Sentence-transformer model |
+| `--model NAME` | `bge-small-en-v1.5` | Sentence-transformer model |
 | `--no-index` | — | Skip LanceDB vector index |
 | `--no-wipe` | — | Keep existing data instead of wiping |
 | `--no-enrich` | — | Skip name enrichment |
@@ -341,4 +341,4 @@ result = kg.simulate_whatif(
 |----------|---------|-------------|
 | `METABOKG_DB` | `data/hsa_pathways/.metabokg/hsa.sqlite` | Default SQLite path |
 | `METABOKG_LANCEDB` | `data/hsa_pathways/.metabokg/lancedb` | Default LanceDB path |
-| `METABOKG_MODEL` | `all-MiniLM-L6-v2` | Sentence-transformer model |
+| `METABOKG_MODEL` | `bge-small-en-v1.5` | Sentence-transformer model |

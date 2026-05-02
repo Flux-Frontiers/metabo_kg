@@ -197,7 +197,7 @@ Both steps are idempotent. Re-run them whenever the codebase changes significant
 | `--sqlite` | ✓ | — | Path to the SQLite graph |
 | `--lancedb` | | `.codekg/lancedb` | LanceDB output directory |
 | `--table` | | `codekg_nodes` | LanceDB table name |
-| `--model` | | `all-MiniLM-L6-v2` | Sentence-transformer model |
+| `--model` | | `bge-small-en-v1.5` | Sentence-transformer model |
 | `--wipe` | | false | Delete existing vectors first |
 | `--kinds` | | `module,class,function,method` | Node kinds to embed |
 | `--batch` | | `256` | Embedding batch size |
