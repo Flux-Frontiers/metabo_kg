@@ -2,6 +2,14 @@
 
 End-to-end data flow from raw pathway sources to analysis, simulation, and AI-agent access.
 
+**Bundled corpora:**
+
+| Corpus | Organism | Pathways | Reactions | Compounds | Enzymes | Nodes | Edges |
+|--------|----------|---------:|----------:|----------:|--------:|------:|------:|
+| `hsa`  | *Homo sapiens* (Human Metabolome)         | 369   | 2,139 | 5,115 | 9,427 | 17,050 | 40,166 |
+| `cge`  | *Cricetulus griseus* (CHO Metabolome)     | 366   | 2,099 | 5,105 | 9,360 | 16,930 | 39,731 |
+| `icho` | iCHO2441 GEM (genome-scale CHO model)     | 1     | 6,337 | 4,174 | 2,441 | 12,953 | 41,437 |
+
 ---
 
 ## Pipeline Overview
@@ -68,37 +76,39 @@ End-to-end data flow from raw pathway sources to analysis, simulation, and AI-ag
 
 ---
 
-## Stage 0 — Reference Data Download
+## Stage 0 — Reference Data
 
-Fetch KEGG name reference files used during Stage 3 enrichment. Run once; re-run with `--force` to refresh.
+KEGG name reference files used during Stage 3 enrichment. **All TSVs are bundled in the repo**; `metabokg-init` checks integrity on first run and auto-fetches anything missing from KEGG REST.
 
-| Script | Output | Used by |
-|--------|--------|---------|
-| `scripts/download_kegg_names.py` | `data/kegg_compound_names.tsv` | Phase 2a |
-| `scripts/download_kegg_names.py` | `data/kegg_reaction_names.tsv` | Phase 2b |
-| `scripts/download_kegg_reactions.py --kgml-dir data/hsa_pathways` | `data/kegg_reaction_detail.tsv` | Phase 2c |
-| `scripts/download_kegg_names.py` | `data/kegg_glycan_names.tsv` | Phase 2d |
-| `scripts/download_kegg_names.py` | `data/kegg_ko_names.tsv` | Phase 2e |
-| `scripts/download_kegg_names.py --genes hsa cge` | `data/{org}_gene_names.tsv` | Phase 3 |
-
-All five name files are downloaded in a single invocation of `download_kegg_names.py`:
+| File | Source endpoint | Used by |
+|------|-----------------|---------|
+| `data/kegg_compound_names.tsv` | `/list/compound` | Phase 2a |
+| `data/kegg_reaction_names.tsv` | `/list/reaction` | Phase 2b |
+| `data/kegg_reaction_detail.tsv` | `/get/rn:R#####` (per-reaction) | Phase 2c |
+| `data/kegg_glycan_names.tsv` | `/list/glycan` | Phase 2d |
+| `data/kegg_ko_names.tsv` | `/list/ko` | Phase 2e |
+| `data/{org}_gene_names.tsv` | `/list/{org}` | Phase 3 |
+| `data/sabio_cho_kinetics.tsv` | SABIO-RK (credentials-gated, manual) | Stage 4 (CHO) |
 
 ```bash
-python scripts/download_kegg_names.py
-python scripts/download_kegg_reactions.py --kgml-dir data/hsa_pathways
-python scripts/download_kegg_names.py --genes hsa cge
+metabokg-init --check          # status only — show TSV integrity + corpus build state
+metabokg-init                  # fetch missing TSVs, build all corpora, seed kinetics
+metabokg-init --no-fetch       # fail instead of downloading
 ```
+
+The integrity check classifies each TSV as `ok` / `thin` / `empty` / `missing`; auto-download is triggered only for the missing/empty cases. `sabio_cho_kinetics.tsv` is excluded from auto-fetch and must be obtained via `scripts/fetch_sabio_cho_kinetics.py`.
 
 ---
 
 ## Stage 1 — Pathway Acquisition
 
-KGML files for human and CHO pathways are included in the repository (`data/hsa_pathways/`, `data/cge_pathways/`). Re-download only when refreshing from KEGG.
+KGML files for human and CHO pathways and the iCHO2441 SBML are included in the repository (`data/hsa_pathways/`, `data/cge_pathways/`, `data/icho_model/`). Re-download only when refreshing from KEGG.
 
 ```bash
 python scripts/download_human_kegg.py --output data/hsa_pathways
-python scripts/download_kegg_names.py --genes hsa  # if refreshing
-python scripts/wire_kegg_enzymes.py                # re-inject CATALYZES edges after refresh
+python scripts/download_cho_kegg.py    --output data/cge_pathways
+python scripts/download_icho_model.py  --output data/icho_model
+python scripts/wire_kegg_enzymes.py    # re-inject CATALYZES edges after refresh
 ```
 
 | Organism | KEGG code | KGML files | Pathways |
@@ -115,6 +125,8 @@ python scripts/wire_kegg_enzymes.py                # re-inject CATALYZES edges a
 **Process:** `KGMLParser` extracts pathway, compound, enzyme, and reaction nodes with typed edges; `MetaStore` writes to SQLite WAL; `MetaIndex` embeds compound/enzyme/pathway nodes into LanceDB
 **Output:** `{org}.sqlite` + `lancedb/` per corpus
 
+`metabokg-init` builds all three corpora in one shot. Use `metabokg-build` to (re)build a single corpus:
+
 ```bash
 metabokg-build --data data/hsa_pathways   # → data/hsa_pathways/.metabokg/hsa.sqlite
 metabokg-build --data data/cge_pathways   # → data/cge_pathways/.metabokg/cge.sqlite
@@ -125,9 +137,10 @@ metabokg-build --data data/icho_model     # → data/icho_model/.metabokg/icho.s
 **Edge relations:** `CONTAINS · SUBSTRATE_OF · PRODUCT_OF · CATALYZES · INHIBITS · ACTIVATES · XREF`
 
 | Corpus | Nodes | Edges | Pathways |
-|--------|-------|-------|----------|
-| hsa | 17,050 | 40,166 | 369 |
-| cge | 16,930 | 39,731 | 366 |
+|--------|------:|------:|---------:|
+| hsa  | 17,050 | 40,166 | 369 |
+| cge  | 16,930 | 39,731 | 366 |
+| icho | 12,953 | 41,437 |   1 |
 
 ---
 
@@ -156,10 +169,7 @@ Replaces bare KEGG accessions with human-readable names across all node kinds. A
 | Organism genes | `{org}:{id}` | Phase 3 (per-organism TSV) |
 
 ```bash
-# Run standalone on an existing database
-metabokg enrich --db data/hsa_pathways/.metabokg/hsa.sqlite
-
-# Or skip enrichment during build
+# Skip enrichment during build (rare — enrichment is on by default)
 metabokg-build --data data/hsa_pathways --no-enrich
 ```
 
@@ -284,13 +294,8 @@ with MetaKG(db_path="data/hsa_pathways/.metabokg/hsa.sqlite") as kg:
 ```bash
 pip install metabokg[simulate,viz]
 
-# Stage 0 — reference data
-python scripts/download_kegg_names.py
-python scripts/download_kegg_reactions.py --kgml-dir data/hsa_pathways
-python scripts/download_kegg_names.py --genes hsa
-
-# Stage 2–4 — build, enrich, seed (all automatic)
-metabokg-build --data data/hsa_pathways
+# Stages 0–4 — integrity check, fetch missing TSVs, build all corpora, seed kinetics
+metabokg-init
 
 # Stage 5 — analyse
 metabokg-analyze --output analysis.md
@@ -300,3 +305,5 @@ metabokg-simulate fba --pathway hsa00010
 metabokg-viz   # default: data/hsa_pathways/.metabokg/hsa.sqlite
 metabokg-mcp
 ```
+
+`metabokg-init --check` reports TSV integrity and per-corpus build state without modifying anything. Use `metabokg-init --corpus hsa` to scope to a single corpus, or `--force` to rebuild existing databases.

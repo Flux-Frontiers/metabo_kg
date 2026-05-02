@@ -16,16 +16,17 @@ Last Revision: 2026-04-19
 License: Elastic 2.0
 """
 
-from metabokg.cli import (  # noqa: F401  — registers snapshot save/list/show/diff  # noqa: F401  — registers simulate (fba/ode/whatif/seed)
+from metabokg.cli import (  # noqa: F401
     cmd_analyze,  # noqa: F401  — registers analyze, analyze-basic
     cmd_build,  # noqa: F401  — registers build, update, enrich
     cmd_hooks,  # noqa: F401  — registers install-hooks
     cmd_info,  # noqa: F401  — registers info
+    cmd_init,  # noqa: F401  — registers init
     cmd_mcp,  # noqa: F401  — registers mcp
     cmd_pack,  # noqa: F401  — registers pack
     cmd_query,  # noqa: F401  — registers query
-    cmd_simulate,
-    cmd_snapshot,
+    cmd_simulate,  # noqa: F401  — registers simulate (fba/ode/whatif/seed)
+    cmd_snapshot,  # noqa: F401  — registers snapshot save/list/show/diff
     cmd_viz,  # noqa: F401  — registers viz
     cmd_viz3d,  # noqa: F401  — registers viz3d
 )
@@ -36,6 +37,7 @@ from metabokg.cli import (  # noqa: F401  — registers snapshot save/list/show/
 from metabokg.cli.cmd_analyze import analyze_basic_main, analyze_main  # noqa: F401
 from metabokg.cli.cmd_build import build_main, enrich_main, update_main  # noqa: F401
 from metabokg.cli.cmd_info import info_main  # noqa: F401
+from metabokg.cli.cmd_init import init_main  # noqa: F401
 from metabokg.cli.cmd_mcp import mcp_main  # noqa: F401
 from metabokg.cli.cmd_pack import pack_main  # noqa: F401
 from metabokg.cli.cmd_query import query_main  # noqa: F401
@@ -54,6 +56,7 @@ __all__ = [
     "enrich_main",
     "update_main",
     "info_main",
+    "init_main",
     "mcp_main",
     "pack_main",
     "query_main",
