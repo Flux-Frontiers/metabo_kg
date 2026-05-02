@@ -10,7 +10,9 @@ A comprehensive, extendable knowledge graph system for metabolic pathways with s
 
 **MetaboKG** ingests pathway data from multiple formats (KGML, SBML, BioPAX, CSV), builds a unified semantic knowledge graph, and provides powerful querying and visualization tools for exploring metabolic relationships.
 
-**Sister Project:** [PyCodeKG](https://github.com/flux-frontiers/pycode_kg) — A codebase knowledge graph system for Python repositories. PyCodeKG provides the semantic analysis capabilities that make it possible to explore MetaboKG's own architecture and implementation.
+**Sister Projects:**
+- [PyCodeKG](https://github.com/flux-frontiers/pycode_kg) — A codebase knowledge graph system for Python repositories. PyCodeKG provides the semantic analysis capabilities that make it possible to explore MetaboKG's own architecture and implementation.
+- [DocKG](https://github.com/flux-frontiers/doc_kg) — A document knowledge graph system for Markdown and text corpora. DocKG indexes documentation chunks, sections, topics, and entities, enabling semantic + structural queries across MetaboKG's docs and any related literature.
 
 [![Python 3.12 | 3.13](https://img.shields.io/badge/Python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/downloads/)
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic%202.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
@@ -47,25 +49,32 @@ source .venv/bin/activate
 poetry install --extras all
 ```
 
+### One-Shot Initialization
+
+```bash
+# Builds all three corpora (hsa, cge, icho), checks TSV integrity,
+# auto-downloads anything missing, and seeds kinetic parameters.
+metabokg-init
+```
+
+That's it — `metabokg-init` is the recommended path for first-time setup. Everything below is the manual equivalent.
+
 ### Pathway Data
 
-**Human (`data/hsa_pathways/`) and CHO (`data/cge_pathways/`) KEGG pathways are included in the repository** — no download needed for these.
+**All pathway data is bundled in the repository** — no download required:
 
-To refresh or re-download them:
+| Data | Location | Count |
+|---|---|---|
+| Human KEGG (`hsa`) | `data/hsa_pathways/` | 369 `.kgml` files |
+| CHO *C. griseus* KEGG (`cge`) | `data/cge_pathways/` | 366 `.kgml` files |
+| iCHO2441 GEM (SBML) | `data/icho_model/` | 1 `.xml` file |
+| KEGG/CHO TSV annotations | `data/*.tsv` | bundled — auto-fetched if missing |
+
+To refresh from source:
 
 ```bash
 poetry run python scripts/download_human_kegg.py --output data/hsa_pathways
 poetry run python scripts/download_cho_kegg.py --output data/cge_pathways
-```
-
-**iCHO2441 Genome-Scale Metabolic Model (6,663 reactions, SBML)** — XML files are included in `data/icho_model/` but the knowledge graph has not been built yet. To build:
-
-```bash
-metabokg-build --data data/icho_model  # → data/icho_model/.metabokg/icho.sqlite
-```
-
-To re-download the source XML:
-```bash
 poetry run python scripts/download_icho_model.py --output data/icho_model
 ```
 
@@ -104,7 +113,7 @@ metabokg-build --data ./data/cge_pathways
 # isolated    : 0
 ```
 
-> **Enzyme name resolution** for CHO uses `data/cge_gene_names.tsv` (bundled). To refresh: `python scripts/download_kegg_names.py --genes cge`
+> **Enzyme name resolution** for CHO uses `data/cge_gene_names.tsv` (bundled). If missing, `metabokg-init` will fetch it automatically from KEGG.
 
 #### iCHO2441 Genome-Scale Metabolic Model (SBML)
 
@@ -205,6 +214,9 @@ Quick reference — see **[CHEATSHEET.md](CHEATSHEET.md)** for full options and 
 
 | Command | Purpose |
 |---------|---------|
+| `metabokg-init` | One-shot setup: integrity check + fetch + build + seed for all corpora |
+| `metabokg-init --check` | Status only — show TSV integrity and corpus build state |
+| `metabokg-info` | Show active corpus and resolved db/lancedb paths |
 | `metabokg-build --data DIR` | Parse pathways → SQLite + LanceDB |
 | `metabokg-update --data DIR` | Incremental add (no wipe) |
 | `metabokg-enrich` | Re-run name enrichment only |

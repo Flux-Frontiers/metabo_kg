@@ -29,6 +29,9 @@ poetry install --all-extras  # Full install with viz, viz3d, mcp
 
 | Command | Purpose |
 |---------|---------|
+| `metabokg-init` | **First-time setup**: integrity check, fetch missing TSVs, build all corpora, seed kinetics |
+| `metabokg-init --check` | Status-only: show TSV integrity and corpus build state without modifying anything |
+| `metabokg-init --corpus hsa` | Initialize a single corpus (repeatable: `--corpus hsa --corpus cge`) |
 | `metabokg-info` | Show active corpus, resolved db/lancedb paths, node/edge counts |
 | `metabokg-build --data DIR` | Full rebuild: wipe + parse pathways → SQLite + LanceDB (enriches by default) |
 | `metabokg-build --data DIR --no-wipe` | Parse without wiping — merge new files on top |
@@ -149,13 +152,16 @@ KGRAG corpus, enabling federated cross-organism queries.
 | `metabokg-icho` | `data/icho_model/.metabokg/icho.sqlite` | iCHO2441 GEM, 6,663 reactions |
 
 ```bash
+# One-shot: builds all three corpora
+metabokg-init
+
+# Or build individually:
 metabokg-build --data data/hsa_pathways  # → data/hsa_pathways/.metabokg/hsa.sqlite
 metabokg-build --data data/cge_pathways  # → data/cge_pathways/.metabokg/cge.sqlite
 metabokg-build --data data/icho_model    # → data/icho_model/.metabokg/icho.sqlite
 ```
 
-- **Enzyme name resolution** requires `data/{org}_gene_names.tsv` — download once with
-  `python scripts/download_kegg_names.py --genes cge hsa`
+- **Enzyme name resolution** requires `data/{org}_gene_names.tsv` — `metabokg-init` fetches these automatically if missing
 - After Phase 3 enrichment, `--knockout Ldha` works directly (no node ID lookup needed)
 
 ---
@@ -184,58 +190,43 @@ metabokg-build --data data/icho_model    # → data/icho_model/.metabokg/icho.sq
 
 ## Data Download Scripts
 
-**All source data is bundled in the repo** (`data/hsa_pathways/`, `data/cge_pathways/`, `data/icho_model/*.xml`). Scripts below are for refreshing data only.
+**All source data is bundled in the repo** (`data/hsa_pathways/`, `data/cge_pathways/`, `data/icho_model/*.xml`, all `data/*.tsv`).
+
+TSV annotation files (compound/reaction/gene names) are fetched automatically by `metabokg-init` if missing — no separate script needed.
+
+Scripts below are for **refreshing pathway files** only (e.g. after a KEGG update):
 
 | Script | Purpose | Output |
 |--------|---------|--------|
 | `scripts/download_human_kegg.py` | Re-download hsa KGML pathway files | `data/hsa_pathways/*.kgml` |
 | `scripts/download_cho_kegg.py` | Re-download cge KGML pathway files | `data/cge_pathways/*.kgml` |
 | `scripts/download_icho_model.py` | Re-download iCHO2441 SBML XML | `data/icho_model/*.xml` |
-| `scripts/download_kegg_names.py` | Bulk-download compound + reaction name lists | `data/kegg_compound_names.tsv`, `data/kegg_reaction_names.tsv` |
-| `scripts/download_kegg_reactions.py` | Per-reaction detail: name, definition, equation, EC numbers | `data/kegg_reaction_detail.tsv` |
-
-**Reaction detail download (EC numbers):**
-```bash
-# From local KGML files (faster, no extra network call for ID list):
-python scripts/download_kegg_reactions.py --kgml-dir data/hsa_pathways
-
-# From KEGG link endpoint (~2000 reactions across all hsa pathways):
-python scripts/download_kegg_reactions.py
-
-# Options: --force (re-download), --dry-run (list IDs only), --delay SECS
-```
-
-Output format (`data/kegg_reaction_detail.tsv`):
-```
-reaction_id  name                              definition        equation           ec_numbers
-R00710       acetaldehyde:NAD+ oxidoreductase  Acetaldehyde ...  C00084 + C00003 …  1.2.1.3; 1.2.1.4
-```
+| `scripts/fetch_sabio_cho_kinetics.py` | Fetch CHO kinetics from SABIO-RK (credentials needed) | `data/sabio_cho_kinetics.tsv` |
 
 ---
 
 ## Typical Workflow
 
 ```bash
-# 1. hsa and cge pathway files are bundled in the repo — no download needed
-#    To refresh: python scripts/download_human_kegg.py --output data/hsa_pathways
+# 1. All data is bundled — just install and init
+poetry install --all-extras
 
-# 2. (Optional) Download KEGG name lists for canonical names in enrichment
-python scripts/download_kegg_names.py
+# 2. One-shot initialization: checks TSVs, builds all corpora, seeds kinetics
+metabokg-init
 
-# 3. Build & analyze pathways (enrichment runs by default)
-#    db colocates automatically: data/hsa_pathways/.metabokg/hsa.sqlite
-metabokg-build --data ./data/hsa_pathways
+# 3. Check what was built (read-only)
+metabokg-init --check
 
-# 4. Seed kinetic parameters from literature
-metabokg-simulate seed
-
-# 5. Run analysis report
+# 4. Run analysis report
 metabokg-analyze
 
 # Explore (choose your view)
-metabokg-viz           # 2D Streamlit explorer
+metabokg-viz                      # 2D Streamlit explorer
 metabokg-viz3d --layout allium    # 3D visualization (allium or cake)
-metabokg-mcp           # MCP server for Claude
+metabokg-mcp                      # MCP server for Claude
+
+# Rebuild a single corpus (e.g. after refreshing pathway files)
+metabokg-build --data ./data/hsa_pathways
 
 # Optional: analyze codebase
 pycodekg-build --repo . --wipe

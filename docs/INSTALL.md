@@ -84,7 +84,7 @@ git clone https://github.com/Flux-Frontiers/metabo_kg.git
 cd metabo_kg
 ```
 
-The repository includes sample KEGG pathway data in `data/hsa_pathways/` (a subset of human pathways). The full human metabolome can be downloaded separately — see [Section 5](#5-downloading-pathway-data).
+The repository includes all bundled pathway data in `data/hsa_pathways/` (369 human pathways), `data/cge_pathways/` (366 CHO *C. griseus* pathways), and `data/icho_model/` (iCHO2441 GEM). No download is required to get started — see [Section 5](#5-downloading-pathway-data) only if you need to refresh data from KEGG.
 
 ---
 
@@ -265,36 +265,39 @@ except ImportError:
 
 ## 5. Downloading Pathway Data
 
-MetaboKG ships with a subset of human KEGG pathways in `data/hsa_pathways/`. For the full human metabolome (369 pathways, ~19 MB), use the provided download script:
+> **All pathway data is bundled in the repository — no download is required to get started.**
+>
+> | Directory | Content | Count |
+> |---|---|---|
+> | `data/hsa_pathways/` | Human (hsa) KEGG pathways | 369 `.kgml` files |
+> | `data/cge_pathways/` | CHO *C. griseus* (cge) KEGG pathways | 366 `.kgml` files |
+> | `data/icho_model/` | iCHO2441 genome-scale metabolic model | 1 SBML `.xml` file |
+
+The download scripts below are only needed if you want to **refresh the bundled pathway files** from KEGG (e.g., after KEGG updates a pathway).
 
 ```bash
-# Download all 369 human KEGG pathways
+# Re-download all 369 human KEGG pathways (overwrites bundled files)
 poetry run python scripts/download_human_kegg.py --output data/hsa_pathways
+
+# Re-download all 366 CHO (C. griseus) KEGG pathways
+poetry run python scripts/download_cho_kegg.py --output data/cge_pathways
 
 # Preview what would be downloaded (no network requests)
 poetry run python scripts/download_human_kegg.py --output data/hsa_pathways --dry-run
 ```
 
-The script makes one KEGG REST API request per pathway with a 1-second courtesy pause between requests (~6 minutes total). KEGG's terms of service permit non-commercial use.
+Each script makes one KEGG REST API request per pathway with a 1-second courtesy pause (~6 minutes total). KEGG's terms of service permit non-commercial use.
 
 **Download script options:**
 
 ```
---output DIR     Output directory (default: data/hsa_pathways)
+--output DIR     Output directory (default: data/hsa_pathways or data/cge_pathways)
 --dry-run        List pathways without downloading
 --force          Re-download files that already exist
 --quiet          Suppress progress output
 ```
 
-After downloading, the directory will contain 369 `.kgml` files:
-
-```
-data/hsa_pathways/
-├── hsa00010.kgml   # Glycolysis / Gluconeogenesis
-├── hsa00020.kgml   # Citrate cycle (TCA cycle)
-├── hsa00030.kgml   # Pentose phosphate pathway
-...
-```
+> **TSV annotation files** (compound names, reaction names, gene names, etc.) are also bundled in the repository under `data/`.  If any are missing or corrupt, `metabokg init` will detect and re-download them automatically — no separate script needed.
 
 ---
 
@@ -873,32 +876,24 @@ metabokg-build --data ./data/hsa_pathways
 ## Complete Quickstart (copy-paste)
 
 ```bash
-# 1. Clone and enter the repo
+# 1. Clone and enter the repo (all data is bundled — nothing to download separately)
 git clone https://github.com/Flux-Frontiers/metabo_kg.git
 cd metabo_kg
 
 # 2. Install with simulation + web visualization
 poetry install --extras "simulate viz"
 
-# 3. Download the full human KEGG metabolome
-poetry run python scripts/download_human_kegg.py --output data/hsa_pathways
+# 3. Initialize all corpora in one step
+#    Checks TSV integrity, fetches anything missing, builds databases, seeds kinetics
+metabokg-init
 
-# 4. Download KEGG name lists for enrichment
-poetry run python scripts/download_kegg_names.py
-
-# 5. Build the knowledge graph with enrichment in one step
-metabokg-build --data ./data/hsa_pathways --enrich
-
-# 6. Seed kinetic parameters from curated literature
-metabokg-simulate seed
-
-# 7. Run a quick analysis
+# 4. Run a quick analysis
 metabokg-analyze --output analysis.md
 
-# 8. Launch the web explorer
+# 5. Launch the web explorer
 metabokg-viz
 
-# 9. (Optional) Start the MCP server for Claude
+# 6. (Optional) Start the MCP server for Claude
 metabokg-mcp --transport stdio
 ```
 
