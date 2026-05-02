@@ -2,7 +2,7 @@
 [![PyPI](https://img.shields.io/pypi/v/metabo-kg.svg)](https://pypi.org/project/metabo-kg/)
 [![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/)
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic--2.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
-[![Version](https://img.shields.io/badge/version-0.8.0-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
+[![Version](https://img.shields.io/badge/version-0.8.1-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 [![DOI](https://zenodo.org/badge/1184537477.svg)](https://zenodo.org/badge/latestdoi/1184537477)
 
@@ -92,16 +92,31 @@ To bring your own data, drop KGML / SBML / BioPAX / CSV files in a directory and
 
 ---
 
-## How retrieval works
+## The graph and how to query it
 
-Search is hybrid by design. A query like *"hexokinase"* runs in two phases:
+MetaboKG is a **structural knowledge graph first**, with semantic search layered on top. The primary store is SQLite — four node kinds (compound, reaction, enzyme, pathway) connected by seven typed edge relations (`SUBSTRATE_OF`, `PRODUCT_OF`, `CATALYZES`, `CONTAINS`, `INHIBITS`, `ACTIVATES`, `XREF`). LanceDB is a vector index over those nodes, not the source of truth. You can query the graph without ever touching the embeddings.
 
-1. **Vector phase** — the query is embedded with a local sentence-transformer (`BAAI/bge-small-en-v1.5` by default, 384-dim, ~130 MB cached after first use) and LanceDB returns the `k` closest compounds, enzymes, and pathways by cosine similarity.
-2. **Graph expansion phase** — each seed hit is expanded `hop` BFS steps along the typed edges (`SUBSTRATE_OF`, `PRODUCT_OF`, `CATALYZES`, `CONTAINS`, `INHIBITS`, `ACTIVATES`, `XREF`) so reaction context surfaces alongside the names that matched.
+### Enrichment turns accessions into names
 
-When no LanceDB index exists (`--no-index`, or `--text-only` at query time), both the CLI and the Streamlit app fall back to case-insensitive substring matching. The embedding model is swappable — any `sentence-transformers`-compatible HuggingFace ID or local model directory works as a drop-in replacement; just rebuild the index against the new model.
+Raw KEGG and SBML records are just opaque codes — `C00031`, `R00710`, `hsa:2538`, `G_100762926`. A multi-phase enrichment pipeline runs at build time and turns them into something you can read and query against:
 
-The graph itself is built around four node kinds (compound, reaction, enzyme, pathway) and seven edge relations. Full schema, edge semantics, and enrichment behaviour live in [docs/CAPABILITIES.md §3–§5](docs/CAPABILITIES.md).
+1. **Phase 1 — gene-symbol fallback** (no network). Reactions get labels derived from their catalysing enzymes via `CATALYZES` edges. Example: `R00710` → `ADH1A / ADH1B / ADH1C`.
+2. **Phase 2 — canonical KEGG names** (from TSVs `metabokg-init` fetches). Compound and reaction names from official KEGG lists override Phase 1 labels. Same example: `R00710` → `acetaldehyde:NAD+ oxidoreductase`.
+3. **Phase 3 — SBML FBC v2** (genome-scale models like iCHO2441). `<fbc:listOfGeneProducts>` entries (`enz:syn:…` nodes) are resolved against the gene-name TSVs. Example: `G_100762926` → `Aoc3`.
+
+After enrichment, knockouts and queries work directly against gene symbols — `Ldha`, `Adh1a`, `Aoc3` — no node-ID lookup required. Per-corpus enrichment results (counts, coverage, gaps) are in [docs/FEATURES.md](docs/FEATURES.md); the full pipeline behaviour is in [docs/CAPABILITIES.md §5](docs/CAPABILITIES.md).
+
+### Three ways in
+
+The same graph is reachable through three orthogonal access paths — pick whichever fits the question:
+
+1. **Semantic search.** A query like *"hexokinase"* is embedded with a local sentence-transformer (`BAAI/bge-small-en-v1.5` by default, 384-dim, ~130 MB cached after first use); LanceDB returns the `k` closest nodes by cosine similarity; each seed is then expanded `hop` BFS steps along typed edges so reaction context arrives alongside the names that matched. This is what `metabokg-query`, `metabokg-pack`, and the MCP `pack` tool use under the hood. Best for fuzzy intent (*"glucose metabolism"*, *"oxidative stress response"*).
+2. **Structural traversal.** Direct graph queries that bypass embeddings entirely: `get_compound("C00031")`, `get_reaction("R00710")`, `query_pathway("hsa00010")`, `find_path(source, target, max_depth=N)` for shortest paths between metabolites. Available from the CLI, the Python API, and the MCP server. Best when you already have an ID or want exact graph topology.
+3. **Simulation.** FBA, ODE kinetics, and what-if perturbations (next section). The simulator reads stoichiometry and kinetic parameters straight off the graph and returns flux distributions or time-courses.
+
+When no LanceDB index is built (`--no-index`, or `--text-only` at query time), the semantic path falls back to case-insensitive substring matching. The embedding model is swappable — any `sentence-transformers`-compatible HuggingFace ID or local model directory works as a drop-in replacement; just rebuild the index against the new model.
+
+Full schema, edge semantics, and enrichment internals live in [docs/CAPABILITIES.md §3–§5](docs/CAPABILITIES.md).
 
 ---
 
@@ -125,7 +140,7 @@ Two integration paths, depending on the LLM:
 - **Anything else (Ollama, OpenAI, local llamas)** — `metabokg-pack "TCA cycle"` produces self-contained Markdown or JSON with reactions, substrates, products, and enzymes already wired together. Pipe it into any context window:
 
   ```bash
-  metabokg-pack "fatty acid oxidation" | ollama run llama3 "Summarize what's unusual about this pathway"
+  metabokg-pack "fatty acid oxidation" | ollama run qwen3:4b-16k "Summarize what's unusual about this pathway"
   ```
 
 ---
@@ -133,7 +148,7 @@ Two integration paths, depending on the LLM:
 ## Visualization
 
 - **`metabokg-viz`** — Streamlit web explorer (2D, filterable, search-driven)
-- **`metabokg-viz3d --layout allium|cake`** — PyVista 3D viewer with two layout modes (hub-and-spoke, or concentric rings by topological distance)
+- **`metabokg-viz3d --layout allium|cake`** — PyVista 3D viewer with two layout modes (hub-and-spoke, or concentric rings by topological distance) *(under active development — layout modes and filtering are functional but the UI is still being refined)*
 
 Both read from whatever corpus is active. UI walkthroughs and layout tradeoffs are in [docs/CAPABILITIES.md §6](docs/CAPABILITIES.md).
 
@@ -155,7 +170,7 @@ metabokg/
 └── visualization/   # Streamlit + PyVista (2D/3D)
 ```
 
-The MCP server and CLI are thin wrappers over the same `MetaKG` orchestrator that the Python API exposes — there's exactly one code path for each capability. Architectural deep-dives (complexity, coupling, hotspots, and the PageRank/centrality of the Python codebase itself) live in [docs/analysis_v0.8.0.md](docs/analysis_v0.8.0.md), [docs/meta_kg_analysis_20260306.md](docs/meta_kg_analysis_20260306.md), and [docs/metakg-codekg-analysis-2026-03-03.md](docs/metakg-codekg-analysis-2026-03-03.md).
+The MCP server and CLI are thin wrappers over the same `MetaKG` orchestrator that the Python API exposes — there's exactly one code path for each capability. Architectural deep-dives (complexity, coupling, hotspots, and the PageRank/centrality of the Python codebase itself) live in [docs/analysis_v0.8.1.md](docs/analysis_v0.8.1.md), [docs/meta_kg_analysis_20260306.md](docs/meta_kg_analysis_20260306.md), and [docs/metakg-codekg-analysis-2026-03-03.md](docs/metakg-codekg-analysis-2026-03-03.md).
 
 ---
 
