@@ -1,20 +1,21 @@
 """
 index.py — MetaIndex: LanceDB semantic index for the metabolic knowledge graph.
 
-Indexes compound, enzyme, and pathway nodes for semantic (vector) search.
-Reactions are excluded — they are too terse for useful semantic search.
+Indexes compound, reaction, and pathway nodes for semantic (vector) search.
+Enzyme nodes are excluded — they contain only gene-name lists with no functional
+descriptions, so their embeddings are near-identical and pollute every search.
+Enzymes remain reachable via hop-1 graph expansion from reactions/pathways.
 
 Embedding text format:
   KIND: <kind>
   NAME: <name>
-  EC: <ec_number>         (enzymes only)
   FORMULA: <formula>      (compounds only)
   XREF <DB>: <ext_id>     (all cross-references)
   DESCRIPTION:
   <description>
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-02-28 20:55:28
+Last Revision: 2026-05-02
 
 """
 
@@ -33,11 +34,12 @@ from metabokg.embed import (
     escape_id,
     extract_distance,
 )
-from metabokg.primitives import KIND_COMPOUND, KIND_ENZYME, KIND_PATHWAY
+from metabokg.primitives import KIND_COMPOUND, KIND_PATHWAY, KIND_REACTION
 from metabokg.store import MetaStore
 
-# Node kinds that are indexed for semantic search
-_INDEXED_KINDS = {KIND_COMPOUND, KIND_ENZYME, KIND_PATHWAY}
+# Enzyme nodes are excluded: 9,427 nodes with gene-name-only descriptions produce
+# near-identical embeddings that swamp compound/pathway/reaction results.
+_INDEXED_KINDS = {KIND_COMPOUND, KIND_REACTION, KIND_PATHWAY}
 
 # Default LanceDB table name for metabolic nodes
 DEFAULT_TABLE = "metabokg_nodes"
@@ -51,9 +53,6 @@ def _build_meta_index_text(node: dict) -> str:
     :return: Multi-line string suitable for sentence-transformer embedding.
     """
     parts = [f"KIND: {node['kind']}", f"NAME: {node['name']}"]
-
-    if node.get("ec_number"):
-        parts.append(f"EC: {node['ec_number']}")
 
     if node.get("formula"):
         parts.append(f"FORMULA: {node['formula']}")

@@ -47,7 +47,7 @@ Public API
     enrich_enzyme_names(store, data_dir, *, quiet=False) -> int
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-04-19
+Last Revision: 2026-05-02 21:01:26
 License: Elastic 2.0
 """
 
@@ -74,26 +74,23 @@ class EnrichStats:
     :param reactions_from_graph: Reaction names set from CATALYZES enzyme labels.
     :param compounds_from_tsv: Compound names set from KEGG compound TSV.
     :param reactions_from_tsv: Reaction names updated from KEGG reaction TSV.
-    :param enzymes_from_tsv: Enzyme names resolved from per-organism gene TSVs.
+    :param glycans_from_tsv: Glycan names set from KEGG glycan TSV.
+    :param ko_enzymes_from_tsv: KO enzyme names set from KEGG KO TSV.
     """
 
     reactions_from_graph: int = 0
     compounds_from_tsv: int = 0
     reactions_from_tsv: int = 0
-    reactions_from_detail: int = 0
     glycans_from_tsv: int = 0
     ko_enzymes_from_tsv: int = 0
-    enzymes_from_tsv: int = 0
 
     def __str__(self) -> str:
         return (
             f"Enrichment: {self.reactions_from_graph} reaction names from graph, "
             f"{self.compounds_from_tsv} compound names from TSV, "
             f"{self.reactions_from_tsv} reaction names from TSV, "
-            f"{self.reactions_from_detail} reaction names from detail TSV, "
             f"{self.glycans_from_tsv} glycan names from TSV, "
-            f"{self.ko_enzymes_from_tsv} KO enzyme names from TSV, "
-            f"{self.enzymes_from_tsv} enzyme names from gene TSV"
+            f"{self.ko_enzymes_from_tsv} KO enzyme names from TSV"
         )
 
 
@@ -649,15 +646,7 @@ def enrich(store, data_dir: Path | str | None = None, *, quiet: bool = False) ->
     if not quiet:
         print(f"    → {stats.reactions_from_tsv} reaction names updated")
 
-    # Phase 2c — fallback for reactions still bare after 2b (uses detail TSV)
-    detail_tsv = data_root / "kegg_reaction_detail.tsv"
-    if not quiet:
-        print(f"  Enriching bare reactions from {detail_tsv.name}...", flush=True)
-    stats.reactions_from_detail = enrich_reactions_from_detail(store, detail_tsv, quiet=quiet)
-    if not quiet:
-        print(f"    → {stats.reactions_from_detail} reaction names updated from detail")
-
-    # Phase 2d — glycan compound names (gl:G##### namespace)
+    # Phase 2c — glycan compound names (gl:G##### namespace)
     glycan_tsv = data_root / "kegg_glycan_names.tsv"
     if not quiet:
         print(f"  Enriching glycan names from {glycan_tsv.name}...", flush=True)
@@ -665,19 +654,12 @@ def enrich(store, data_dir: Path | str | None = None, *, quiet: bool = False) ->
     if not quiet:
         print(f"    → {stats.glycans_from_tsv} glycan names updated")
 
-    # Phase 2e — KO enzyme names (enz:kegg:K##### namespace)
+    # Phase 2d — KO enzyme names (enz:kegg:K##### namespace)
     ko_tsv = data_root / "kegg_ko_names.tsv"
     if not quiet:
         print(f"  Enriching KO enzyme names from {ko_tsv.name}...", flush=True)
     stats.ko_enzymes_from_tsv = enrich_ko_enzymes_from_tsv(store, ko_tsv, quiet=quiet)
     if not quiet:
-        print(f"    → {stats.ko_enzymes_from_tsv} KO enzyme names updated")
-
-    # Phase 3 — enzyme gene IDs → gene symbols from per-organism TSVs
-    if not quiet:
-        print("  Enriching enzyme names from gene TSVs...", flush=True)
-    stats.enzymes_from_tsv = enrich_enzyme_names(store, data_root, quiet=quiet)
-    if not quiet:
-        print(f"    → {stats.enzymes_from_tsv} enzyme names updated")
+        print(f"    → {stats.ko_enzymes_from_tsv} KO enzyme names updated", flush=True)
 
     return stats

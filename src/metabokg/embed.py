@@ -1,13 +1,12 @@
 """
 embed.py — Embedding infrastructure for MetaKG.
 
-Provides a pluggable Embedder interface and a SentenceTransformer-backed
-implementation for producing float32 vectors from text.
-
-This module is self-contained — no dependency on code_kg.
+Re-exports the shared ``Embedder`` and ``SentenceTransformerEmbedder`` from
+``kgmodule-utils`` and adds MetaboKG-specific helpers (``SeedHit``,
+``extract_distance``, ``escape_id``) used by the LanceDB index layer.
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-02-28 20:55:28
+Last Revision: 2026-05-02
 
 """
 
@@ -15,96 +14,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import numpy as np
 from kg_utils.embed import DEFAULT_MODEL as DEFAULT_MODEL
-from kg_utils.embed import KNOWN_MODELS, resolve_model_path
-
-# ---------------------------------------------------------------------------
-# Embedder interface (pluggable)
-# ---------------------------------------------------------------------------
-
-
-class Embedder:
-    """
-    Abstract embedding backend.
-
-    Subclass and implement :meth:`embed_texts` to plug in any model.
-
-    :param dim: Embedding dimension (must be set by subclass ``__init__``).
-    """
-
-    dim: int
-
-    def embed_texts(self, texts: list[str]) -> list[list[float]]:
-        """
-        Embed a list of strings.
-
-        :param texts: Input strings.
-        :return: List of float32 vectors, one per input.
-        """
-        raise NotImplementedError
-
-    def embed_query(self, query: str) -> list[float]:
-        """
-        Embed a single query string.
-
-        Default implementation calls :meth:`embed_texts` with a one-element list.
-
-        :param query: Query string.
-        :return: Float32 vector.
-        """
-        return self.embed_texts([query])[0]
-
-
-class SentenceTransformerEmbedder(Embedder):
-    """
-    Local embedding via ``sentence-transformers``.
-
-    :param model_name: HuggingFace model name or local path.
-                       Defaults to :data:`DEFAULT_MODEL`.
-    """
-
-    def __init__(self, model_name: str = DEFAULT_MODEL) -> None:
-        """
-        Load the sentence-transformer model.
-
-        :param model_name: HuggingFace model name, known alias, or local path.
-            Resolved against the shared KGModule model cache
-            (``~/.kgrag/models/`` or ``$KGRAG_MODEL_DIR``).
-        """
-        from sentence_transformers import SentenceTransformer
-
-        resolved = KNOWN_MODELS.get(model_name, model_name)
-        cache_path = resolve_model_path(model_name)
-        load_from = str(cache_path) if cache_path.exists() else resolved
-
-        self.model = SentenceTransformer(load_from)
-        self.model_name = model_name
-        self.dim: int = self.model.get_embedding_dimension() or 384
-
-    def embed_texts(self, texts: list[str]) -> list[list[float]]:
-        """
-        Embed a list of strings into float32 vectors.
-
-        :param texts: Input strings to embed.
-        :return: List of float32 vectors, one per input string.
-        """
-        vecs = self.model.encode(texts, normalize_embeddings=True, show_progress_bar=False)
-        return [np.asarray(v, dtype="float32").tolist() for v in vecs]
-
-    def embed_query(self, query: str) -> list[float]:
-        """
-        Embed a single query string into a float32 vector.
-
-        :param query: Query string to embed.
-        :return: Float32 vector representation of the query.
-        """
-        vec = self.model.encode([query], normalize_embeddings=True)[0]
-        return np.asarray(vec, dtype="float32").tolist()
-
-    def __repr__(self) -> str:
-        return f"SentenceTransformerEmbedder(model={self.model_name!r}, dim={self.dim})"
-
+from kg_utils.embedder import Embedder as Embedder
+from kg_utils.embedder import SentenceTransformerEmbedder as SentenceTransformerEmbedder
 
 # ---------------------------------------------------------------------------
 # Seed hit returned by MetaIndex.search()
@@ -117,7 +29,7 @@ class SeedHit:
     A single result from a semantic vector search.
 
     :param id: Node ID.
-    :param kind: Node kind (``compound``, ``enzyme``, ``pathway``).
+    :param kind: Node kind (``compound``, ``reaction``, ``pathway``).
     :param name: Short name.
     :param distance: Vector distance (lower = more similar).
     :param rank: Zero-based rank in the result list.

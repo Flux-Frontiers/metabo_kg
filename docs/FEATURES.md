@@ -12,9 +12,9 @@ genome-scale stoichiometric model.
 
 | Corpus | Organism | Source | Pathways | Reactions | Compounds | Enzymes | Nodes | Edges | Vectors |
 |--------|----------|--------|:--------:|:---------:|:---------:|:-------:|------:|------:|--------:|
-| `metabokg-hsa` | *Homo sapiens* | KEGG KGML | 369 | 2,139 | 5,115 | 9,427 | 17,050 | 40,166 | 14,911 |
-| `metabokg-cge` | *Cricetulus griseus* (CHO) | KEGG KGML | 366 | 2,099 | 5,105 | 9,360 | 16,930 | 39,731 | 14,831 |
-| `metabokg-icho` | CHO (iCHO2441 GEM) | SBML / BioModels | 1 | 6,337 | 4,174 | 2,441 | 12,953 | 41,437 | 6,616 |
+| `metabokg-hsa` | *Homo sapiens* | KEGG KGML | 369 | 2,139 | 5,115 | 9,427 | 17,050 | 40,166 | 7,623 |
+| `metabokg-cge` | *Cricetulus griseus* (CHO) | KEGG KGML | 366 | 2,099 | 5,105 | 9,360 | 16,930 | 39,731 | 7,570 |
+| `metabokg-icho` | CHO (iCHO2441 GEM) | SBML / BioModels | 1 | 6,337 | 4,174 | 2,441 | 12,953 | 41,437 | 10,512 |
 
 ---
 
@@ -35,12 +35,13 @@ genome-scale stoichiometric model.
 | CONTAINS edges | 32,689 |
 | SUBSTRATE\_OF / PRODUCT\_OF | 5,083 |
 | **Total edges** | **40,166** |
-| Vectors (dim=384) | 14,911 |
+| Vectors (dim=384) | 7,623 |
 
 **Enrichment:**
 - Compound names: canonical KEGG names from `kegg_compound_names.tsv`
-- Reaction names: from `kegg_reaction_names.tsv` + `kegg_reaction_detail.tsv`
-- Enzyme names: gene symbols from `hsa_gene_names.tsv` (HGNC symbols, e.g. `LDHA`)
+- Reaction names: from graph CATALYZES edges + `kegg_reaction_names.tsv`
+- Glycan names: from `kegg_glycan_names.tsv`
+- KO enzyme names: from `kegg_ko_names.tsv`
 
 **Simulations supported:** FBA, ODE (BDF solver), what-if (enzyme knockouts by gene symbol)
 
@@ -69,7 +70,7 @@ structure as human but with CHO-specific enzyme gene assignments.
 | CONTAINS edges | 32,413 |
 | SUBSTRATE\_OF / PRODUCT\_OF | 4,999 |
 | **Total edges** | **39,731** |
-| Vectors (dim=384) | 14,831 |
+| Vectors (dim=384) | 7,570 |
 
 **Enrichment:**
 - Compound / reaction names: same KEGG TSVs as human
@@ -94,8 +95,10 @@ metabokg-build --data data/cge_pathways
 
 **Source:** iCHO2441 SBML (BioModels `MODEL2206100001`, Hefzi et al. 2016),
 the most comprehensive consensus CHO genome-scale metabolic model.
-Encodes 6,663 reactions across all subcellular compartments using
+The published model encodes 6,663 reactions across all subcellular compartments using
 **SBML Level 3 + FBC v2** (flux balance constraints package).
+MetaboKG parses 6,337 reactions (exchange/boundary reactions with no internal metabolites
+are excluded during SBML ingestion).
 
 **Coverage:**
 
@@ -110,7 +113,7 @@ Encodes 6,663 reactions across all subcellular compartments using
 | CONTAINS edges | 6,337 |
 | SUBSTRATE\_OF / PRODUCT\_OF | 25,304 |
 | **Total edges** | **41,437** |
-| Vectors (dim=384) | 6,616 |
+| Vectors (dim=384) | 10,512 |
 | Xref rows (gene IDs) | 2,441 |
 
 **Enrichment:**

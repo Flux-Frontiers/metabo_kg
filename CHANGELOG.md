@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **LanceDB index strategy: reactions indexed, enzymes excluded** (`src/metabokg/index.py`) — The vector index now covers **compound**, **reaction**, and **pathway** nodes. Enzyme nodes (9,427 in hsa) are dropped from indexing: they contain only gene-name lists, producing near-identical embeddings that crowd out compound and pathway results. Enzymes remain reachable via hop-1 graph expansion from reactions. Updated vector counts: hsa 7,623, cge 7,570, icho 10,512 (dim=384).
+- **`embed.py` consolidated into `kgmodule-utils`** (`src/metabokg/embed.py`) — Removed local `Embedder` and `SentenceTransformerEmbedder` class definitions; the module now re-exports them from `kg_utils.embedder` (shipped in `kgmodule-utils ≥0.2.4`). MetaboKG-specific helpers (`SeedHit`, `extract_distance`, `escape_id`) remain in place.
+- **`enrich.py` pipeline simplified** (`src/metabokg/enrich.py`) — Removed Phase 2c (reaction detail TSV fallback) and Phase 3 (per-organism enzyme gene symbol enrichment) from the `enrich()` pipeline. `EnrichStats` drops the `reactions_from_detail` and `enzymes_from_tsv` fields accordingly.
+- **iCHO2441 stats corrected** (`README.md`, `docs/icho_workflow.md`, `docs/FEATURES.md`, `CLAUDE.md`) — The published model has 6,663 reactions; MetaboKG parses **6,337** (exchange/boundary reactions with no internal metabolites are excluded during SBML ingestion). Metabolite count corrected to **4,174**. These numbers are now consistent across all documentation surfaces.
+- **`kgmodule-utils` bumped to `≥0.2.4`** (`pyproject.toml`) — Required for the shared `Embedder`/`SentenceTransformerEmbedder` re-exports in `embed.py`.
+- **Transitive dependency bumps** (`poetry.lock`) — `pyvista` 0.47.3→0.48.0, `huggingface-hub` 1.12.2→1.13.0, `pycode-kg` 0.18.1→0.19.0, `cachetools` 7.0.6→7.1.0, `typer` 0.25.0→0.25.1, `cyclopts` 4.11.0→4.11.1, `jedi` 0.19.2→0.20.0, `parso` 0.8.6→0.8.7, `wcwidth` 0.6.0→0.7.0.
+
 ### Fixed
 
 ### Removed

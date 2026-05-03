@@ -78,7 +78,7 @@ MetaboKG ships with three production-grade metabolic models, each built into its
 |---|---|---|
 | **`metabokg-hsa`** | 369 KEGG pathways for *Homo sapiens* — the complete human metabolome (17K+ nodes, 40K+ edges) | [docs/HSA_SUMMARY.md](docs/HSA_SUMMARY.md) |
 | **`metabokg-cge`** | 366 KEGG pathways for *C. griseus* (Chinese Hamster Ovary) — the workhorse of biopharma | [docs/cho_workflow.md](docs/cho_workflow.md) |
-| **`metabokg-icho`** | iCHO2441 genome-scale model (SBML/FBC v2): 6,663 reactions, 4,456 metabolites, 2,441 gene products | [docs/icho_workflow.md](docs/icho_workflow.md) |
+| **`metabokg-icho`** | iCHO2441 genome-scale model (SBML/FBC v2): 6,337 reactions, 4,174 metabolites, 2,441 gene products | [docs/icho_workflow.md](docs/icho_workflow.md) |
 
 Each corpus is a drop-in target:
 

@@ -149,7 +149,7 @@ KGRAG corpus, enabling federated cross-organism queries.
 |--------|---------------------|---------|
 | `metabokg-hsa` | `data/hsa_pathways/.metabokg/hsa.sqlite` | 369 human pathways *(bundled in repo)* |
 | `metabokg-cge` | `data/cge_pathways/.metabokg/cge.sqlite` | 366 CHO (*C. griseus*) pathways *(bundled in repo)* |
-| `metabokg-icho` | `data/icho_model/.metabokg/icho.sqlite` | iCHO2441 GEM, 6,663 reactions |
+| `metabokg-icho` | `data/icho_model/.metabokg/icho.sqlite` | iCHO2441 GEM, 6,337 reactions |
 
 ```bash
 # One-shot: builds all three corpora

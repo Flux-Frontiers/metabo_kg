@@ -4,8 +4,10 @@
 
 iCHO2441 is the most comprehensive consensus reconstruction of Chinese Hamster
 Ovary (CHO) cell metabolism (Hefzi et al. 2016, BioModels `MODEL2206100001`).
-It contains 6,663 reactions, 2,441 gene products, and 4,456 metabolites across
-subcellular compartments, encoded as **SBML Level 3 with the FBC v2 package**.
+The published model contains 6,663 reactions, 2,441 gene products, and 4,456 metabolites
+across subcellular compartments, encoded as **SBML Level 3 with the FBC v2 package**.
+MetaboKG parses **6,337 reactions** and **4,174 compounds** (exchange/boundary reactions
+with no internal metabolites are excluded during SBML ingestion).
 
 This document covers: downloading the model, the FBC-specific parser behaviour,
 build results, enrichment state, and known gaps.
@@ -88,7 +90,7 @@ stripped to store the raw Entrez gene ID in `xrefs`:
 | PRODUCT\_OF edges | 12,722 |
 | CATALYZES edges | 9,796 |
 | **Total edges** | **41,437** |
-| Vectors indexed | 6,616 (dim=384) |
+| Vectors indexed | 10,512 (dim=384) |
 | Xref rows | 2,441 (one per enzyme) |
 
 ---

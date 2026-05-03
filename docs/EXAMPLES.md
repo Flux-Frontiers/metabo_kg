@@ -76,6 +76,7 @@ Expected output:
 ```
 nodes=17050  edges=40166
   compounds=5115  enzymes=9427  pathways=369  reactions=2139
+indexed=7623  dim=384
 ```
 
 ---

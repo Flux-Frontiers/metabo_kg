@@ -252,7 +252,7 @@ metabokg-update --data <DIR>
 2. Each file is passed to parsers in priority order (KGML → SBML → BioPAX → CSV); first match wins
 3. All `MetaNode` and `MetaEdge` objects are bulk-written to SQLite
 4. The `xref_index` table is populated by expanding `xrefs` JSON blobs
-5. Unless `--no-index`, compound + enzyme + pathway nodes are embedded and loaded into LanceDB
+5. Unless `--no-index`, compound + reaction + pathway nodes are embedded and loaded into LanceDB
 6. If `--enrich` is set, name enrichment runs immediately after indexing (see §5)
 
 **Build stats printed to stderr:**
@@ -261,7 +261,7 @@ metabokg-update --data <DIR>
 nodes: 342 (compound: 198, reaction: 87, enzyme: 41, pathway: 16)
 edges: 891 (SUBSTRATE_OF: 234, PRODUCT_OF: 234, CATALYZES: 87, CONTAINS: 336)
 xref_index: 621 rows
-lancedb: 255 rows indexed (dim=384)
+lancedb: 301 rows indexed (dim=384)  # compound + reaction + pathway only
 parse_errors: 0
 Enrichment: 87 reaction names from graph, 198 compound names from TSV, 54 reaction names from TSV, 12 reaction names from detail TSV, 41 enzyme names from gene TSV
 ```
@@ -443,7 +443,7 @@ n = enrich_enzyme_names(store, Path("data/"))                               # Ph
 
 ### 6.1 What is indexed
 
-**Compounds, enzymes, and pathways** are indexed.  Reactions are excluded (no natural-language description to embed).
+**Compounds, reactions, and pathways** are indexed.  Enzyme nodes are excluded — they contain only gene-name lists with near-identical embeddings that pollute search results.  Enzymes remain reachable via hop-1 graph expansion from reactions.
 
 Each node is converted to a text document before embedding:
 

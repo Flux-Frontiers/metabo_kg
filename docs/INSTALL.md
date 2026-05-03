@@ -346,7 +346,7 @@ db_path     : .metabokg/hsa.sqlite
 nodes       : 17050  {'compound': 5115, 'reaction': 2139, 'enzyme': 9427, 'pathway': 369}
 edges       : 40166  {'SUBSTRATE_OF': 2551, 'PRODUCT_OF': 2532, 'CATALYZES': 2394, 'CONTAINS': 32689}
 isolated    : 0
-indexed     : 14911 vectors  dim=384
+indexed     : 7623 vectors  dim=384
 ```
 
 > **First build note:** The sentence-transformer model (`BAAI/bge-small-en-v1.5`, ~130 MB) is downloaded automatically on first use and cached in `~/.cache/huggingface/`. Subsequent builds are much faster.
