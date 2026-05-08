@@ -1,0 +1,163 @@
+{
+  "key": "949c46e9329e9ba25f6c9f5273d9d659b5da3cc3",
+  "branch": "main",
+  "timestamp": "2026-05-08T03:44:59.592185+00:00",
+  "version": "0.19.0",
+  "metrics": {
+    "db_path": ".pycodekg/graph.sqlite",
+    "total_nodes": 7392,
+    "meaningful_nodes": 486,
+    "total_edges": 6806,
+    "node_counts": {
+      "class": 49,
+      "function": 235,
+      "method": 150,
+      "module": 52,
+      "symbol": 6906
+    },
+    "edge_counts": {
+      "ATTR_ACCESS": 2219,
+      "CALLS": 2445,
+      "CONTAINS": 434,
+      "IMPORTS": 443,
+      "INHERITS": 10,
+      "RESOLVES_TO": 1255
+    },
+    "module_count": 52,
+    "class_count": 49,
+    "function_count": 235,
+    "method_count": 150,
+    "docstring_coverage": 0.852,
+    "snapshot_count": 27,
+    "critical_issues": 3,
+    "complexity_median": 7,
+    "module_node_counts": {
+      "scripts/collect_pathway_data.py": 95,
+      "scripts/download_cho_kegg.py": 42,
+      "scripts/download_human_kegg.py": 56,
+      "scripts/download_icho_model.py": 55,
+      "scripts/examples.py": 238,
+      "scripts/fetch_sabio_cho_kinetics.py": 132,
+      "scripts/generate_wiki.py": 159,
+      "scripts/simulation_demo.py": 62,
+      "scripts/wire_kegg_enzymes.py": 114,
+      "src/metabokg/__init__.py": 3,
+      "src/metabokg/analyze.py": 309,
+      "src/metabokg/app.py": 487,
+      "src/metabokg/cho_kinetics.py": 81,
+      "src/metabokg/cli/__init__.py": 3,
+      "src/metabokg/cli/_utils.py": 23,
+      "src/metabokg/cli/cmd_analyze.py": 49,
+      "src/metabokg/cli/cmd_build.py": 78,
+      "src/metabokg/cli/cmd_hooks.py": 22,
+      "src/metabokg/cli/cmd_info.py": 25,
+      "src/metabokg/cli/cmd_init.py": 141,
+      "src/metabokg/cli/cmd_mcp.py": 19,
+      "src/metabokg/cli/cmd_pack.py": 31,
+      "src/metabokg/cli/cmd_query.py": 60,
+      "src/metabokg/cli/cmd_simulate.py": 114,
+      "src/metabokg/cli/cmd_snapshot.py": 144,
+      "src/metabokg/cli/cmd_viz.py": 7,
+      "src/metabokg/cli/cmd_viz3d.py": 10,
+      "src/metabokg/cli/main.py": 2,
+      "src/metabokg/cli/options.py": 19,
+      "src/metabokg/downloader.py": 170,
+      "src/metabokg/embed.py": 9,
+      "src/metabokg/enrich.py": 241,
+      "src/metabokg/graph.py": 64,
+      "src/metabokg/index.py": 123,
+      "src/metabokg/kinetics_fetch.py": 43,
+      "src/metabokg/layout3d.py": 180,
+      "src/metabokg/mcp_tools.py": 293,
+      "src/metabokg/metabokg_viz.py": 22,
+      "src/metabokg/metabokg_viz3d.py": 17,
+      "src/metabokg/orchestrator.py": 373,
+      "src/metabokg/parsers/__init__.py": 2,
+      "src/metabokg/parsers/base.py": 9,
+      "src/metabokg/parsers/biopax.py": 130,
+      "src/metabokg/parsers/csv_tsv.py": 101,
+      "src/metabokg/parsers/kgml.py": 108,
+      "src/metabokg/parsers/sbml.py": 166,
+      "src/metabokg/primitives.py": 88,
+      "src/metabokg/simulate.py": 351,
+      "src/metabokg/snapshots.py": 264,
+      "src/metabokg/store.py": 404,
+      "src/metabokg/thorough_analysis.py": 94,
+      "src/metabokg/viz3d.py": 450
+    }
+  },
+  "hotspots": [
+    {
+      "name": "m:src/metabokg/store.py:MetaStore.node",
+      "callers": 25,
+      "callees": 3,
+      "risk_level": "low"
+    },
+    {
+      "name": "fn:scripts/examples.py:_section",
+      "callers": 16,
+      "callees": 1,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/analyze.py:PathwayAnalyzer.close",
+      "callers": 16,
+      "callees": 1,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/orchestrator.py:MetaKG.close",
+      "callers": 16,
+      "callees": 1,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/store.py:MetaStore.close",
+      "callers": 16,
+      "callees": 1,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/orchestrator.py:MetaKG.store",
+      "callers": 12,
+      "callees": 1,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/analyze.py:PathwayAnalyzer.conn",
+      "callers": 9,
+      "callees": 1,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/store.py:MetaStore.edges_of",
+      "callers": 7,
+      "callees": 3,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/store.py:MetaStore.all_nodes",
+      "callers": 6,
+      "callees": 6,
+      "risk_level": "low"
+    },
+    {
+      "name": "m:src/metabokg/orchestrator.py:MetaKG.index",
+      "callers": 6,
+      "callees": 2,
+      "risk_level": "low"
+    }
+  ],
+  "issues": [
+    "[WARN] 2 orphaned functions found (`snapshot_diff`, `main`) -- consider archiving or documenting",
+    "[WARN] `store.py` has 38 functions/methods/classes -- consider splitting into focused submodules",
+    "[WARN] `orchestrator.py` has 35 functions/methods/classes -- consider splitting into focused submodules"
+  ],
+  "vs_previous": null,
+  "vs_baseline": {
+    "nodes": 2248,
+    "edges": 2131,
+    "coverage_delta": 0.0129999999999999,
+    "critical_issues_delta": 2
+  }
+}

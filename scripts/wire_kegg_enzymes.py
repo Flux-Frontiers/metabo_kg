@@ -87,7 +87,7 @@ def extract_enzyme_reaction_map(
     # Sort each list so gene entries come before ortholog entries (prefer genes)
     for rxn_id, eids in rxn_to_entries.items():
         rxn_to_entries[rxn_id] = sorted(
-            eids, key=lambda eid: (0 if entry_types.get(eid) == "gene" else 1)
+            eids, key=lambda eid: 0 if entry_types.get(eid) == "gene" else 1
         )
 
     return rxn_to_entries, entry_types
