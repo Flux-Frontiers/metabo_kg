@@ -116,7 +116,7 @@ command-line interface, and Model~Context~Protocol (MCP) server exposing nine
 typed tools, making \textsc{MetaboKG} a first-class data source for AI reasoning
 systems. We demonstrate the system on the complete \textit{Homo sapiens}
 metabolome---all 369 KEGG pathways ingested as a single queryable graph
-(17,050 nodes, 11,286 edges, 9,427 enzymes, 20,151 indexed embeddings)---with
+(17,058 nodes, 41,334 edges, 9,427 enzymes, 7,631 indexed embeddings)---with
 structural queries completing in 10--50\,ms, semantic searches in
 100--500\,ms, and kinetic simulations in under 400\,ms on commodity
 hardware.\footnote{All timings measured on a 2024 MacBook Pro (Apple M3
@@ -221,7 +221,7 @@ after setup. This is a deliberate design choice. Unlike live database mirrors,
 version-controlled snapshot. Users rebuild when input files change, enabling
 reproducible analysis, offline workflows, and integration into research
 pipelines. The system scales to organism-scale pathway corpora: the complete
-\textit{Homo sapiens} metabolome (369 KEGG pathways, 17,050 nodes, 11,286
+\textit{Homo sapiens} metabolome (369 KEGG pathways, 17,058 nodes, 41,334
 edges, 9,427 enzymes) builds in 30--60~seconds, and queries complete in
 milliseconds to seconds.
 
@@ -766,12 +766,12 @@ carbohydrate metabolism, lipid metabolism, and signaling networks.
 $ metabokg-build --data ./data/hsa_pathways
 Building MetaKG from ./data/hsa_pathways...
 data_root   : ./data/hsa_pathways
-db_path     : .metabokg/meta.sqlite
-nodes       : 22290  {'compound': 5115, 'enzyme': 14667,
-              'pathway': 369, 'reaction': 2139}
-edges       : 11298  {'CATALYZES': 2406, 'CONTAINS': 3809,
-              'PRODUCT_OF': 2532, 'SUBSTRATE_OF': 2551}
-indexed     : 20151 vectors  dim=384
+db_path     : data/hsa_pathways/.metabokg/hsa.sqlite
+nodes       : 17058  {'compound': 5115, 'enzyme': 9427,
+              'pathway': 369, 'reaction': 2147}
+edges       : 41334  {'CATALYZES': 2579, 'CONTAINS': 33255,
+              'PRODUCT_OF': 2745, 'SUBSTRATE_OF': 2755}
+indexed     : 7631 vectors  dim=384
 \end{lstlisting}
 
 By default, \texttt{metabokg-build} wipes the existing database and vector index
@@ -798,18 +798,27 @@ print(f"Substrates: {[s['name'] for s in rxn['substrates']]}")
 print(f"Products:   {[p['name'] for p in rxn['products']]}")
 \end{lstlisting}
 
-Output:
+Output (with default name enrichment applied during build; the KGML parser
+now splits multi-R \texttt{<reaction>} elements into separate reaction nodes,
+so each row corresponds to a single canonical KEGG R-number with its
+canonical name):
 \begin{lstlisting}[style=bash, caption={}]
 Pyruvate
-  R00703                         SUBSTRATE_OF
-  R00014                         SUBSTRATE_OF
-  R00431                         SUBSTRATE_OF
-  R00209                         SUBSTRATE_OF
-  R00200                         PRODUCT_OF
-  ... and 5 more
-Substrates: ['Phosphoenolpyruvate', 'ADP']
-Products:   ['Pyruvate', 'ATP']
+  pyruvate:thiamin diphosphate acetaldehyd  SUBSTRATE_OF
+  pyruvate:carbon-dioxide ligase (ADP-form  SUBSTRATE_OF
+  pyruvate:NAD+ 2-oxidoreductase (CoA-acet  SUBSTRATE_OF
+  acetyl-CoA:formate C-acetyltransferase    SUBSTRATE_OF
+  pyruvate:ferredoxin 2-oxidoreductase (Co  SUBSTRATE_OF
+  ... and 38 more
+Substrates: ['Phosphoenolpyruvate']
+Products:   ['Pyruvate']
 \end{lstlisting}
+
+Cofactors (ADP, ATP) are not present in the stoichiometry block returned for
+\texttt{R00200} in this KGML graph; the canonical KEGG entry encodes the
+phosphoryl transfer with substrate-product mapping limited to the carbon
+backbone. They are recoverable from the SBML or BioPAX import paths when
+present in the source file.
 
 \subsection{Shortest-Path Search}
 
@@ -828,32 +837,34 @@ for node in result["path"]:
     print(f"  {node['kind']:10s} {node['name']}")
 \end{lstlisting}
 
-Output:
+Output (with default name enrichment applied during build; the bidirectional
+BFS finds an 8-hop route through the alpha/beta-D-glucose-6-phosphate
+isomerisation and the pentose-phosphate / TCA crossover via NADPH and
+2-oxoglutarate, which is shorter than the canonical glycolysis route under
+the current edge set):
 \begin{lstlisting}[style=bash, caption={}]
-Path length: 9 steps
-  compound   C00031
-  reaction   R00299
-  compound   C00092
-  reaction   R00771
-  compound   C00085
-  reaction   R00756
-  compound   C00354
-  reaction   R01068
-  compound   C00118
-  reaction   R01061
-  compound   C00236
-  reaction   R01662
-  compound   C01159
-  reaction   R09532
-  compound   C00631
-  reaction   R00658
-  compound   C00074
-  reaction   R00200
-  compound   C00022
+Path length: 8 steps
+  compound   D-Glucose
+  reaction   ATP:D-glucose 6-phosphotransferase
+  compound   D-Glucose 6-phosphate
+  reaction   D-glucose-6-phosphate aldose-ketose-isomerase
+  compound   D-Fructose 6-phosphate
+  reaction   alpha-D-glucose-6-phosphate aldose-ketose-isomerase
+  compound   alpha-D-Glucose 6-phosphate
+  reaction   alpha-D-glucose 6-phosphate ketol-isomerase
+  compound   beta-D-Glucose 6-phosphate
+  reaction   beta-D-glucose-6-phosphate:NADP+ 1-oxoreductase
+  compound   NADPH
+  reaction   glutathione:NADP+ oxidoreductase
+  compound   NADP+
+  reaction   isocitrate:NADP+ oxidoreductase (decarboxylating)
+  compound   2-Oxoglutarate
+  reaction   L-alanine:2-oxoglutarate aminotransferase
+  compound   Pyruvate
 \end{lstlisting}
 
 The query resolves in milliseconds on the local SQLite index. The algorithm
-scales efficiently to the complete human metabolome (17,050 nodes, 11,286
+scales efficiently to the complete human metabolome (17,058 nodes, 41,334
 edges) using bidirectional BFS with early termination. Typical shortest-path
 queries complete in 10--50~ms.
 
@@ -869,18 +880,17 @@ for hit in result.hits:
     print(f"{hit['name']:40s}  dist={hit['_distance']:.3f}")
 \end{lstlisting}
 
-Output:
+Output (\texttt{BAAI/bge-small-en-v1.5} encoder; cosine distance):
 \begin{lstlisting}[style=bash, caption={}]
-Fatty acid degradation                    dist=1.174
-alpha-Linolenic acid metabolism           dist=1.183
-Fatty acid metabolism                     dist=1.200
-Biosynthesis of unsaturated fatty acids   dist=1.245
-Linoleic acid metabolism                  dist=1.252
+Fatty acid degradation                    dist=0.567
 \end{lstlisting}
 
 The semantic search correctly identifies related pathways despite differences
 in nomenclature between the query and the KEGG pathway names. The
 sentence-transformer model handles synonymy and domain terminology effectively.
+\texttt{query\_pathway} filters \texttt{index.search} hits to
+\texttt{kind=="pathway"}, so when non-pathway nodes (compounds with overlapping
+terms) rank highly the result count may be smaller than \texttt{k}.
 
 \subsection{Pathway Analysis Report}
 
@@ -1039,13 +1049,13 @@ the SBML parser preserves all information needed to reconstruct a COBRApy
 model.
 
 \textbf{Performance on complete human metabolome.} The complete
-\textit{Homo sapiens} metabolome (369 KEGG pathways, 17,050 nodes, 11,286
-edges, 20,151 vector embeddings) shows the following performance
+\textit{Homo sapiens} metabolome (369 KEGG pathways, 17,058 nodes, 41,334
+edges, 7,631 vector embeddings) shows the following performance
 characteristics:
 
 \begin{table}[H]
   \centering
-  \caption{Performance on the complete human metabolome (17K nodes, 11K edges).
+  \caption{Performance on the complete human metabolome (17K nodes, 41K edges).
   All timings measured on a 2024 MacBook Pro (Apple M3 Max, 36\,GB RAM, 1\,TB SSD).}
   \label{tab:performance}
   \small
@@ -1054,8 +1064,8 @@ characteristics:
     Operation & Time & Details \\
     \midrule
     Build graph (parse + index) & 30--60s & All 369 pathways, LanceDB + SQLite \\
-    Semantic search (natural language) & 100--500ms & Vector similarity on 20K nodes \\
-    Shortest-path (6 hops) & 10--50ms & BFS on 11K edges \\
+    Semantic search (natural language) & 100--500ms & Vector similarity on 7.6K nodes \\
+    Shortest-path (6 hops) & 10--50ms & BFS on 41K edges \\
     ODE simulation (10 units) & 150--400ms & BDF solver, 24 compounds \\
     Streamlit rerun & 0.5--1.5s & Batch query + session cache \\
     \bottomrule

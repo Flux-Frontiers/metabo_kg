@@ -1,14 +1,13 @@
 [![CI](https://github.com/flux-frontiers/metabo_kg/actions/workflows/ci.yml/badge.svg)](https://github.com/flux-frontiers/metabo_kg/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/metabo-kg.svg)](https://pypi.org/project/metabo-kg/)
 [![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/)
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic--2.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
 [![Version](https://img.shields.io/badge/version-0.8.1-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 [![DOI](https://zenodo.org/badge/1184537477.svg)](https://zenodo.org/badge/latestdoi/1184537477)
 
-# MetaboKG — Metabolic Pathway Knowledge Graph
+# MetaboKG: Metabolic Pathway Knowledge Graph
 
-**MetaboKG turns the world's metabolic pathway databases into a single, local, queryable knowledge graph — and then lets you ask it questions in English, simulate flux through it, and hand it to an LLM as structured context.**
+**MetaboKG turns the world's metabolic pathway databases into a single, local, queryable knowledge graph that lets you ask it questions in English, simulate flux through it, and hand it to an LLM as structured context.**
 
 It ingests pathways in the formats biology actually publishes in (KGML, SBML, BioPAX, CSV), normalizes them into a unified compound/reaction/enzyme/pathway graph backed by SQLite, and indexes the nodes in LanceDB so that *"glucose metabolism"* and *"hexokinase"* both find the right places to start exploring. From there you can trace shortest paths between metabolites, run flux balance analysis or kinetic ODE simulations, knock out enzymes to see what changes, render the result in 2D or 3D, or expose the whole thing to Claude over MCP.
 
@@ -20,12 +19,13 @@ Everything runs on your laptop. No cloud APIs, no quotas, no data leaving the ma
 
 ## Sister projects
 
-MetaboKG is part of a small family of knowledge-graph systems that share the same hybrid semantic-plus-structural design:
+MetaboKG is part of a growing family of knowledge-graph systems that share the same hybrid semantic-plus-structural design:
 
-- **[PyCodeKG](https://github.com/flux-frontiers/pycode_kg)** — the same idea applied to Python source code. It's what lets MetaboKG understand its own architecture.
-- **[DocKG](https://github.com/flux-frontiers/doc_kg)** — the same idea applied to Markdown and prose. It indexes MetaboKG's own documentation, so the docs you're reading now are themselves a queryable graph.
+- **[PyCodeKG](https://github.com/flux-frontiers/pycode_kg):** hybrid semantic-plus-structural search over Python source code. It indexes MetaboKG's own codebase, making the architecture self-describing.
+- **[DocKG](https://github.com/flux-frontiers/doc_kg):** the same design for Markdown and prose corpora. It indexes MetaboKG's own documentation, so the docs you're reading now are themselves a queryable graph.
+- **[GutenbergKG](https://github.com/Flux-Frontiers/gutenberg_kg):** extends the pattern to literary prose, downloading, converting, and indexing Project Gutenberg texts as a queryable document knowledge graph.
 
-Together they form **KGRAG**, a federated retrieval layer where one query can span code, documentation, and pathway data simultaneously.
+All four are adapters within **[KGRAG](https://github.com/flux-frontiers/kgrag)**, the orchestration layer for all KG adaptors.
 
 ---
 
@@ -33,16 +33,16 @@ Together they form **KGRAG**, a federated retrieval layer where one query can sp
 
 The system is organized around five things, each documented in its own file:
 
-| If you want to… | Start here |
+| If you want to... | Start here |
 |---|---|
-| **Install it** | [docs/INSTALL.md](docs/INSTALL.md) — minimal, simulation, viz, viz3d, BioPAX, and `all` extras |
-| **Build a graph from your data** | [docs/WORKFLOW.md](docs/WORKFLOW.md) — the full ingest → enrich → index pipeline, stage by stage |
-| **Understand what the graph contains** | [docs/FEATURES.md](docs/FEATURES.md) and [docs/HSA_SUMMARY.md](docs/HSA_SUMMARY.md) — coverage tables for each corpus |
-| **Use the Python API or CLI** | [docs/EXAMPLES.md](docs/EXAMPLES.md) — worked examples for every public capability |
-| **Simulate metabolism** | [docs/CAPABILITIES.md §7](docs/CAPABILITIES.md) — FBA, ODE kinetics, what-if perturbations, with the math |
-| **Look up a command** | [docs/CHEATSHEET.md](docs/CHEATSHEET.md) — every CLI flag and every MCP tool in one page |
-| **Expose the graph to an LLM** | [docs/MCP.md](docs/MCP.md) — MCP server setup, tool reference, agent workflows |
-| **See the full capability map** | [docs/CAPABILITIES.md](docs/CAPABILITIES.md) — the deep reference for everything below |
+| **Install it** | [docs/INSTALL.md](docs/INSTALL.md): minimal, simulation, viz, viz3d, BioPAX, and `all` extras |
+| **Build a graph from your data** | [docs/WORKFLOW.md](docs/WORKFLOW.md): the full ingest-enrich-index pipeline, stage by stage |
+| **Understand what the graph contains** | [docs/FEATURES.md](docs/FEATURES.md) and [docs/HSA_SUMMARY.md](docs/HSA_SUMMARY.md): coverage tables for each corpus |
+| **Use the Python API or CLI** | [docs/EXAMPLES.md](docs/EXAMPLES.md): worked examples for every public capability |
+| **Simulate metabolism** | [docs/CAPABILITIES.md, section 7](docs/CAPABILITIES.md): FBA, ODE kinetics, what-if perturbations, with the math |
+| **Look up a command** | [docs/CHEATSHEET.md](docs/CHEATSHEET.md): every CLI flag and every MCP tool in one page |
+| **Expose the graph to an LLM** | [docs/MCP.md](docs/MCP.md): MCP server setup, tool reference, agent workflows |
+| **See the full capability map** | [docs/CAPABILITIES.md](docs/CAPABILITIES.md): the deep reference for everything below |
 
 If you only read one file after this one, read [docs/CAPABILITIES.md](docs/CAPABILITIES.md). It's the canonical tour.
 
@@ -50,7 +50,7 @@ If you only read one file after this one, read [docs/CAPABILITIES.md](docs/CAPAB
 
 ## Get started in 60 seconds
 
-All pathway data is bundled in the repo — there's nothing to download to get going.
+All pathway data is bundled in the repo; there is nothing to download to get going.
 
 ```bash
 git clone https://github.com/flux-frontiers/metabo_kg.git
@@ -72,51 +72,51 @@ That's the recommended path. [docs/INSTALL.md](docs/INSTALL.md) has the variant 
 
 ## The three bundled corpora
 
-MetaboKG ships with three production-grade metabolic models, each built into its own colocated database. The same CLI, API, and MCP tools work against any of them — and KGRAG can federate queries across all three at once.
+MetaboKG ships with three production-grade metabolic models, each built into its own colocated database. The same CLI, API, and MCP tools work against any of them, and the KGRAG orchestration layer can issue federated semantic queries across all three simultaneously via a single registered corpus.
 
 | Corpus | What it is | Detail doc |
 |---|---|---|
-| **`metabokg-hsa`** | 369 KEGG pathways for *Homo sapiens* — the complete human metabolome (17K+ nodes, 40K+ edges) | [docs/HSA_SUMMARY.md](docs/HSA_SUMMARY.md) |
-| **`metabokg-cge`** | 366 KEGG pathways for *C. griseus* (Chinese Hamster Ovary) — the workhorse of biopharma | [docs/cho_workflow.md](docs/cho_workflow.md) |
+| **`metabokg-hsa`** | 369 KEGG pathways for *Homo sapiens* (the complete human metabolome, 17K+ nodes, 40K+ edges) | [docs/HSA_SUMMARY.md](docs/HSA_SUMMARY.md) |
+| **`metabokg-cge`** | 366 KEGG pathways for *C. griseus* (Chinese Hamster Ovary), the workhorse of biopharma | [docs/cho_workflow.md](docs/cho_workflow.md) |
 | **`metabokg-icho`** | iCHO2441 genome-scale model (SBML/FBC v2): 6,337 reactions, 4,174 metabolites, 2,441 gene products | [docs/icho_workflow.md](docs/icho_workflow.md) |
 
 Each corpus is a drop-in target:
 
 ```bash
-metabokg-build --data data/hsa_pathways    # → data/hsa_pathways/.metabokg/hsa.sqlite
-metabokg-build --data data/cge_pathways    # → data/cge_pathways/.metabokg/cge.sqlite
-metabokg-build --data data/icho_model      # → data/icho_model/.metabokg/icho.sqlite
+metabokg-build --data data/hsa_pathways    # creates: data/hsa_pathways/.metabokg/hsa.sqlite
+metabokg-build --data data/cge_pathways    # creates: data/cge_pathways/.metabokg/cge.sqlite
+metabokg-build --data data/icho_model      # creates: data/icho_model/.metabokg/icho.sqlite
 ```
 
-To bring your own data, drop KGML / SBML / BioPAX / CSV files in a directory and point `--data` at it. Format detection is automatic; see [docs/CAPABILITIES.md §2](docs/CAPABILITIES.md) for parser specifics.
+To bring your own data, drop KGML / SBML / BioPAX / CSV files in a directory and point `--data` at it. Format detection is automatic; see [docs/CAPABILITIES.md, section 2](docs/CAPABILITIES.md) for parser specifics.
 
 ---
 
 ## The graph and how to query it
 
-MetaboKG is a **structural knowledge graph first**, with semantic search layered on top. The primary store is SQLite — four node kinds (compound, reaction, enzyme, pathway) connected by seven typed edge relations (`SUBSTRATE_OF`, `PRODUCT_OF`, `CATALYZES`, `CONTAINS`, `INHIBITS`, `ACTIVATES`, `XREF`). LanceDB is a vector index over those nodes, not the source of truth. You can query the graph without ever touching the embeddings.
+MetaboKG is a **structural knowledge graph first**, with semantic search layered on top. The primary store is SQLite: four node kinds (compound, reaction, enzyme, pathway) connected by seven typed edge relations (`SUBSTRATE_OF`, `PRODUCT_OF`, `CATALYZES`, `CONTAINS`, `INHIBITS`, `ACTIVATES`, `XREF`). LanceDB is a vector index over those nodes, not the source of truth. You can query the graph without ever touching the embeddings.
 
 ### Enrichment turns accessions into names
 
-Raw KEGG and SBML records are just opaque codes — `C00031`, `R00710`, `hsa:2538`, `G_100762926`. A multi-phase enrichment pipeline runs at build time and turns them into something you can read and query against:
+Raw KEGG and SBML records are just opaque codes: `C00031`, `R00710`, `hsa:2538`, `G_100762926`. A multi-phase enrichment pipeline runs at build time and turns them into something you can read and query against:
 
-1. **Phase 1 — gene-symbol fallback** (no network). Reactions get labels derived from their catalysing enzymes via `CATALYZES` edges. Example: `R00710` → `ADH1A / ADH1B / ADH1C`.
-2. **Phase 2 — canonical KEGG names** (from TSVs `metabokg-init` fetches). Compound and reaction names from official KEGG lists override Phase 1 labels. Same example: `R00710` → `acetaldehyde:NAD+ oxidoreductase`.
-3. **Phase 3 — SBML FBC v2** (genome-scale models like iCHO2441). `<fbc:listOfGeneProducts>` entries (`enz:syn:…` nodes) are resolved against the gene-name TSVs. Example: `G_100762926` → `Aoc3`.
+1. **Phase 1: gene-symbol fallback** (no network). Reactions get labels derived from their catalysing enzymes via `CATALYZES` edges. Example: `R00710` resolves to `ADH1A / ADH1B / ADH1C`.
+2. **Phase 2: canonical KEGG names** (from TSVs `metabokg-init` fetches). Compound and reaction names from official KEGG lists override Phase 1 labels. Same example: `R00710` resolves to `acetaldehyde:NAD+ oxidoreductase`.
+3. **Phase 3: SBML FBC v2** (genome-scale models like iCHO2441). `<fbc:listOfGeneProducts>` entries (`enz:syn:...` nodes) are resolved against the gene-name TSVs. Example: `G_100762926` resolves to `Aoc3`.
 
-After enrichment, knockouts and queries work directly against gene symbols — `Ldha`, `Adh1a`, `Aoc3` — no node-ID lookup required. Per-corpus enrichment results (counts, coverage, gaps) are in [docs/FEATURES.md](docs/FEATURES.md); the full pipeline behaviour is in [docs/CAPABILITIES.md §5](docs/CAPABILITIES.md).
+After enrichment, knockouts and queries work directly against gene symbols (`Ldha`, `Adh1a`, `Aoc3`) with no node-ID lookup required. Per-corpus enrichment results (counts, coverage, gaps) are in [docs/FEATURES.md](docs/FEATURES.md); the full pipeline behaviour is in [docs/CAPABILITIES.md, section 5](docs/CAPABILITIES.md).
 
 ### Three ways in
 
-The same graph is reachable through three orthogonal access paths — pick whichever fits the question:
+The same graph is reachable through three orthogonal access paths; pick whichever fits the question:
 
 1. **Semantic search.** A query like *"hexokinase"* is embedded with a local sentence-transformer (`BAAI/bge-small-en-v1.5` by default, 384-dim, ~130 MB cached after first use); LanceDB returns the `k` closest nodes by cosine similarity; each seed is then expanded `hop` BFS steps along typed edges so reaction context arrives alongside the names that matched. This is what `metabokg-query`, `metabokg-pack`, and the MCP `pack` tool use under the hood. Best for fuzzy intent (*"glucose metabolism"*, *"oxidative stress response"*).
 2. **Structural traversal.** Direct graph queries that bypass embeddings entirely: `get_compound("C00031")`, `get_reaction("R00710")`, `query_pathway("hsa00010")`, `find_path(source, target, max_depth=N)` for shortest paths between metabolites. Available from the CLI, the Python API, and the MCP server. Best when you already have an ID or want exact graph topology.
 3. **Simulation.** FBA, ODE kinetics, and what-if perturbations (next section). The simulator reads stoichiometry and kinetic parameters straight off the graph and returns flux distributions or time-courses.
 
-When no LanceDB index is built (`--no-index`, or `--text-only` at query time), the semantic path falls back to case-insensitive substring matching. The embedding model is swappable — any `sentence-transformers`-compatible HuggingFace ID or local model directory works as a drop-in replacement; just rebuild the index against the new model.
+When no LanceDB index is built (`--no-index`, or `--text-only` at query time), the semantic path falls back to case-insensitive substring matching. The embedding model is swappable: any `sentence-transformers`-compatible HuggingFace ID or local model directory works as a drop-in replacement; just rebuild the index against the new model.
 
-Full schema, edge semantics, and enrichment internals live in [docs/CAPABILITIES.md §3–§5](docs/CAPABILITIES.md).
+Full schema, edge semantics, and enrichment internals live in [docs/CAPABILITIES.md, sections 3-5](docs/CAPABILITIES.md).
 
 ---
 
@@ -124,11 +124,11 @@ Full schema, edge semantics, and enrichment internals live in [docs/CAPABILITIES
 
 With `--extras simulate` installed, the same graph becomes a simulation substrate:
 
-- **FBA** — steady-state flux optimization via `scipy.optimize.linprog` (HiGHS backend)
-- **ODE kinetics** — time-course concentration dynamics under Michaelis-Menten rate laws, integrated with `scipy.integrate.solve_ivp` using **BDF** (metabolic systems are stiff; RK45 will hang)
-- **What-if perturbations** — enzyme knockouts, partial inhibitions, substrate pulses, with delta flux or delta concentration sorted by magnitude
+- **FBA:** steady-state flux optimization via `scipy.optimize.linprog` (HiGHS backend)
+- **ODE kinetics:** time-course concentration dynamics under Michaelis-Menten rate laws, integrated with `scipy.integrate.solve_ivp` using **BDF** (metabolic systems are stiff; RK45 will hang)
+- **What-if perturbations:** enzyme knockouts, partial inhibitions, substrate pulses, with delta flux or delta concentration sorted by magnitude
 
-Kinetic parameters are seeded from BRENDA / SABIO-RK literature values via `metabokg-init` (or `kg.seed_kinetics()` from the API). The math, the rate equations (including the Haldane reversible extension), and the recommended solver settings are in [docs/CAPABILITIES.md §7](docs/CAPABILITIES.md); worked examples are in [docs/EXAMPLES.md §6–§8](docs/EXAMPLES.md).
+Kinetic parameters are seeded from BRENDA / SABIO-RK literature values via `metabokg-init` (or `kg.seed_kinetics()` from the API). The math, the rate equations (including the Haldane reversible extension), and the recommended solver settings are in [docs/CAPABILITIES.md, section 7](docs/CAPABILITIES.md); worked examples are in [docs/EXAMPLES.md, sections 6-8](docs/EXAMPLES.md).
 
 ---
 
@@ -136,8 +136,8 @@ Kinetic parameters are seeded from BRENDA / SABIO-RK literature values via `meta
 
 Two integration paths, depending on the LLM:
 
-- **Claude / MCP-aware clients** — `metabokg-mcp` exposes the graph as MCP tools (`pack`, `query_pathway`, `get_compound`, `get_reaction`, `find_path`, `seed_kinetics`, `simulate_fba`, `simulate_ode`, `simulate_whatif`). Setup for Claude Code, Claude Desktop, Kilo Code, and Copilot is in [docs/MCP.md](docs/MCP.md).
-- **Anything else (Ollama, OpenAI, local llamas)** — `metabokg-pack "TCA cycle"` produces self-contained Markdown or JSON with reactions, substrates, products, and enzymes already wired together. Pipe it into any context window:
+- **Claude / MCP-aware clients:** `metabokg-mcp` exposes the graph as MCP tools (`pack`, `query_pathway`, `get_compound`, `get_reaction`, `find_path`, `seed_kinetics`, `simulate_fba`, `simulate_ode`, `simulate_whatif`). Setup for Claude Code, Claude Desktop, Kilo Code, and Copilot is in [docs/MCP.md](docs/MCP.md).
+- **Anything else (Ollama, OpenAI, local llamas):** `metabokg-pack "TCA cycle"` produces self-contained Markdown or JSON with reactions, substrates, products, and enzymes already wired together. Pipe it into any context window:
 
   ```bash
   metabokg-pack "fatty acid oxidation" | ollama run qwen3:4b-16k "Summarize what's unusual about this pathway"
@@ -147,10 +147,10 @@ Two integration paths, depending on the LLM:
 
 ## Visualization
 
-- **`metabokg-viz`** — Streamlit web explorer (2D, filterable, search-driven)
-- **`metabokg-viz3d --layout allium|cake`** — PyVista 3D viewer with two layout modes (hub-and-spoke, or concentric rings by topological distance) *(under active development — layout modes and filtering are functional but the UI is still being refined)*
+- **`metabokg-viz`:** Streamlit web explorer (2D, filterable, search-driven)
+- **`metabokg-viz3d --layout cake|allium`:** PyVista 3D viewer with two layout modes (concentric rings by topological distance, or hub-and-spoke) — default `cake` *(under active development; node picking, popup details, and UI polish are actively being improved)*
 
-Both read from whatever corpus is active. UI walkthroughs and layout tradeoffs are in [docs/CAPABILITIES.md §6](docs/CAPABILITIES.md).
+Both read from whatever corpus is active. UI walkthroughs and layout tradeoffs are in [docs/CAPABILITIES.md, section 6](docs/CAPABILITIES.md).
 
 ---
 
@@ -158,19 +158,19 @@ Both read from whatever corpus is active. UI walkthroughs and layout tradeoffs a
 
 ```
 metabokg/
-├── parsers/         # kgml, sbml, biopax, csv_tsv — format-specific
-├── graph.py         # MetabolicGraph: file discovery + dispatch
-├── primitives.py    # MetaNode, MetaEdge — core data types
-├── store.py         # MetaStore — SQLite persistence + graph queries
-├── index.py         # MetaIndex — LanceDB vector indexing
-├── embed.py         # embedding utilities
-├── orchestrator.py  # MetaKG — the public façade
-├── cli.py           # all metabokg-* command entry points
-├── mcp_tools.py     # MCP server
-└── visualization/   # Streamlit + PyVista (2D/3D)
++-- parsers/         # kgml, sbml, biopax, csv_tsv: format-specific
++-- graph.py         # MetabolicGraph: file discovery + dispatch
++-- primitives.py    # MetaNode, MetaEdge: core data types
++-- store.py         # MetaStore: SQLite persistence + graph queries
++-- index.py         # MetaIndex: LanceDB vector indexing
++-- embed.py         # embedding utilities
++-- orchestrator.py  # MetaKG: the public facade
++-- cli.py           # all metabokg-* command entry points
++-- mcp_tools.py     # MCP server
++-- visualization/   # Streamlit + PyVista (2D/3D)
 ```
 
-The MCP server and CLI are thin wrappers over the same `MetaKG` orchestrator that the Python API exposes — there's exactly one code path for each capability. Architectural deep-dives (complexity, coupling, hotspots, and the PageRank/centrality of the Python codebase itself) live in [docs/analysis_v0.8.1.md](docs/analysis_v0.8.1.md), [docs/meta_kg_analysis_20260306.md](docs/meta_kg_analysis_20260306.md), and [docs/metakg-codekg-analysis-2026-03-03.md](docs/metakg-codekg-analysis-2026-03-03.md).
+The MCP server and CLI are thin wrappers over the same `MetaKG` orchestrator that the Python API exposes; there is exactly one code path for each capability. Architectural deep-dives (complexity, coupling, hotspots, and the PageRank/centrality of the Python codebase itself) live in [docs/analysis_v0.8.1.md](docs/analysis_v0.8.1.md), [docs/meta_kg_analysis_20260306.md](docs/meta_kg_analysis_20260306.md), and [docs/metakg-codekg-analysis-2026-03-03.md](docs/metakg-codekg-analysis-2026-03-03.md).
 
 ---
 
@@ -182,19 +182,19 @@ The MCP server and CLI are thin wrappers over the same `MetaKG` orchestrator tha
 | [docs/WORKFLOW.md](docs/WORKFLOW.md) | The build pipeline, stage by stage; what each `metabokg-*` command does |
 | [docs/CAPABILITIES.md](docs/CAPABILITIES.md) | The canonical reference: parsers, store, retrieval, simulation, MCP, CLI |
 | [docs/FEATURES.md](docs/FEATURES.md) | Feature inventory and per-corpus coverage tables |
-| [docs/EXAMPLES.md](docs/EXAMPLES.md) | Worked examples for every public capability — Python and CLI |
+| [docs/EXAMPLES.md](docs/EXAMPLES.md) | Worked examples for every public capability: Python and CLI |
 | [docs/MCP.md](docs/MCP.md) | MCP server setup for Claude / Kilo / Copilot, tool reference, agent flows |
 | [docs/HSA_SUMMARY.md](docs/HSA_SUMMARY.md) | The human metabolome corpus in detail |
 | [docs/cho_workflow.md](docs/cho_workflow.md) | The CHO (`cge`) corpus build and quirks |
 | [docs/icho_workflow.md](docs/icho_workflow.md) | The iCHO2441 genome-scale model (SBML/FBC v2) |
-| [docs/CHEATSHEET.md](docs/CHEATSHEET.md) | Every command, every flag, every MCP tool — one page |
+| [docs/CHEATSHEET.md](docs/CHEATSHEET.md) | Every command, every flag, every MCP tool: one page |
 | [CHANGELOG.md](CHANGELOG.md) | Release history |
 
 ---
 
 ## Feedback & contributions
 
-Bug reports, feature requests, and discussion are very welcome — please open an [issue](https://github.com/flux-frontiers/metabo_kg/issues) or start a [discussion](https://github.com/flux-frontiers/metabo_kg/discussions).
+Bug reports, feature requests, and discussion are very welcome. Please open an [issue](https://github.com/flux-frontiers/metabo_kg/issues) or start a [discussion](https://github.com/flux-frontiers/metabo_kg/discussions).
 
 External pull requests are not currently being accepted while contribution licensing is being finalized. If you have a patch you'd like to share, please open an issue describing it and we can figure out the right path together.
 
@@ -225,14 +225,14 @@ Full citation metadata in [`CITATION.cff`](CITATION.cff).
 
 ## License
 
-**Elastic License 2.0** — free to use, modify, and redistribute, with two restrictions: you may not provide the software as a hosted/managed service to third parties, and you may not circumvent license-key or copyright-notice mechanisms. See [LICENSE](LICENSE) for the full text.
+**Elastic License 2.0:** free to use, modify, and redistribute, with two restrictions: you may not provide the software as a hosted/managed service to third parties, and you may not circumvent license-key or copyright-notice mechanisms. See [LICENSE](LICENSE) for the full text.
 
 ---
 
 ## Support & acknowledgments
 
-- **Issues** — [GitHub Issues](https://github.com/flux-frontiers/metabo_kg/issues)
-- **Discussions** — [GitHub Discussions](https://github.com/flux-frontiers/metabo_kg/discussions)
+- **Issues:** [GitHub Issues](https://github.com/flux-frontiers/metabo_kg/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/flux-frontiers/metabo_kg/discussions)
 - Sister projects [PyCodeKG](https://github.com/flux-frontiers/pycode_kg) and [DocKG](https://github.com/flux-frontiers/doc_kg) for the semantic analysis that made this codebase legible to itself
 - Layout algorithms adapted from [repo_vis](https://github.com/Suchanek/repo_vis)
 - KEGG, Reactome, MetaCyc, and the iCHO2441 authors (Hefzi et al. 2016) for pathway data
@@ -240,4 +240,4 @@ Full citation metadata in [`CITATION.cff`](CITATION.cff).
 
 ---
 
-*Built for computational biology research — egs · Last updated April 2026*
+*Built for computational biology research. egs. Last updated April 2026.*

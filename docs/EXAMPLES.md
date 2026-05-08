@@ -10,6 +10,13 @@ The CLI build command collocates all outputs under the data directory, so
 `data/hsa_pathways/.metabokg/lancedb`.  Python API examples pass these paths
 explicitly so they work regardless of CWD.
 
+> **Runnable companion:** every Python block below is reproduced as a function
+> in [`scripts/examples.py`](../scripts/examples.py) and is exercised end-to-end
+> against the live SQLite + LanceDB databases.  Run all of them with
+> `poetry run python scripts/examples.py` or a single section by name, e.g.
+> `poetry run python scripts/examples.py ex_06_fba`.  If any expected output in
+> this document drifts from what the script prints, this document is wrong.
+
 ---
 
 ## Table of Contents
@@ -70,13 +77,15 @@ with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
     nc = s['node_counts']
     print(f"  compounds={nc['compound']}  enzymes={nc['enzyme']}  "
           f"pathways={nc['pathway']}  reactions={nc['reaction']}")
+    idx = kg.index.stats()
+    print(f"indexed={idx['indexed_rows']}  dim={idx['dim']}")
 ```
 
 Expected output:
 ```
-nodes=17050  edges=40166
-  compounds=5115  enzymes=9427  pathways=369  reactions=2139
-indexed=7623  dim=384
+nodes=17058  edges=41334
+  compounds=5115  enzymes=9427  pathways=369  reactions=2147
+indexed=7631  dim=384
 ```
 
 ---
@@ -110,13 +119,14 @@ with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
         print(f"{hit['name']:<40}  score={score:.3f}")
 ```
 
-Expected output:
+Expected output (BAAI/bge-small-en-v1.5; `query_pathway` filters
+`index.search` hits to `kind=='pathway'`, so fewer than `k` may return when
+non-pathway nodes rank in the top-`k`):
 ```
-Fatty acid degradation                    score=0.435
-Fatty acid metabolism                     score=0.409
-Biosynthesis of unsaturated fatty acids   score=0.398
-Fatty acid elongation                     score=0.379
-Lipoic acid metabolism                    score=0.374
+Fatty acid degradation                    score=0.721
+Biosynthesis of unsaturated fatty acids   score=0.709
+Fatty acid metabolism                     score=0.706
+Fatty acid biosynthesis                   score=0.703
 ```
 
 ### Filter by pathway category
@@ -195,7 +205,7 @@ with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
 
 Expected output:
 ```
-rxn:kegg:R00299 R00303: R00299 R00303
+rxn:kegg:R00299: ATP:D-glucose 6-phosphotransferase
 rxn:kegg:R00303: D-glucose-6-phosphate phosphohydrolase
 rxn:kegg:R00771: D-glucose-6-phosphate aldose-ketose-isomerase
 rxn:kegg:R07324: 1D-myo-inositol-3-phosphate lyase (isomerizing)
@@ -244,9 +254,11 @@ with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
         print(f"{result['hops']} hops: {' → '.join(names)}")
 ```
 
-Expected output:
+Expected output (the 9-hop bidirectional-BFS route currently passes through
+the alpha-D-glucose-6-phosphate / NADPH cross-link before reaching
+acetyl-CoA — a real shortest path under the live edge set):
 ```
-9 hops: D-Glucose → ATP:D-glucose 6-phosphotransferase → D-Glucose 6-phosphate → D-glucose-6-phosphate aldose-ketose-isomerase → D-Fructose 6-phosphate → ... → Acetyl-CoA
+9 hops: D-Glucose → ATP:D-glucose 6-phosphotransferase → D-Glucose 6-phosphate → D-glucose-6-phosphate aldose-ketose-isomerase → D-Fructose 6-phosphate → alpha-D-glucose-6-phosphate aldose-ketose-isomerase → alpha-D-Glucose 6-phosphate → alpha-D-glucose 6-phosphate ketol-isomerase → beta-D-Glucose 6-phosphate → beta-D-glucose-6-phosphate:NADP+ 1-oxoreductase → NADPH → glutathione:NADP+ oxidoreductase → NADP+ → isocitrate:NADP+ oxidoreductase (decarboxylating) → 2-Oxoglutarate → L-alanine:2-oxoglutarate aminotransferase → Pyruvate → pyruvate:NAD+ 2-oxidoreductase (CoA-acetylating) → Acetyl-CoA
 ```
 
 ### Cross-pathway hub metabolites
@@ -304,7 +316,7 @@ with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
 Expected output:
 ```
 Status:    optimal
-Objective: 187.5000
+Objective: 151.5152
   rxn:kegg:R00710  +1000.0000
   rxn:kegg:R00711  -1000.0000
   rxn:kegg:R00746  -1000.0000
@@ -375,11 +387,11 @@ with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
 Expected output:
 ```
 Status: ok
-  D-Fructose 1,6-bisphosphate                         5.4537 mM
   Acetyl-CoA                                          3.9991 mM
+  D-Glyceraldehyde 3-phosphate                        3.4958 mM
+  D-Fructose 1,6-bisphosphate                         3.0012 mM
   [Dihydrolipoyllysine-residue acetyltransferase] ...  2.9999 mM
-  alpha-D-Glucose 6-phosphate                         2.0567 mM
-  2-(alpha-Hydroxyethyl)thiamine diphosphate           2.0000 mM
+  alpha-D-Glucose 6-phosphate                         2.3246 mM
 ```
 
 ---
@@ -512,7 +524,7 @@ with MetaKG(db_path=CGE_DB, lancedb_dir=CGE_LANCE) as kg:
 
 Expected output:
 ```
-CHO graph: 16930 nodes, 39731 edges
+CHO graph: 16938 nodes, 40851 edges
 ```
 
 ### Simulate lactate metabolism — a key CHO bioprocess bottleneck
@@ -562,8 +574,8 @@ with MetaKG(db_path=CGE_DB, lancedb_dir=CGE_LANCE) as kg:
 Expected output:
 ```
 Status: ok
-Lactate [final]:  0.000 mM
-Pyruvate [final]: 0.106 mM
+Lactate [final]:  0.500 mM
+Pyruvate [final]: 0.000 mM
 ```
 
 ### What-if: LDHA knockdown — reducing lactate accumulation
@@ -623,8 +635,8 @@ with MetaKG(db_path=CGE_DB, lancedb_dir=CGE_LANCE) as kg:
 
 Expected output:
 ```
-Baseline objective: 285.7143
-Perturbed objective: 285.7143
+Baseline objective: 347.8261
+Perturbed objective: 347.8261
 ```
 
 ### Inspect CHO-specific kinetic parameters
@@ -644,10 +656,14 @@ with MetaKG(db_path=CGE_DB, lancedb_dir=CGE_LANCE) as kg:
               f"source={p.get('source_database')}  confidence={p.get('confidence')}")
 ```
 
-Expected output:
+Expected output (after `metabokg simulate seed-cho` has been run; the
+hexokinase Km of 0.046 mM is the CHO-specific value at pH 7.2, 37 °C; row
+count varies with the number of catalysing enzyme isoforms wired into the
+graph):
 ```
-  Km=0.1 mM  Vmax=2.8 mM/s  source=literature  confidence=None
-  Km=0.1 mM  Vmax=2.8 mM/s  source=literature  confidence=None
+  Km=0.046 mM  Vmax=2.2 mM/s  source=literature  confidence=None
+  Km=0.046 mM  Vmax=2.2 mM/s  source=literature  confidence=None
+  Km=0.046 mM  Vmax=2.2 mM/s  source=literature  confidence=None
 ```
 
 ---

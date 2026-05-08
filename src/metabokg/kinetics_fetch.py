@@ -1,18 +1,18 @@
 """
-kinetics_fetch.py — Kinetic parameter seeder for MetaKG.
+kinetics_fetch.py - Kinetic parameter seeder for MetaKG.
 
 Seeds the ``kinetic_parameters`` and ``regulatory_interactions`` tables with
 curated literature values for the KEGG reactions present in the bundled
 pathway files (glycolysis, TCA, PPP, fatty-acid degradation, and related
-pathways hsa00010–hsa00650).
+pathways hsa00010-hsa00650).
 
 Sources
 -------
-- Mulquiney & Kuchel (1999) – Glycolysis in human erythrocytes
-- Fell (1997) – Understanding the Control of Metabolism
-- Beard & Qian (2008) – Chemical Biophysics
+- Mulquiney & Kuchel (1999): Glycolysis in human erythrocytes
+- Fell (1997): Understanding the Control of Metabolism
+- Beard & Qian (2008): Chemical Biophysics
 - BRENDA database (https://www.brenda-enzymes.org), Homo sapiens entries
-- eQuilibrator (https://equilibrator.weizmann.ac.il) – ΔG°' values
+- eQuilibrator (https://equilibrator.weizmann.ac.il): ΔG°' values
 
 All Km and Ki values are in **mM**, Vmax in **mM/s** (normalised to 1 mg/mL
 enzyme unless otherwise noted), kcat in **1/s**, and ΔG°' in **kJ/mol** at
@@ -188,7 +188,7 @@ _KEGG_KINETICS: dict[str, dict] = {
         "notes": "LDHA/LDHB",
     },
     # -----------------------------------------------------------------------
-    # Pyruvate metabolism  (hsa00620) — bridge reactions
+    # Pyruvate metabolism  (hsa00620): bridge reactions
     # -----------------------------------------------------------------------
     # Pyruvate dehydrogenase complex  (Pyr + CoA + NAD⁺ → AcCoA + CO₂ + NADH)
     "R00351": {
@@ -329,7 +329,7 @@ _KEGG_KINETICS: dict[str, dict] = {
         "notes": "TKT",
     },
     # -----------------------------------------------------------------------
-    # Oxidative phosphorylation  (hsa00190) — complex kinetics (simplified)
+    # Oxidative phosphorylation  (hsa00190): complex kinetics (simplified)
     # -----------------------------------------------------------------------
     # Complex I  (NADH → NAD⁺ + 2H⁺, pumps 4H⁺)
     "R02163": {
@@ -446,7 +446,7 @@ _KEGG_KINETICS: dict[str, dict] = {
         "notes": "GPX1/4; Km_H2O2=0.001",
     },
     # -----------------------------------------------------------------------
-    # Purine metabolism  (hsa00230) — selected
+    # Purine metabolism  (hsa00230): selected
     # -----------------------------------------------------------------------
     # Adenylate kinase  (2 ADP ↔ ATP + AMP)
     "R00127": {
@@ -598,7 +598,7 @@ def seed_kinetics(store: MetaStore, *, force: bool = False) -> tuple[int, int]:
     for kegg_rxn_id, kdata in _KEGG_KINETICS.items():
         rxn_node = store.node(f"rxn:kegg:{kegg_rxn_id}")
         if rxn_node is None:
-            continue  # Reaction not loaded — skip silently
+            continue  # Reaction not loaded, skip silently
 
         rxn_id = rxn_node["id"]
 

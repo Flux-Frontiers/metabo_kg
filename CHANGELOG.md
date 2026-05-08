@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`scripts/examples.py`** — Runnable companion to `docs/EXAMPLES.md` and the article worked example. Each documented Python block is reproduced as an `ex_*` function and exercised end-to-end against the live SQLite + LanceDB. Replaces `scripts/article_examples.py`.
+
 ### Changed
+
+- **KGML parser splits multi-R `<reaction>` elements** (`src/metabokg/parsers/kgml.py`) — KEGG groups related R-numbers into single `<reaction>` elements when they share substrates, products, and enzymes (e.g. `<reaction name="rn:R00243 rn:R00248">`). Previously the parser used the entire space-separated string as the node ID, producing 360 composite reaction nodes in the cge graph (and similar in hsa) where lookups by individual KEGG R-number returned `None`. The parser now emits one reaction node per R-number, each carrying the same stoichiometry, substrate/product edges, pathway membership (`CONTAINS`), and enzyme catalysis (`CATALYZES`). Result: 0 composite reaction nodes; hsa totals updated to **17,058 nodes / 41,334 edges / 2,147 reactions / 7,631 vectors**; cge edge total updated to **40,851** (CATALYZES, CONTAINS, PRODUCT_OF, SUBSTRATE_OF all expand because each split reaction inherits the composite's full edge set). Single-R lookups (`store.node("rxn:kegg:R00243")`, `simulate_whatif --knockout-reaction R00243`, kinetics seeders) now resolve correctly.
+
+- **`seed_cho_kinetics` auto-creates missing reaction nodes** (`src/metabokg/cho_kinetics.py`) — The seeder previously dropped 8 reactions silently when their KEGG R-numbers were absent from the cge KGML pathway graph (KEGG sometimes uses different reaction granularity in pathway maps vs. the canonical reaction database). It now consults `data/kegg_reaction_names.tsv` and creates a stub `reaction` node with the canonical KEGG name before writing kinetics. Result: the cge corpus now has all **35 CHO reactions** seeded (39 parameter rows + 15 regulatory interactions at pH 7.2, 37 °C). The 8 previously-orphaned reactions (R00081, R00196, R00243 GLUD1, R00254 GS, R00430, R00835 G6PD, R02163 Complex I, R02740) are now graph nodes; cge totals updated to **16,938 nodes / 39,731 edges / 2,107 reactions**.
 
 - **LanceDB index strategy: reactions indexed, enzymes excluded** (`src/metabokg/index.py`) — The vector index now covers **compound**, **reaction**, and **pathway** nodes. Enzyme nodes (9,427 in hsa) are dropped from indexing: they contain only gene-name lists, producing near-identical embeddings that crowd out compound and pathway results. Enzymes remain reachable via hop-1 graph expansion from reactions. Updated vector counts: hsa 7,623, cge 7,570, icho 10,512 (dim=384).
 - **`embed.py` consolidated into `kgmodule-utils`** (`src/metabokg/embed.py`) — Removed local `Embedder` and `SentenceTransformerEmbedder` class definitions; the module now re-exports them from `kg_utils.embedder` (shipped in `kgmodule-utils ≥0.2.4`). MetaboKG-specific helpers (`SeedHit`, `extract_distance`, `escape_id`) remain in place.
@@ -17,10 +23,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **iCHO2441 stats corrected** (`README.md`, `docs/icho_workflow.md`, `docs/FEATURES.md`, `CLAUDE.md`) — The published model has 6,663 reactions; MetaboKG parses **6,337** (exchange/boundary reactions with no internal metabolites are excluded during SBML ingestion). Metabolite count corrected to **4,174**. These numbers are now consistent across all documentation surfaces.
 - **`kgmodule-utils` bumped to `≥0.2.4`** (`pyproject.toml`) — Required for the shared `Embedder`/`SentenceTransformerEmbedder` re-exports in `embed.py`.
 - **Transitive dependency bumps** (`poetry.lock`) — `pyvista` 0.47.3→0.48.0, `huggingface-hub` 1.12.2→1.13.0, `pycode-kg` 0.18.1→0.19.0, `cachetools` 7.0.6→7.1.0, `typer` 0.25.0→0.25.1, `cyclopts` 4.11.0→4.11.1, `jedi` 0.19.2→0.20.0, `parso` 0.8.6→0.8.7, `wcwidth` 0.6.0→0.7.0.
+- **`ANNOUNCEMENT.md` updated to v0.8.1**: tone professionalized; "gluing" replaced with "integrating"; all Unicode characters (em/en dashes, arrows) replaced with ASCII; iCHO2441 stats corrected (6,337 reactions, 4,174 metabolites); KGRAG described as "orchestration layer for all KG adaptors".
+- **`README.md` copy and Unicode pass**: all em/en dashes, arrows, ellipsis, box-drawing characters, and section signs replaced with ASCII equivalents; GutenbergKG added as a sister project; "the same idea applied to..." phrasing varied across sister project bullets; KGRAG description corrected throughout.
+- **`enrich.py` module docstring corrected**: phase numbering aligned with actual `enrich()` pipeline (2c=glycans, 2d=KO enzyme nodes); `enrich_reactions_from_detail()` and `enrich_enzyme_names()` documented as standalone callables not invoked by `enrich()`; section headers made consistent; Unicode removed from docstring.
+- **`kinetics_fetch.py` docstring Unicode removed**: em/en dashes replaced with ASCII in module header, sources list, and inline comments.
+- **`kg` extra trimmed** (`pyproject.toml`): dev-only tools (`detect-secrets`, `mypy`, `pre-commit`, `pylint`, `pytest`, `pytest-cov`, `pytest-timeout`, `ruff`) removed from the `kg` extras group; these belong in `dev` dependencies only.
 
 ### Fixed
 
 ### Removed
+
+- **`scripts/article_examples.py`**: replaced by `scripts/examples.py` (see Added).
 
 ---
 

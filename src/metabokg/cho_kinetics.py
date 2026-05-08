@@ -44,17 +44,77 @@ Usage::
         print(f"Seeded {n_kp} CHO kinetic params, {n_ri} regulatory interactions.")
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-04-19
+Last Revision: 2026-05-07 18:38:30
 """
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
-from metabokg.primitives import KineticParam, RegulatoryInteraction, _kp_id, _ri_id
+from metabokg.primitives import KineticParam, MetaNode, RegulatoryInteraction, _kp_id, _ri_id
 
 if TYPE_CHECKING:
     from metabokg.store import MetaStore
+
+_REPO_DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
+
+
+def _load_kegg_reaction_names(tsv_path: Path) -> dict[str, str]:
+    """Parse ``kegg_reaction_names.tsv`` into ``{R#####: canonical_name}``.
+
+    Each row is ``<R-id>\\t<name>;<equation>``. We keep only the name segment
+    (everything before the first ``;``).
+    """
+    names: dict[str, str] = {}
+    if not tsv_path.exists():
+        return names
+    with tsv_path.open(encoding="utf-8") as fh:
+        for raw in fh:
+            line = raw.rstrip("\n")
+            if not line or "\t" not in line:
+                continue
+            rid, _, payload = line.partition("\t")
+            name = payload.split(";", 1)[0].strip()
+            if rid.startswith("R") and name:
+                names[rid] = name
+    return names
+
+
+def _ensure_reaction_node(
+    store: MetaStore,
+    kegg_rxn_id: str,
+    name_lookup: dict[str, str],
+) -> dict | None:
+    """Return the reaction node, auto-creating it from the KEGG name list when missing.
+
+    Reactions defined in the cho_kinetics literature tables can refer to canonical
+    KEGG R-numbers that are not present in the cge KGML pathway graph (KEGG sometimes
+    uses different reaction granularity in pathway maps). When such a reaction has a
+    bulk-list entry in ``kegg_reaction_names.tsv``, create a minimal stub node so the
+    kinetics row can attach to it. Returns ``None`` only when neither the graph nor
+    the bulk list knows about the reaction.
+    """
+    full_id = f"rxn:kegg:{kegg_rxn_id}"
+    existing = store.node(full_id)
+    if existing is not None:
+        return existing
+
+    canonical_name = name_lookup.get(kegg_rxn_id)
+    if not canonical_name:
+        return None
+
+    stub = MetaNode(
+        id=full_id,
+        kind="reaction",
+        name=canonical_name,
+        description=f"KEGG reaction {kegg_rxn_id} (auto-created for CHO kinetics)",
+        xrefs=json.dumps({"kegg": kegg_rxn_id}),
+        source_format="kegg_reaction_names",
+    )
+    store.write(nodes=[stub], edges=[])
+    return store.node(full_id)
 
 
 # ---------------------------------------------------------------------------
@@ -790,10 +850,12 @@ def seed_cho_kinetics(store: MetaStore, *, force: bool = False) -> tuple[int, in
         cur = store._conn.execute("SELECT id FROM regulatory_interactions")  # pylint: disable=protected-access
         existing_ri_ids = {row["id"] for row in cur.fetchall()}
 
+    name_lookup = _load_kegg_reaction_names(_REPO_DATA_DIR / "kegg_reaction_names.tsv")
+
     for kegg_rxn_id, kdata in _CHO_KINETICS.items():
-        rxn_node = store.node(f"rxn:kegg:{kegg_rxn_id}")
+        rxn_node = _ensure_reaction_node(store, kegg_rxn_id, name_lookup)
         if rxn_node is None:
-            continue  # Reaction not loaded — skip silently
+            continue  # Reaction not in graph and not in KEGG bulk name list — skip
 
         rxn_id = rxn_node["id"]
 
@@ -845,7 +907,7 @@ def seed_cho_kinetics(store: MetaStore, *, force: bool = False) -> tuple[int, in
     # Regulatory interactions
     # -----------------------------------------------------------------------
     for kegg_rxn_id, reg_list in _CHO_REGULATORY.items():
-        rxn_node = store.node(f"rxn:kegg:{kegg_rxn_id}")
+        rxn_node = _ensure_reaction_node(store, kegg_rxn_id, name_lookup)
         if rxn_node is None:
             continue
 

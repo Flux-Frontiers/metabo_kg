@@ -1,37 +1,45 @@
 """
-enrich.py — Post-build name enrichment for the MetaKG knowledge graph.
+enrich.py - Post-build name enrichment for the MetaKG knowledge graph.
 
 After ``metabokg-build`` has populated the SQLite database, compound, reaction,
-and enzyme nodes carry bare KEGG accessions as their ``name`` field.  This
-module replaces those with human-readable names across three phases and seven
-sub-phases:
+and enzyme nodes carry bare KEGG accessions as their ``name`` field. This
+module replaces those with human-readable names.
 
-Phase 1 — graph-local, no network required:
-    • Reaction nodes: labelled with the gene symbols of their catalysing
-      enzymes, taken from existing CATALYZES edges
-      (e.g. "R00710" → "ADH1A / ADH1B / ADH1C").
+The main entry point ``enrich()`` runs Phase 1 and four Phase 2 sub-phases.
+Two additional functions, ``enrich_reactions_from_detail()`` and
+``enrich_enzyme_names()``, are available as standalone callables and are
+invoked separately by the build pipeline.
 
-Phase 2 — requires downloaded KEGG name TSV files (see download_kegg_names.py):
+Phase 1 - graph-local, no network required:
+    Reaction nodes are labelled with the gene symbols of their catalysing
+    enzymes, taken from existing CATALYZES edges
+    (e.g. "R00710" resolves to "ADH1A / ADH1B / ADH1C").
+
+Phase 2 - requires downloaded KEGG name TSV files (see download_kegg_names.py):
     2a  Compound nodes: canonical names from ``data/kegg_compound_names.tsv``
-        (e.g. "C00031" → "D-Glucose").
+        (e.g. "C00031" resolves to "D-Glucose").
     2b  Reaction nodes: canonical KEGG reaction names from
         ``data/kegg_reaction_names.tsv``
-        (e.g. "R00710" → "Acetaldehyde:NAD+ oxidoreductase").
+        (e.g. "R00710" resolves to "Acetaldehyde:NAD+ oxidoreductase").
         Overrides Phase 1 gene-symbol labels where a canonical name exists.
-    2c  Reaction nodes (fallback): reactions still carrying bare IDs after 2b
-        are resolved via ``data/kegg_reaction_detail.tsv``
-        (e.g. "R02736" → "ATP:pyruvate 2-O-phosphotransferase").
-    2d  Glycan compound nodes: names from ``data/kegg_glycan_names.tsv``
-        for the ``gl:G#####`` namespace (e.g. "G13086" → "Lactosylceramide").
-    2e  KO enzyme nodes: KEGG Orthology descriptions from
+    2c  Glycan compound nodes: names from ``data/kegg_glycan_names.tsv``
+        for the ``gl:G#####`` namespace (e.g. "G13086" resolves to "Lactosylceramide").
+    2d  KO enzyme nodes: KEGG Orthology descriptions from
         ``data/kegg_ko_names.tsv`` for ``enz:kegg:K#####`` stubs
-        (e.g. "K00001" → "alcohol dehydrogenase").
+        (e.g. "K00001" resolves to "alcohol dehydrogenase").
 
-Phase 3 — requires per-organism gene name TSV files (see download_kegg_names.py):
-    • Enzyme nodes: organism gene IDs resolved to gene symbols from
-      ``data/{org}_gene_names.tsv`` (e.g. "100689064" → "Ldha").
-      Organisms are detected automatically from enzyme node IDs in the graph.
-      Enables ``--knockout ldha`` and ``resolve_id("ldha")`` at query time.
+Standalone (not called by ``enrich()``):
+    Reaction detail fallback: reactions still carrying bare IDs after Phase 2b
+    are resolved via ``data/kegg_reaction_detail.tsv``
+    (e.g. "R02736" resolves to "ATP:pyruvate 2-O-phosphotransferase").
+    Call ``enrich_reactions_from_detail()`` directly if needed.
+
+Phase 3 - requires per-organism gene name TSV files (see download_kegg_names.py):
+    Enzyme nodes: organism gene IDs resolved to gene symbols from
+    ``data/{org}_gene_names.tsv`` (e.g. "100689064" resolves to "Ldha").
+    Organisms are detected automatically from enzyme node IDs in the graph.
+    Enables ``--knockout ldha`` and ``resolve_id("ldha")`` at query time.
+    Called via ``enrich_enzyme_names()``; not called by ``enrich()``.
 
 All phases are idempotent. Phase 2 always prioritises canonical KEGG names
 over Phase 1 gene-symbol labels.
@@ -47,7 +55,7 @@ Public API
     enrich_enzyme_names(store, data_dir, *, quiet=False) -> int
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-05-02 21:01:26
+Last Revision: 2026-05-07 19:48:53
 License: Elastic 2.0
 """
 
@@ -278,7 +286,7 @@ def enrich_from_tsv(store, tsv_path: Path, kind: str, *, quiet: bool = False) ->
 
 
 # ---------------------------------------------------------------------------
-# Phase 2d: glycan compound names from kegg_glycan_names.tsv
+# Phase 2c: glycan compound names from kegg_glycan_names.tsv
 # ---------------------------------------------------------------------------
 
 
@@ -335,7 +343,7 @@ def enrich_glycans_from_tsv(store, glycan_tsv: Path, *, quiet: bool = False) -> 
 
 
 # ---------------------------------------------------------------------------
-# Phase 2c: reaction names from kegg_reaction_detail.tsv (fallback)
+# Standalone: reaction names from kegg_reaction_detail.tsv (fallback)
 # ---------------------------------------------------------------------------
 
 
@@ -394,7 +402,7 @@ def enrich_reactions_from_detail(store, detail_tsv: Path, *, quiet: bool = False
 
 
 # ---------------------------------------------------------------------------
-# Phase 2e: KO enzyme names from kegg_ko_names.tsv
+# Phase 2d: KO enzyme names from kegg_ko_names.tsv
 # ---------------------------------------------------------------------------
 
 

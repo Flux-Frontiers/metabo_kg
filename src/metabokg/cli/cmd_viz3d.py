@@ -17,7 +17,7 @@ from metabokg.cli.main import cli
 @click.option("--lancedb", default=None, help="Path to LanceDB directory.")
 @click.option(
     "--layout",
-    default="allium",
+    default="cake",
     show_default=True,
     type=click.Choice(["allium", "cake"]),
     help="3D layout strategy.",

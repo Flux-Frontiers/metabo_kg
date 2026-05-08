@@ -1,0 +1,28 @@
+feat(parser,docs): split multi-R KGML reactions, seed missing CHO nodes, v0.9.0
+
+Parser and seeder fixes:
+- KGML parser now emits one reaction node per R-number in multi-R
+  <reaction name="rn:R00243 rn:R00248"> elements; eliminates 360 composite
+  nodes in cge and equivalent in hsa; single-R lookups and kinetics seeders
+  now resolve correctly
+- seed_cho_kinetics auto-creates stub reaction nodes for R-numbers absent
+  from the cge pathway graph; all 35 CHO reactions now seeded (39 parameter
+  rows, 15 regulatory interactions)
+- scripts/examples.py: new runnable companion to docs/EXAMPLES.md; replaces
+  scripts/article_examples.py
+
+Documentation and copy:
+- ANNOUNCEMENT.md updated to v0.8.1; Unicode removed; "gluing" replaced
+  with "integrating"; iCHO stats corrected; KGRAG description fixed
+- README.md: all Unicode (em/en dashes, arrows, box-drawing, section signs)
+  replaced with ASCII; GutenbergKG added as sister project; KGRAG described
+  as orchestration layer for all KG adaptors
+- enrich.py docstring corrected: phase numbering aligned with enrich()
+  pipeline; standalone functions documented; Unicode removed
+- kinetics_fetch.py: em/en dashes removed from docstring and comments
+
+Packaging:
+- Version bumped to 0.9.0
+- kg extra trimmed: dev tools removed (belong in dev dependencies only)
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>

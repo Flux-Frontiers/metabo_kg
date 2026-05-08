@@ -15,7 +15,7 @@ KGML detection heuristic: the root element tag is ``{...}pathway`` or
 ``pathway`` (no namespace), which distinguishes it from SBML's ``<sbml>`` root.
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-02-28
+Last Revision: 2026-05-07 19:49:39
 """
 
 from __future__ import annotations
@@ -190,8 +190,18 @@ class KGMLParser(PathwayParser):
                         reaction_attr_map.setdefault(kegg_rxn, nid)
 
         # --- Reactions ---
+        # KGML <reaction name="rn:R00243 rn:R00248"> groups multiple R-numbers
+        # into a single element when they share substrates, products, and
+        # enzymes (typically reverse pairs or isozyme variants). Emit one
+        # reaction node per R-number so individual lookups (e.g. by kinetics
+        # seeders or single-R MCP queries) resolve correctly.
         for rxn_elem in root.findall("reaction"):
-            rxn_kegg_id = rxn_elem.attrib.get("name", "").replace("rn:", "").strip()
+            raw_name = rxn_elem.attrib.get("name", "")
+            rxn_kegg_ids = [
+                tok.replace("rn:", "").strip()
+                for tok in raw_name.split()
+                if tok.replace("rn:", "").strip()
+            ]
             rxn_type = rxn_elem.attrib.get("type", "irreversible")  # reversible|irreversible
 
             substrates: list[dict] = []
@@ -208,74 +218,74 @@ class KGMLParser(PathwayParser):
             stoich_blob = json.dumps(
                 {"substrates": substrates, "products": products, "direction": rxn_type}
             )
-            rxn_id = (
-                node_id(KIND_REACTION, "kegg", rxn_kegg_id)
-                if rxn_kegg_id
-                else synthetic_id(KIND_REACTION, rxn_elem.attrib.get("id", ""))
-            )
-            rxn_name = rxn_kegg_id or rxn_elem.attrib.get("id", "unknown")
 
-            if rxn_id not in nodes:
-                nodes[rxn_id] = MetaNode(
-                    id=rxn_id,
-                    kind=KIND_REACTION,
-                    name=rxn_name,
-                    description=f"KEGG reaction {rxn_kegg_id} ({rxn_type})",
-                    stoichiometry=stoich_blob,
-                    xrefs=json.dumps({"kegg": rxn_kegg_id}) if rxn_kegg_id else None,
-                    source_format="kgml",
-                    source_file=str(path),
-                )
+            if rxn_kegg_ids:
+                rxn_ids = [node_id(KIND_REACTION, "kegg", rid) for rid in rxn_kegg_ids]
+            else:
+                rxn_ids = [synthetic_id(KIND_REACTION, rxn_elem.attrib.get("id", ""))]
+                rxn_kegg_ids = [rxn_elem.attrib.get("id", "unknown")]
 
-            # Pathway CONTAINS reaction
-            edges.append(MetaEdge(src=pwy_id, rel=REL_CONTAINS, dst=rxn_id))
-
-            # Substrate edges
-            for s in substrates:
-                cid = s["id"]
-                # Ensure compound node exists (may not be in entries if only in reaction)
-                if cid not in nodes:
-                    kegg_cid = cid.split(":")[-1]
-                    nodes[cid] = MetaNode(
-                        id=cid,
-                        kind=KIND_COMPOUND,
-                        name=kegg_cid,
-                        description=f"KEGG compound {kegg_cid}",
-                        xrefs=json.dumps({"kegg": kegg_cid}),
+            for rxn_id, rxn_kegg_id in zip(rxn_ids, rxn_kegg_ids):
+                if rxn_id not in nodes:
+                    nodes[rxn_id] = MetaNode(
+                        id=rxn_id,
+                        kind=KIND_REACTION,
+                        name=rxn_kegg_id,
+                        description=f"KEGG reaction {rxn_kegg_id} ({rxn_type})",
+                        stoichiometry=stoich_blob,
+                        xrefs=json.dumps({"kegg": rxn_kegg_id}) if rxn_kegg_id else None,
                         source_format="kgml",
                         source_file=str(path),
                     )
-                edges.append(
-                    MetaEdge(
-                        src=cid,
-                        rel=REL_SUBSTRATE_OF,
-                        dst=rxn_id,
-                        evidence=json.dumps({"stoich": s["stoich"]}),
-                    )
-                )
 
-            # Product edges
-            for p in products:
-                cid = p["id"]
-                if cid not in nodes:
-                    kegg_cid = cid.split(":")[-1]
-                    nodes[cid] = MetaNode(
-                        id=cid,
-                        kind=KIND_COMPOUND,
-                        name=kegg_cid,
-                        description=f"KEGG compound {kegg_cid}",
-                        xrefs=json.dumps({"kegg": kegg_cid}),
-                        source_format="kgml",
-                        source_file=str(path),
+                # Pathway CONTAINS reaction
+                edges.append(MetaEdge(src=pwy_id, rel=REL_CONTAINS, dst=rxn_id))
+
+                # Substrate edges
+                for s in substrates:
+                    cid = s["id"]
+                    if cid not in nodes:
+                        kegg_cid = cid.split(":")[-1]
+                        nodes[cid] = MetaNode(
+                            id=cid,
+                            kind=KIND_COMPOUND,
+                            name=kegg_cid,
+                            description=f"KEGG compound {kegg_cid}",
+                            xrefs=json.dumps({"kegg": kegg_cid}),
+                            source_format="kgml",
+                            source_file=str(path),
+                        )
+                    edges.append(
+                        MetaEdge(
+                            src=cid,
+                            rel=REL_SUBSTRATE_OF,
+                            dst=rxn_id,
+                            evidence=json.dumps({"stoich": s["stoich"]}),
+                        )
                     )
-                edges.append(
-                    MetaEdge(
-                        src=rxn_id,
-                        rel=REL_PRODUCT_OF,
-                        dst=cid,
-                        evidence=json.dumps({"stoich": p["stoich"]}),
+
+                # Product edges
+                for p in products:
+                    cid = p["id"]
+                    if cid not in nodes:
+                        kegg_cid = cid.split(":")[-1]
+                        nodes[cid] = MetaNode(
+                            id=cid,
+                            kind=KIND_COMPOUND,
+                            name=kegg_cid,
+                            description=f"KEGG compound {kegg_cid}",
+                            xrefs=json.dumps({"kegg": kegg_cid}),
+                            source_format="kgml",
+                            source_file=str(path),
+                        )
+                    edges.append(
+                        MetaEdge(
+                            src=rxn_id,
+                            rel=REL_PRODUCT_OF,
+                            dst=cid,
+                            evidence=json.dumps({"stoich": p["stoich"]}),
+                        )
                     )
-                )
 
         # --- Wire enzymes to reactions ---
         # Strategy A: MetaKG extension — <reaction ... enzyme="N"> references
@@ -288,43 +298,50 @@ class KGMLParser(PathwayParser):
         #   the fallback when A and B both fail (e.g. when the reaction
         #   element id differs from the gene entry id).
         for rxn_elem in root.findall("reaction"):
-            rxn_kegg_id = rxn_elem.attrib.get("name", "").replace("rn:", "").strip()
-            rxn_nid = (
-                node_id(KIND_REACTION, "kegg", rxn_kegg_id)
-                if rxn_kegg_id
-                else synthetic_id(KIND_REACTION, rxn_elem.attrib.get("id", ""))
-            )
-            if rxn_nid not in nodes:
-                continue
+            raw_name = rxn_elem.attrib.get("name", "")
+            rxn_kegg_ids = [
+                tok.replace("rn:", "").strip()
+                for tok in raw_name.split()
+                if tok.replace("rn:", "").strip()
+            ]
+            if rxn_kegg_ids:
+                rxn_nids = [node_id(KIND_REACTION, "kegg", rid) for rid in rxn_kegg_ids]
+            else:
+                rxn_nids = [synthetic_id(KIND_REACTION, rxn_elem.attrib.get("id", ""))]
+                rxn_kegg_ids = [""]
 
-            # Strategies A and B: entry_map-based lookup
-            wired = False
-            candidate_ids: list[str] = []
-            enz_attr = rxn_elem.attrib.get("enzyme", "")
-            if enz_attr:
-                candidate_ids.append(enz_attr)
-            rxn_id_attr = rxn_elem.attrib.get("id", "")
-            if rxn_id_attr and rxn_id_attr not in candidate_ids:
-                candidate_ids.append(rxn_id_attr)
-
-            for cand in candidate_ids:
-                if cand not in entry_map:
+            for rxn_nid, rxn_kegg_id in zip(rxn_nids, rxn_kegg_ids):
+                if rxn_nid not in nodes:
                     continue
-                enz_nid = entry_map[cand]
-                if enz_nid in nodes and nodes[enz_nid].kind == KIND_ENZYME:
-                    edges.append(MetaEdge(src=enz_nid, rel=REL_CATALYZES, dst=rxn_nid))
-                    wired = True
-                    break  # one enzyme entry per reaction is enough
 
-            # Strategy C: fall back to reaction= attribute map
-            if not wired and rxn_kegg_id:
-                enz_nid_c = reaction_attr_map.get(rxn_kegg_id)
-                if (
-                    enz_nid_c is not None
-                    and enz_nid_c in nodes
-                    and nodes[enz_nid_c].kind == KIND_ENZYME
-                ):
-                    edges.append(MetaEdge(src=enz_nid_c, rel=REL_CATALYZES, dst=rxn_nid))
+                # Strategies A and B: entry_map-based lookup
+                wired = False
+                candidate_ids: list[str] = []
+                enz_attr = rxn_elem.attrib.get("enzyme", "")
+                if enz_attr:
+                    candidate_ids.append(enz_attr)
+                rxn_id_attr = rxn_elem.attrib.get("id", "")
+                if rxn_id_attr and rxn_id_attr not in candidate_ids:
+                    candidate_ids.append(rxn_id_attr)
+
+                for cand in candidate_ids:
+                    if cand not in entry_map:
+                        continue
+                    enz_nid = entry_map[cand]
+                    if enz_nid in nodes and nodes[enz_nid].kind == KIND_ENZYME:
+                        edges.append(MetaEdge(src=enz_nid, rel=REL_CATALYZES, dst=rxn_nid))
+                        wired = True
+                        break  # one enzyme entry per reaction is enough
+
+                # Strategy C: fall back to reaction= attribute map
+                if not wired and rxn_kegg_id:
+                    enz_nid_c = reaction_attr_map.get(rxn_kegg_id)
+                    if (
+                        enz_nid_c is not None
+                        and enz_nid_c in nodes
+                        and nodes[enz_nid_c].kind == KIND_ENZYME
+                    ):
+                        edges.append(MetaEdge(src=enz_nid_c, rel=REL_CATALYZES, dst=rxn_nid))
 
         # --- Attach unreacted entry nodes to their pathway via CONTAINS ---
         # Gene/ortholog entries that were never linked to a reaction, and
