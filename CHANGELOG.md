@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Removed
+
+### Fixed
+
+---
+
+## [0.9.0] - 2026-07-07
+
+### Added
+
 - **`scripts/examples.py`** — Runnable companion to `docs/EXAMPLES.md` and the article worked example. Each documented Python block is reproduced as an `ex_*` function and exercised end-to-end against the live SQLite + LanceDB. Replaces `scripts/article_examples.py`.
 - **Pre-commit KG rebuild + snapshot hook** (`.pre-commit-config.yaml`, `scripts/precommit_kg_index.sh`) — A new `kg-index` local hook rebuilds PyCodeKG and DocKG and captures version-tagged temporal snapshots on every commit. The `ty` and `pytest` hooks are now marked `fail_fast: true`, so a type-check or test failure aborts the run before the (expensive) KG rebuild — the graphs are only ever rebuilt from code that passed the full suite. The wrapper script derives the snapshot version from `pyproject.toml`, runs `pycodekg-build`/`dockg-build` followed by `snapshot save`, and stages the resulting snapshot JSONs so they ride along with the triggering commit.
 
