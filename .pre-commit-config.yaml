@@ -14,9 +14,9 @@ repos:
 
   - repo: local
     hooks:
-      - id: mypy
-        name: mypy
-        entry: .venv/bin/mypy src/
+      - id: ty
+        name: ty
+        entry: .venv/bin/ty check src/
         language: system
         pass_filenames: false
         always_run: true

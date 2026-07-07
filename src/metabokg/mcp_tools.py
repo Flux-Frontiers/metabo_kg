@@ -307,8 +307,8 @@ def _mcp_simulate_whatif(
                 {
                     "id": rxn_id,
                     "name": (store.node(rxn_id) or {}).get("name", rxn_id),
-                    "baseline_flux": (result.baseline.fluxes or {}).get(rxn_id, 0.0),  # type: ignore[union-attr]
-                    "perturbed_flux": (result.perturbed.fluxes or {}).get(rxn_id, 0.0),  # type: ignore[union-attr]
+                    "baseline_flux": (result.baseline.fluxes or {}).get(rxn_id, 0.0),  # ty: ignore[unresolved-attribute]
+                    "perturbed_flux": (result.perturbed.fluxes or {}).get(rxn_id, 0.0),  # ty: ignore[unresolved-attribute]
                     "delta": delta,
                 }
                 for rxn_id, delta in result.delta_fluxes.items()
@@ -324,10 +324,10 @@ def _mcp_simulate_whatif(
                     "id": cpd_id,
                     "name": (store.node(cpd_id) or {}).get("name", cpd_id),
                     "baseline_final_mM": (
-                        (result.baseline.concentrations or {}).get(cpd_id, [0.0])[-1]  # type: ignore[union-attr]
+                        (result.baseline.concentrations or {}).get(cpd_id, [0.0])[-1]  # ty: ignore[unresolved-attribute]
                     ),
                     "perturbed_final_mM": (
-                        (result.perturbed.concentrations or {}).get(cpd_id, [0.0])[-1]  # type: ignore[union-attr]
+                        (result.perturbed.concentrations or {}).get(cpd_id, [0.0])[-1]  # ty: ignore[unresolved-attribute]
                     ),
                     "delta_mM": delta,
                 }

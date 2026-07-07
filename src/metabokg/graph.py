@@ -129,7 +129,7 @@ class MetabolicGraph:
         """
         if self._nodes is None:
             raise RuntimeError("Call extract() before result()")
-        return self._nodes, self._edges  # type: ignore[return-value]
+        return self._nodes, self._edges  # ty: ignore[invalid-return-type]
 
     @property
     def parse_errors(self) -> list[dict]:
