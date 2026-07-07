@@ -155,7 +155,15 @@ class SnapshotManifest:
 
 
 class SnapshotManager(_BaseSnapshotManager):
-    """Manages MetaKG snapshot storage, retrieval, and comparison."""
+    """Manages MetaKG snapshot storage, retrieval, and comparison.
+
+    Overrides every public method of the base ``SnapshotManager`` to operate
+    on this module's own ``Snapshot``/``SnapshotManifest`` dataclasses (which
+    predate and are not subclasses of ``kg_snapshot``'s), so ty's Liskov
+    override checks flag the whole surface as incompatible. Silenced per
+    method below rather than migrating to the shared base's data model,
+    which is a separate decision.
+    """
 
     def __init__(self, snapshots_dir: Path | str, db_path: Path | str | None = None):
         """
@@ -175,7 +183,7 @@ class SnapshotManager(_BaseSnapshotManager):
     # Capture
     # ------------------------------------------------------------------
 
-    def capture(
+    def capture(  # ty: ignore[invalid-method-override]
         self,
         version: str | None = None,
         branch: str | None = None,
@@ -247,7 +255,7 @@ class SnapshotManager(_BaseSnapshotManager):
     # Persistence
     # ------------------------------------------------------------------
 
-    def save_snapshot(self, snapshot: Snapshot) -> Path:
+    def save_snapshot(self, snapshot: Snapshot) -> Path:  # ty: ignore[invalid-method-override]
         """
         Save snapshot to ``.metabokg/snapshots/{key}.json`` and update manifest.
 
@@ -293,18 +301,18 @@ class SnapshotManager(_BaseSnapshotManager):
         self._save_manifest(manifest)
         return snapshot_file
 
-    def load_manifest(self) -> SnapshotManifest:
+    def load_manifest(self) -> SnapshotManifest:  # ty: ignore[invalid-method-override]
         """Load manifest.json; return empty manifest if it doesn't exist."""
         if not self.manifest_path.exists():
             return SnapshotManifest()
         with open(self.manifest_path) as f:
             return SnapshotManifest.from_dict(json.load(f))
 
-    def _save_manifest(self, manifest: SnapshotManifest) -> None:
+    def _save_manifest(self, manifest: SnapshotManifest) -> None:  # ty: ignore[invalid-method-override]
         with open(self.manifest_path, "w") as f:
             json.dump(manifest.to_dict(), f, indent=2)
 
-    def load_snapshot(self, key: str) -> Snapshot | None:
+    def load_snapshot(self, key: str) -> Snapshot | None:  # ty: ignore[invalid-method-override]
         """
         Load a snapshot by key (tree hash) or ``"latest"``.
 
@@ -356,7 +364,7 @@ class SnapshotManager(_BaseSnapshotManager):
     # Retrieval helpers
     # ------------------------------------------------------------------
 
-    def get_previous(self, key: str) -> Snapshot | None:
+    def get_previous(self, key: str) -> Snapshot | None:  # ty: ignore[invalid-method-override]
         """Get the snapshot immediately before this one (by timestamp)."""
         manifest = self.load_manifest()
         current_ts = next((s["timestamp"] for s in manifest.snapshots if s.get("key") == key), None)
@@ -369,7 +377,7 @@ class SnapshotManager(_BaseSnapshotManager):
                 break
         return self.load_snapshot(prev_entry["key"]) if prev_entry else None
 
-    def get_baseline(self) -> Snapshot | None:
+    def get_baseline(self) -> Snapshot | None:  # ty: ignore[invalid-method-override]
         """Get the oldest snapshot (baseline for comparison)."""
         manifest = self.load_manifest()
         if not manifest.snapshots:
@@ -377,7 +385,7 @@ class SnapshotManager(_BaseSnapshotManager):
         baseline_entry = min(manifest.snapshots, key=lambda x: x["timestamp"])
         return self.load_snapshot(baseline_entry["key"])
 
-    def list_snapshots(self, limit: int | None = None) -> list[dict]:
+    def list_snapshots(self, limit: int | None = None) -> list[dict]:  # ty: ignore[invalid-method-override]
         """
         List all snapshots in reverse chronological order.
 
@@ -440,7 +448,7 @@ class SnapshotManager(_BaseSnapshotManager):
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _compute_delta(snap_new: Snapshot, snap_old: Snapshot) -> SnapshotDelta:
+    def _compute_delta(snap_new: Snapshot, snap_old: Snapshot) -> SnapshotDelta:  # ty: ignore[invalid-method-override]
         """Compute metrics delta (new − old)."""
         return SnapshotDelta(
             nodes=snap_new.metrics.total_nodes - snap_old.metrics.total_nodes,

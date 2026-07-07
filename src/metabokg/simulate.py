@@ -360,9 +360,9 @@ class MetabolicSimulator:
             dy = np.zeros(n_cpd)
             for spec in rxn_specs:
                 v = _mm_rate(spec, yc, cpd_ids)
-                for idx, stoich in spec["substrates"]:
+                for idx, stoich in spec["substrates"]:  # ty: ignore[not-iterable]
                     dy[idx] -= stoich * v
-                for idx, stoich in spec["products"]:
+                for idx, stoich in spec["products"]:  # ty: ignore[not-iterable]
                     dy[idx] += stoich * v
             return dy
 

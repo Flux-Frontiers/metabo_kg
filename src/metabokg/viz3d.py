@@ -926,7 +926,7 @@ def _run_export(
     }
 
     print("Creating visualization for export...")
-    pl = cast(Any, pv.Plotter(window_size=[width, height], off_screen=True))
+    pl = pv.Plotter(window_size=[width, height], off_screen=True)
     pl.set_background("black")
     pl.remove_all_lights()
     pl.enable_anti_aliasing("msaa")
