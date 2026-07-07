@@ -1,6 +1,6 @@
 # Introducing MetaboKG: A Local, Queryable Knowledge Graph for Metabolism
 
-We are releasing **MetaboKG v0.8.1**: an open-source Python toolkit that turns the world's metabolic pathway databases into a single, local, queryable knowledge graph. Query it in plain English, simulate flux through it, and pass it to an LLM as structured context.
+We are releasing **MetaboKG**: an open-source Python toolkit that turns the world's metabolic pathway databases into a single, local, queryable knowledge graph. Query it in plain English, simulate flux through it, and pass it to an LLM as structured context.
 
 **Repo:** https://github.com/flux-frontiers/metabo_kg
 **License:** Elastic License 2.0 (free to use, modify, and redistribute; no hosted-service resale)
