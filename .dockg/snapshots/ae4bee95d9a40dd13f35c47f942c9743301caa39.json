@@ -1,0 +1,125 @@
+{
+  "key": "ae4bee95d9a40dd13f35c47f942c9743301caa39",
+  "branch": "main",
+  "timestamp": "2026-07-07T19:59:07.957992+00:00",
+  "version": "0.9.0",
+  "metrics": {
+    "db_path": "/Users/egs/repos/Metabo_kg/.dockg/graph.sqlite",
+    "total_nodes": 4661,
+    "total_edges": 40648,
+    "node_counts": {
+      "chunk": 1094,
+      "document": 33,
+      "entity": 1158,
+      "keyword": 1006,
+      "section": 682,
+      "topic": 688
+    },
+    "edge_counts": {
+      "CONTAINS": 1776,
+      "CO_OCCURS_WITH": 25368,
+      "HAS_KEYWORD": 4372,
+      "HAS_TOPIC": 1106,
+      "MENTIONS_ENTITY": 5127,
+      "NEXT": 348,
+      "REFERENCES": 42,
+      "SIMILAR_TO": 2509
+    },
+    "meaningful_nodes": 4628,
+    "coverage_score": 0.9585618525289458,
+    "issues_count": 1,
+    "complexity_median": 23.0
+  },
+  "hotspots": [
+    {
+      "id": "chunk:ANNOUNCEMENT.md:0000",
+      "file_path": "ANNOUNCEMENT.md",
+      "label": "Introducing MetaboKG: A Local, Queryable Knowledge Graph for Metabolism",
+      "references": 0,
+      "semantic_links": 30,
+      "total_links": 30
+    },
+    {
+      "id": "chunk:CHANGELOG.md:0095",
+      "file_path": "CHANGELOG.md",
+      "label": "Added",
+      "references": 0,
+      "semantic_links": 29,
+      "total_links": 30
+    },
+    {
+      "id": "chunk:ANNOUNCEMENT.md:0003",
+      "file_path": "ANNOUNCEMENT.md",
+      "label": "What's in the box",
+      "references": 0,
+      "semantic_links": 24,
+      "total_links": 25
+    },
+    {
+      "id": "chunk:analysis/metakg-analysis-2026-03-06-153153.md:0026",
+      "file_path": "analysis/metakg-analysis-2026-03-06-153153.md",
+      "label": "All Isolated Nodes",
+      "references": 0,
+      "semantic_links": 23,
+      "total_links": 23
+    },
+    {
+      "id": "chunk:analysis/metakg-analysis-2026-03-06-163949.md:0025",
+      "file_path": "analysis/metakg-analysis-2026-03-06-163949.md",
+      "label": "All Isolated Nodes",
+      "references": 0,
+      "semantic_links": 23,
+      "total_links": 23
+    },
+    {
+      "id": "chunk:docs/FEATURES.md:0008",
+      "file_path": "docs/FEATURES.md",
+      "label": "iCHO2441 Genome-Scale Model (`metabokg-icho`)",
+      "references": 1,
+      "semantic_links": 22,
+      "total_links": 23
+    },
+    {
+      "id": "chunk:docs/CHEATSHEET.md:0030",
+      "file_path": "docs/CHEATSHEET.md",
+      "label": "Node ID Formats",
+      "references": 0,
+      "semantic_links": 22,
+      "total_links": 23
+    },
+    {
+      "id": "chunk:docs/analysis_v0.8.1.md:0005",
+      "file_path": "docs/analysis_v0.8.1.md",
+      "label": "Fan-In Ranking",
+      "references": 0,
+      "semantic_links": 22,
+      "total_links": 23
+    },
+    {
+      "id": "chunk:CHANGELOG.md:0010",
+      "file_path": "CHANGELOG.md",
+      "label": "Changed",
+      "references": 0,
+      "semantic_links": 21,
+      "total_links": 22
+    },
+    {
+      "id": "chunk:CLAUDE.md:0003",
+      "file_path": "CLAUDE.md",
+      "label": "MetaboKG Commands",
+      "references": 0,
+      "semantic_links": 21,
+      "total_links": 22
+    }
+  ],
+  "issues": [
+    "Chunk density appears low; consider reducing --chunk-size or reviewing corpus content."
+  ],
+  "vs_previous": null,
+  "vs_baseline": {
+    "nodes": 0,
+    "edges": 0,
+    "coverage_delta": 0.0,
+    "issues_delta": 0
+  }
+}

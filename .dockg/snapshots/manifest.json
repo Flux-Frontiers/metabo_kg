@@ -1,0 +1,49 @@
+{
+  "format": "1.0",
+  "last_update": "2026-07-07T19:59:07.958775+00:00",
+  "snapshots": [
+    {
+      "key": "ae4bee95d9a40dd13f35c47f942c9743301caa39",
+      "branch": "main",
+      "timestamp": "2026-07-07T19:59:07.957992+00:00",
+      "version": "0.9.0",
+      "file": "ae4bee95d9a40dd13f35c47f942c9743301caa39.json",
+      "metrics": {
+        "db_path": "/Users/egs/repos/Metabo_kg/.dockg/graph.sqlite",
+        "total_nodes": 4661,
+        "total_edges": 40648,
+        "node_counts": {
+          "chunk": 1094,
+          "document": 33,
+          "entity": 1158,
+          "keyword": 1006,
+          "section": 682,
+          "topic": 688
+        },
+        "edge_counts": {
+          "CONTAINS": 1776,
+          "CO_OCCURS_WITH": 25368,
+          "HAS_KEYWORD": 4372,
+          "HAS_TOPIC": 1106,
+          "MENTIONS_ENTITY": 5127,
+          "NEXT": 348,
+          "REFERENCES": 42,
+          "SIMILAR_TO": 2509
+        },
+        "meaningful_nodes": 4628,
+        "coverage_score": 0.9585618525289458,
+        "issues_count": 1,
+        "complexity_median": 23.0
+      },
+      "deltas": {
+        "vs_previous": null,
+        "vs_baseline": {
+          "nodes": 6,
+          "edges": 34,
+          "coverage_delta": 3.791230326721795e-05,
+          "issues_delta": 0
+        }
+      }
+    }
+  ]
+}

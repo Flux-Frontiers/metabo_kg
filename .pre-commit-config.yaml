@@ -20,9 +20,19 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+        fail_fast: true
       - id: pytest
         name: pytest
         entry: .venv/bin/pytest --tb=short -q
+        language: system
+        pass_filenames: false
+        always_run: true
+        fail_fast: true
+      # KG build + snapshot run only after ty and pytest pass (fail_fast above
+      # aborts the run on any failure, so this never fires on broken code).
+      - id: kg-index
+        name: pycodekg + dockg build & snapshot
+        entry: scripts/precommit_kg_index.sh
         language: system
         pass_filenames: false
         always_run: true

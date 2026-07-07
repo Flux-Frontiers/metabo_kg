@@ -39,13 +39,13 @@ End-to-end data flow from raw pathway sources to analysis, simulation, and AI-ag
        ▼                        ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         STAGE 3 — Name Enrichment                           │
-│  Phase 1  — reaction names from CATALYZES edges (graph-local, no network)  │
-│  Phase 2a — compound names       ← kegg_compound_names.tsv                 │
-│  Phase 2b — reaction names       ← kegg_reaction_names.tsv  (overrides 1)  │
-│  Phase 2c — reaction names (fallback) ← kegg_reaction_detail.tsv           │
-│  Phase 2d — glycan names         ← kegg_glycan_names.tsv                   │
-│  Phase 2e — KO enzyme names      ← kegg_ko_names.tsv                       │
-│  Phase 3  — enzyme gene symbols  ← {org}_gene_names.tsv                    │
+│  Phase 1    — reaction names from CATALYZES edges (graph-local, no network) │
+│  Phase 2a   — compound names      ← kegg_compound_names.tsv                │
+│  Phase 2b   — reaction names      ← kegg_reaction_names.tsv  (overrides 1) │
+│  Phase 2c   — glycan names        ← kegg_glycan_names.tsv                  │
+│  Phase 2d   — KO enzyme names     ← kegg_ko_names.tsv                      │
+│  Standalone — reaction fallback   ← kegg_reaction_detail.tsv               │
+│  Phase 3    — enzyme gene symbols ← {org}_gene_names.tsv                   │
 └───────────────────────────────┬─────────────────────────────────────────────┘
                                 │ enriched {org}.sqlite
                                 ▼
@@ -84,9 +84,9 @@ KEGG name reference files used during Stage 3 enrichment. **All TSVs are bundled
 |------|-----------------|---------|
 | `data/kegg_compound_names.tsv` | `/list/compound` | Phase 2a |
 | `data/kegg_reaction_names.tsv` | `/list/reaction` | Phase 2b |
-| `data/kegg_reaction_detail.tsv` | `/get/rn:R#####` (per-reaction) | Phase 2c |
-| `data/kegg_glycan_names.tsv` | `/list/glycan` | Phase 2d |
-| `data/kegg_ko_names.tsv` | `/list/ko` | Phase 2e |
+| `data/kegg_glycan_names.tsv` | `/list/glycan` | Phase 2c |
+| `data/kegg_ko_names.tsv` | `/list/ko` | Phase 2d |
+| `data/kegg_reaction_detail.tsv` | `/get/rn:R#####` (per-reaction) | Standalone fallback |
 | `data/{org}_gene_names.tsv` | `/list/{org}` | Phase 3 |
 | `data/sabio_cho_kinetics.tsv` | SABIO-RK (credentials-gated, manual) | Stage 4 (CHO) |
 
@@ -153,9 +153,9 @@ Replaces bare KEGG accessions with human-readable names across all node kinds. A
 | 1 | reaction | *(graph-local, no file needed)* | reaction ← gene symbols of catalysing enzymes (CATALYZES edges) | `R00710` → `ADH1A / ADH1B` |
 | 2a | compound | `kegg_compound_names.tsv` | compound ← canonical KEGG name | `C00031` → `D-Glucose` |
 | 2b | reaction | `kegg_reaction_names.tsv` | reaction ← canonical KEGG name (overrides Phase 1) | `R00710` → `Acetaldehyde:NAD+ oxidoreductase` |
-| 2c | reaction | `kegg_reaction_detail.tsv` | reaction ← detail name (fallback for remaining bare IDs) | `R02736` → `ATP:pyruvate 2-O-phosphotransferase` |
-| 2d | glycan | `kegg_glycan_names.tsv` | glycan compound ← canonical KEGG glycan name | `G13086` → `Lactosylceramide` |
-| 2e | enzyme (KO) | `kegg_ko_names.tsv` | KO enzyme ← KEGG Orthology description | `K00001` → `alcohol dehydrogenase` |
+| 2c | glycan | `kegg_glycan_names.tsv` | glycan compound ← canonical KEGG glycan name | `G13086` → `Lactosylceramide` |
+| 2d | enzyme (KO) | `kegg_ko_names.tsv` | KO enzyme ← KEGG Orthology description | `K00001` → `alcohol dehydrogenase` |
+| Standalone | reaction | `kegg_reaction_detail.tsv` | reaction ← detail name (fallback for remaining bare IDs; not called by `enrich()`) | `R02736` → `ATP:pyruvate 2-O-phosphotransferase` |
 | 3 | enzyme | `{org}_gene_names.tsv` | organism enzyme ← gene symbol | `2539` → `ADH1C` |
 
 **Namespace coverage after full enrichment:**

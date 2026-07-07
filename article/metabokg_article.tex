@@ -372,7 +372,7 @@ similar pathways using embeddings---all within the same interface.
 Both the store and the index initialise lazily: a caller that builds only the
 SQLite database (e.g.\ with \texttt{--no-index}) never loads the embedding
 model. This supports lightweight deployments where only structural queries are
-needed, avoiding the 100~MB embedding model download unless semantic search is
+needed, avoiding the 24~MB embedding model download unless semantic search is
 actually used.
 
 \begin{figure}[H]
@@ -439,39 +439,86 @@ replaces accessions with canonical names and stores them directly in
 \texttt{meta\_nodes.name}, making them available everywhere---CLI, MCP,
 Streamlit, and the Python API.
 
-\subsection{Two-Phase Enrichment}
+\subsection{Multi-Phase Enrichment Pipeline}
 
-Enrichment proceeds in two phases, both idempotent and safe to re-run:
+Enrichment proceeds in three numbered phases (with Phase~2 split into four
+sub-phases). All phases are idempotent and safe to re-run.
 
 \begin{description}[leftmargin=*,itemsep=3pt]
-  \item[Phase~1 (no network, always runs).] For every reaction node still
-    carrying a bare accession name, the enricher looks up all
-    \texttt{CATALYZES} edges pointing to it and joins the catalysing enzyme
-    gene symbols with a slash separator:
+  \item[Phase~1 (no network, always runs).]
+    For every reaction node still carrying a bare accession name, the enricher
+    looks up all \texttt{CATALYZES} edges pointing to it and joins the
+    catalysing enzyme gene symbols with a slash separator:
     \begin{center}
       \texttt{R00710} $\to$ \texttt{ADH1A / ADH1B / ADH1C}
     \end{center}
     This phase requires no external data and runs immediately after build.
+    It provides a useful human-readable label for any reaction even if the
+    canonical KEGG name is unavailable.
 
-  \item[Phase~2 (requires downloaded KEGG name lists).] KEGG publishes bulk
-    name lists for compounds ($\sim$19,500 entries) and reactions
-    ($\sim$12,400 entries). A provided download script fetches these files
-    once; subsequent enrichment runs read them locally:
-    \begin{lstlisting}[style=bash]
-python scripts/download_kegg_names.py
-metabokg-enrich --db .metabokg/meta.sqlite
-    \end{lstlisting}
-    Phase~2 updates compound names (e.g.\ \texttt{C00031} $\to$
-    \texttt{D-Glucose}) and reaction names (e.g.\ \texttt{R00710} $\to$
-    \texttt{Acetaldehyde:NAD\textsuperscript{+} oxidoreductase}), overriding
-    Phase~1 enzyme labels where canonical KEGG names are available.
+  \item[Phase~2a --- compound names.]
+    KEGG publishes a bulk compound name list ($\sim$19,500 entries).
+    A provided download script fetches it once; subsequent runs read it
+    locally.  This sub-phase updates all compound nodes:
+    \begin{center}
+      \texttt{C00031} $\to$ \texttt{D-Glucose}
+    \end{center}
+
+  \item[Phase~2b --- reaction names.]
+    The KEGG bulk reaction name list ($\sim$12,400 entries) provides
+    canonical IUPAC-style reaction names.  This sub-phase overrides
+    Phase~1 gene-symbol labels wherever a canonical name is available:
+    \begin{center}
+      \texttt{R00710} $\to$ \texttt{Acetaldehyde:NAD\textsuperscript{+}
+      oxidoreductase}
+    \end{center}
+
+  \item[Phase~2c --- glycan compound names.]
+    KEGG glycans use a separate \texttt{gl:G\#\#\#\#\#} namespace.
+    This sub-phase loads \texttt{kegg\_glycan\_names.tsv} and resolves
+    \texttt{cpd:kegg:gl:G\#\#\#\#\#} nodes to human-readable names:
+    \begin{center}
+      \texttt{G13086} $\to$ \texttt{Lactosylceramide}
+    \end{center}
+
+  \item[Phase~2d --- KEGG Orthology enzyme names.]
+    KO stub enzyme nodes (\texttt{enz:kegg:K\#\#\#\#\#}) are resolved
+    using the KEGG KO description list.  The gene symbol(s) preceding the
+    first semicolon are used as the enzyme label:
+    \begin{center}
+      \texttt{K00001} $\to$ \texttt{adh}
+    \end{center}
+
+  \item[Phase~3 --- organism gene symbols (called separately).]
+    Enzyme nodes carrying bare integer Entrez gene IDs
+    (e.g.\ \texttt{enz:kegg:cge:100689064}) are resolved to gene symbols
+    using per-organism KEGG gene list TSVs
+    (\texttt{data/\{org\}\_gene\_names.tsv}).  Organisms are detected
+    automatically from enzyme node IDs; the phase also handles
+    \texttt{enz:syn:\{hash\}} nodes produced by the SBML FBC parser
+    (e.g.\ iCHO2441 gene products) by scanning all available
+    \texttt{*\_gene\_names.tsv} files:
+    \begin{center}
+      \texttt{100689064} $\to$ \texttt{Ldha}
+    \end{center}
+    Phase~3 is invoked separately via \texttt{enrich\_enzyme\_names()} and
+    is what enables \texttt{--knockout Ldha} and
+    \texttt{resolve\_id("Ldha")} at query time.
+    It is not called by the main \texttt{enrich()} entry point.
 \end{description}
 
-Both phases can be combined with the build step via the \texttt{--enrich}
-flag:
+A standalone detail-fallback function (\texttt{enrich\_reactions\_from\_detail})
+is also available for reactions that remain as bare accessions after
+Phases~1 and~2b; it reads \texttt{kegg\_reaction\_detail.tsv} and is
+invoked directly when needed.
+
+All phases can be triggered together with the build step via the
+\texttt{--enrich} flag (Phases~1--2d); Phase~3 runs automatically as part
+of \texttt{metabokg-build} when gene TSV files are present:
 
 \begin{lstlisting}[style=bash]
-metabokg-build --data ./pathways --enrich
+python scripts/download_kegg_names.py   # fetch TSV files once
+metabokg-build --data ./pathways        # build + enrich (default)
 \end{lstlisting}
 
 After enrichment, all query results---including MCP tool responses and
@@ -539,10 +586,10 @@ and read many times.
 Structural queries alone are insufficient for exploratory use cases where the
 user does not know an exact identifier. \textsc{MetaboKG} therefore maintains a
 vector index over node descriptions using LanceDB~\citep{lancedb2023} as the
-approximate nearest-neighbour engine and the \texttt{all-MiniLM-L6-v2}
+approximate nearest-neighbour engine and the \texttt{BAAI/bge-small-en-v1.5}
 sentence-transformer model~\citep{reimers2019sbert} as the default encoder.
 This model produces 384-dimensional embeddings and occupies approximately
-100~MB of disk space on first download.
+24~MB of disk space on first download.
 
 Each node is serialised to an embedding string that concatenates its name,
 molecular formula (for compounds), EC number (for enzymes), cross-reference

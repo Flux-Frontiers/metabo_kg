@@ -102,6 +102,12 @@ def _build_qt_window(
     from pyvistaqt import BackgroundPlotter
     from vtkmodules.vtkInteractionStyle import vtkInteractorStyleImage
 
+    # PyQt5 exposes enum members (LeftDockWidgetArea, AlignTop, ...) directly on
+    # Qt at runtime, but the stubs don't declare them. Alias to Any so the type
+    # checker doesn't flag these valid accesses (and no per-line ignores to break
+    # when the formatter re-wraps long calls).
+    qt: Any = Qt
+
     from metabokg.layout3d import AlliumLayout, LayerCakeLayout
     from metabokg.primitives import (
         KIND_COMPOUND,
@@ -316,7 +322,7 @@ def _build_qt_window(
     # Mapping from mesh to node data for picking
     mesh_to_node: dict[Any, dict[str, Any]] = {}
 
-    def _render(plotter: BackgroundPlotter) -> None:
+    def _render(plotter: Any) -> None:
         """
         Re-render the graph from scratch using the current :class:`VizState`.
 
@@ -546,14 +552,14 @@ def _build_qt_window(
     # Left control panel (QDockWidget)
     # -----------------------------------------------------------------------
     dock = QDockWidget("Controls", window)
-    dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)  # type: ignore[attr-defined]
+    dock.setAllowedAreas(qt.LeftDockWidgetArea | qt.RightDockWidgetArea)
     dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
 
     panel = QWidget()
     panel.setMinimumWidth(240)
     panel.setMaximumWidth(300)
     layout = QVBoxLayout(panel)
-    layout.setAlignment(Qt.AlignTop)  # type: ignore[attr-defined]
+    layout.setAlignment(qt.AlignTop)
     layout.setSpacing(10)
     layout.setContentsMargins(10, 12, 10, 12)
 
@@ -726,7 +732,7 @@ def _build_qt_window(
 
     panel.setLayout(layout)
     dock.setWidget(panel)
-    window.addDockWidget(Qt.LeftDockWidgetArea, dock)  # type: ignore[attr-defined]
+    window.addDockWidget(qt.LeftDockWidgetArea, dock)
 
     # Don't render on startup for large graphs—let user filter first.
     # Window shows immediately; user clicks "Render Graph" to load.
