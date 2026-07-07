@@ -628,17 +628,17 @@ metabokg-viz3d --db .metabokg/hsa.sqlite --layout allium
 
 ## 12. Development Install
 
-For contributing to MetaboKG or running the test suite, install with the `dev` dependency group. In Poetry, dependency groups are separate from optional extras and are activated with `--with dev`.
+For contributing to MetaboKG or running the test suite, install with the `dev` extra.
 
 ```bash
 # Core + dev tools only (no optional extras)
-poetry install --with dev
+poetry install --extras dev
 
 # All extras + dev tools — recommended for contributors
-poetry install --all-extras --with dev
+poetry install --all-extras
 ```
 
-**What the `dev` group includes:**
+**What the `dev` extra includes:**
 
 | Package | Purpose |
 |---|---|
@@ -646,7 +646,7 @@ poetry install --all-extras --with dev
 | `pytest-cov >= 5.0.0` | Coverage reporting |
 | `pytest-timeout >= 2.4.0` | Per-test timeout enforcement |
 | `ruff >= 0.4.0` | Fast linter and formatter |
-| `mypy >= 1.10.0` | Static type checker |
+| `ty >= 0.0.41` | Static type checker |
 | `pre-commit >= 4.0.0` | Git hook manager |
 | `detect-secrets >= 1.5.0` | Prevent accidental secret commits |
 | `pylint >= 4.0.5` | Additional static analysis |
@@ -662,7 +662,7 @@ poetry run pytest --cov=metabokg --cov-report=html
 poetry run ruff check src/
 
 # Type check
-poetry run mypy src/metabokg/
+poetry run ty check src/metabokg/
 
 # Format
 poetry run ruff format src/
@@ -674,7 +674,7 @@ poetry run ruff format src/
 poetry run pre-commit install
 ```
 
-This installs hooks for `ruff`, `mypy`, and `detect-secrets` that run automatically on `git commit`.
+This installs hooks for `ruff`, `ty`, and `detect-secrets` that run automatically on `git commit`.
 
 ### Project structure
 
@@ -908,6 +908,6 @@ metabokg-mcp --transport stdio
 | + Web UI | `poetry install --extras viz` |
 | + 3D viewer | `poetry install --extras viz3d` |
 | + BioPAX parsing | `poetry install --extras biopax` |
-| Everything (no dev tools) | `poetry install --all-extras` |
-| Dev tools only (pytest, ruff, mypy…) | `poetry install --with dev` |
-| Everything + dev tools | `poetry install --all-extras --with dev` |
+| Dev tools only (pytest, ruff, ty…) | `poetry install --extras dev` |
+| Everything, including dev tools | `poetry install --all-extras` |
+| Everything except dev tools | `poetry install --extras "simulate viz viz3d biopax kgdeps"` |

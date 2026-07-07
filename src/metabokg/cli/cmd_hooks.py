@@ -30,7 +30,7 @@ set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 
-# Run pre-commit framework checks (ruff, mypy, detect-secrets, etc.)
+# Run pre-commit framework checks (ruff, ty, detect-secrets, etc.)
 # Delegates to .pre-commit-config.yaml so quality checks stay in one place.
 PRECOMMIT="$REPO_ROOT/.venv/bin/pre-commit"
 if [ -x "$PRECOMMIT" ]; then
@@ -93,7 +93,7 @@ def install_hooks(repo: str, force: bool) -> None:
     """Install the MetaboKG pre-commit git hook.
 
     After installation, before each commit:
-      1. Runs pre-commit framework checks (ruff, mypy, detect-secrets)
+      1. Runs pre-commit framework checks (ruff, ty, detect-secrets)
       2. Rebuilds local CodeKG index (--wipe)
       3. Captures snapshots for CodeKG, MetaboKG, and DocKG (if present)
       4. Stages all snapshot directories atomically
