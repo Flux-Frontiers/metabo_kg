@@ -146,10 +146,6 @@ def fibonacci_disk(
     return points
 
 
-# Backward-compat alias used by AlliumLayout and unit tests.
-_golden_spiral_2d = fibonacci_disk
-
-
 # ---------------------------------------------------------------------------
 # Data transfer objects
 # ---------------------------------------------------------------------------

@@ -21,6 +21,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -347,12 +348,13 @@ def _build_pyvis(
         net.add_edge(src, dst, label=rel, color=color)
 
     net.toggle_physics(physics_on)
-    temp_file = f"temp_{id(net)}.html"
-    net.write_html(temp_file)
-    with open(temp_file, encoding="utf-8") as f:
-        html_content = f.read()
-    os.remove(temp_file)
-    return html_content
+    with tempfile.NamedTemporaryFile(suffix=".html", delete=False, mode="w") as f:
+        tmp_path = f.name
+    try:
+        net.write_html(tmp_path)
+        return Path(tmp_path).read_text(encoding="utf-8")
+    finally:
+        os.unlink(tmp_path)
 
 
 # ---------------------------------------------------------------------------
