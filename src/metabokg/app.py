@@ -21,6 +21,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -328,7 +329,15 @@ def _build_pyvis(
     :param physics_on: Whether to enable physics simulation.
     :return: HTML string for embedding in Streamlit.
     """
-    net = Network(directed=True, height=height)
+    # pyvis defaults to cdn_resources="local", which emits *relative* asset
+    # paths (lib/bindings/utils.js, ../node_modules/vis/dist/vis.js) plus a
+    # cdnjs fallback, and writes a lib/ directory into the current working
+    # directory on every render.  Streamlit embeds this HTML in a srcdoc iframe,
+    # which has no base URL, so the relative paths cannot resolve — the graph
+    # renders only when cdnjs is reachable at view time and otherwise fails
+    # silently with "vis is not defined".  "in_line" inlines vis-network so the
+    # page is genuinely self-contained and nothing is written to disk.
+    net = Network(directed=True, height=height, cdn_resources="in_line")
 
     for node in nodes:
         node_id = node["id"]
@@ -347,12 +356,13 @@ def _build_pyvis(
         net.add_edge(src, dst, label=rel, color=color)
 
     net.toggle_physics(physics_on)
-    temp_file = f"temp_{id(net)}.html"
-    net.write_html(temp_file)
-    with open(temp_file, encoding="utf-8") as f:
-        html_content = f.read()
-    os.remove(temp_file)
-    return html_content
+    with tempfile.NamedTemporaryFile(suffix=".html", delete=False, mode="w") as f:
+        tmp_path = f.name
+    try:
+        net.write_html(tmp_path)
+        return Path(tmp_path).read_text(encoding="utf-8")
+    finally:
+        os.unlink(tmp_path)
 
 
 # ---------------------------------------------------------------------------

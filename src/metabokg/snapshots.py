@@ -35,8 +35,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from kg_snapshot.snapshots import PruneResult as PruneResult  # noqa: F401 — re-export
-from kg_snapshot.snapshots import SnapshotManager as _BaseSnapshotManager
+from kg_utils.snapshots import PruneResult as PruneResult  # noqa: F401 — re-export
+from kg_utils.snapshots import SnapshotManager as _BaseSnapshotManager
 
 
 def _package_version() -> str:
@@ -159,7 +159,7 @@ class SnapshotManager(_BaseSnapshotManager):
 
     Overrides every public method of the base ``SnapshotManager`` to operate
     on this module's own ``Snapshot``/``SnapshotManifest`` dataclasses (which
-    predate and are not subclasses of ``kg_snapshot``'s), so ty's Liskov
+    predate and are not subclasses of ``kg_utils.snapshots``'s), so ty's Liskov
     override checks flag the whole surface as incompatible. Silenced per
     method below rather than migrating to the shared base's data model,
     which is a separate decision.
