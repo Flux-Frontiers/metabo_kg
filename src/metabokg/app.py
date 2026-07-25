@@ -329,7 +329,15 @@ def _build_pyvis(
     :param physics_on: Whether to enable physics simulation.
     :return: HTML string for embedding in Streamlit.
     """
-    net = Network(directed=True, height=height)
+    # pyvis defaults to cdn_resources="local", which emits *relative* asset
+    # paths (lib/bindings/utils.js, ../node_modules/vis/dist/vis.js) plus a
+    # cdnjs fallback, and writes a lib/ directory into the current working
+    # directory on every render.  Streamlit embeds this HTML in a srcdoc iframe,
+    # which has no base URL, so the relative paths cannot resolve — the graph
+    # renders only when cdnjs is reachable at view time and otherwise fails
+    # silently with "vis is not defined".  "in_line" inlines vis-network so the
+    # page is genuinely self-contained and nothing is written to disk.
+    net = Network(directed=True, height=height, cdn_resources="in_line")
 
     for node in nodes:
         node_id = node["id"]
