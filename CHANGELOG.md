@@ -9,7 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **MCP server regression tests** (`tests/test_mcp_server.py`). Unlike the sibling
+  KG repos, MetaKG builds its server inside `create_server()` behind a
+  function-level import, so an import-only test would pass against an
+  incompatible `mcp` while `metabokg mcp` stayed broken. These call
+  `create_server()` for real and assert all 13 tools register.
+
 ### Changed
+
+- **`mcp` upper-bounded to `<2`.** mcp 2.0 removed the bundled
+  `mcp.server.fastmcp` module — FastMCP was split out into the standalone
+  `fastmcp` package — so the previously unbounded `mcp>=1.0.0` let a clean
+  install from PyPI pull 2.x and break the MCP server when it is built. Lift
+  only alongside a port to the standalone package.
 
 - **Dependency floors lifted to the currently published releases** —
   `kgmodule-utils>=0.8.0`, `doc-kg>=0.18.1`, `pycode-kg>=0.20.0`; lock
