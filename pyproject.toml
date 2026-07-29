@@ -75,7 +75,13 @@ requires-python = ">=3.12,<3.14"
 dependencies = [
     "click>=8.1.0,<9",
     "lancedb>=0.29.0",
-    "mcp>=1.0.0",
+    # Upper-bounded: mcp 2.0 removed the bundled `mcp.server.fastmcp` module
+    # (FastMCP was split out into the standalone `fastmcp` package) and rebuilt
+    # mcp.server around new submodules. metabokg.mcp_tools.create_server imports
+    # FastMCP from mcp, so an unbounded floor lets a clean install pull 2.x and
+    # break `metabokg mcp` when the server is built. Lift this only alongside a
+    # port to the standalone fastmcp package.
+    "mcp>=1.0.0,<2",
     "numpy>=1.24.0",
     "sentence-transformers>=5.4.1",
     "watchdoc>=0.0.1",
