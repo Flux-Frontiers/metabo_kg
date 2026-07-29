@@ -6,7 +6,7 @@ Registers:
   metabokg enrich   — enrich node names in an existing database
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-04-19
+Last Revision: 2026-04-20
 License: Elastic 2.0
 """
 

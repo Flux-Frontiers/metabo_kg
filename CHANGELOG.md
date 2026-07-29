@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Removed
+
+### Fixed
+
+## [0.9.1] - 2026-07-29
+
+### Added
+
 - **MCP server regression tests** (`tests/test_mcp_server.py`). Unlike the sibling
   KG repos, MetaKG builds its server inside `create_server()` behind a
   function-level import, so an import-only test would pass against an

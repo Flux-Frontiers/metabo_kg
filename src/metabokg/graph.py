@@ -8,7 +8,7 @@ aggregates the resulting nodes and edges.
 Analogous to ``code_kg.graph.CodeGraph``.
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-02-28 20:55:28
+Last Revision: 2026-07-07 14:17:33
 
 """
 

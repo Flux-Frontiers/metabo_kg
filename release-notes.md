@@ -1,56 +1,40 @@
-# Release Notes — v0.9.0
+# Release Notes — v0.9.1
 
-> Released: 2026-07-07
+> Released: 2026-07-29
 
-MetaboKG v0.9.0 is a correctness and completeness release. The KGML parser now
-represents every KEGG reaction as its own node, the CHO kinetics seeder no longer
-silently drops reactions, and the vector index is retuned so semantic search
-surfaces compounds, reactions, and pathways instead of near-identical enzyme
-embeddings. The result is a graph you can trust to resolve by individual KEGG
-accession and a search index that returns the nodes you actually query for.
+A dependency-correctness release. The headline is a hard upper bound on `mcp`: a clean
+install of MetaboKG could resolve mcp 2.x, which breaks the MCP server the moment it is
+built. If `metabokg mcp` failed to start with an error about `mcp.server.fastmcp`,
+upgrading fixes it.
 
 ## What changed
 
-**Reactions are no longer composite.** KEGG groups related R-numbers into a single
-`<reaction>` element when they share substrates, products, and enzymes. The parser
-previously used the whole space-separated string as one node ID, leaving ~360
-composite reaction nodes in the CHO graph (and similar in human) that no
-single-R-number lookup could find. The parser now emits one reaction node per
-R-number — each carrying the same stoichiometry, substrate/product edges, pathway
-membership, and enzyme catalysis — so `store.node("rxn:kegg:R00243")`, reaction
-knockouts, and the kinetics seeders all resolve correctly.
+**`mcp` bounded below 2.0.** mcp 2.0 split FastMCP out into a standalone `fastmcp` package
+and removed the bundled `mcp.server.fastmcp` module, so the previous unbounded
+`mcp>=1.0.0` let a fresh install pick up 2.x. Developers never saw it — a pinned lock file
+keeps every local checkout working, which is exactly how this reached the index across the
+KG family before anyone noticed. The bound stays until the server is ported to the
+standalone package.
 
-**CHO kinetics are complete.** The seeder used to drop eight reactions whose KEGG
-R-numbers were absent from the CHO pathway graph. It now consults the canonical
-reaction-name table and creates a stub node before writing kinetics, so the full
-set of 35 CHO reactions is seeded (39 parameter rows, 15 regulatory interactions).
+**Regression tests shaped to how MetaKG actually builds its server.** MetaboKG differs from
+its sibling KGs in a way that matters here: it does not construct the server at module
+import. `create_server()` builds `FastMCP` behind a function-level import and
+`register_tools()` attaches the tools imperatively. An import-only test — the pattern used
+in the sibling repos — would therefore pass against an incompatible `mcp` while
+`metabokg mcp` stayed dead on arrival. The new `tests/test_mcp_server.py` calls
+`create_server()` for real and asserts all thirteen tools register. Building a throwaway
+server costs nothing, because `MetaKG.__init__` only resolves paths — no database or index
+is opened.
 
-**Sharper semantic search.** The LanceDB index now covers compound, reaction, and
-pathway nodes and excludes enzymes, whose gene-name-only content produced
-near-identical embeddings that crowded out more useful hits. Enzymes remain
-reachable via one hop from reactions.
-
-**Leaner packaging and a simpler enrichment path.** Embedding backends are now
-sourced from `kgmodule-utils`, the enrichment pipeline drops two redundant phases,
-the `kg` extra no longer bundles dev-only tools, the type checker moved from mypy
-to `ty`, and iCHO2441 statistics were corrected consistently across the docs.
-
-**Commit-time index hygiene.** A new pre-commit hook rebuilds the PyCodeKG and
-DocKG indices and captures version-tagged snapshots after the type check and test
-suite pass, keeping the local knowledge graphs in sync with the committed code.
+**Housekeeping: `.gitignore` normalized across the KG fleet.** All eleven KG repos now
+share one canonical set of ignore rules — databases, vector indexes and model caches are
+ignored; `snapshots/` never is. The rules are written so MetaboKG's nested snapshot store
+at `data/hsa_pathways/.metabokg/snapshots/` stays tracked.
 
 ## Upgrading
 
-Reinstall to pick up the new dependency set and rebuild the corpora so the
-reaction-splitting and index changes take effect:
-
-```bash
-poetry install --all-extras
-metabokg-init          # or: metabokg-build --data data/<corpus>
-```
-
-No API changes are required, but code that relied on composite reaction IDs (the
-old space-separated `rn:...` strings) should switch to individual KEGG R-numbers.
+Nothing to do beyond upgrading. No rebuild, no migration, no API change. If you had pinned
+`mcp` yourself to work around the crash, you can drop that pin.
 
 ---
 

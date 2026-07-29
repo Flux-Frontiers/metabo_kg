@@ -1,7 +1,7 @@
 # pyproject.toml — MetaboKG package configuration (PEP 621)
 #
 # Author: Eric G. Suchanek, PhD
-# Last Revision: 2026-04-30 20:32:15
+# Last Revision: 2026-07-29 00:00:00
 #
 # Build system : Poetry 2.x with PEP 621 [project] table
 #
@@ -54,7 +54,7 @@ packages = [{ include = "metabokg", from = "src" }]
 # ---------------------------------------------------------------------------
 [project]
 name = "metabo-kg"
-version = "0.9.0"
+version = "0.9.1"
 description = "Metabolic pathway parser and semantic knowledge graph with MCP support"
 readme = "README.md"
 license = "Elastic-2.0"

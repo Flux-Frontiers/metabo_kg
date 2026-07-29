@@ -15,7 +15,7 @@ KGML detection heuristic: the root element tag is ``{...}pathway`` or
 ``pathway`` (no namespace), which distinguishes it from SBML's ``<sbml>`` root.
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-05-07 19:49:39
+Last Revision: 2026-05-07 23:39:12
 """
 
 from __future__ import annotations

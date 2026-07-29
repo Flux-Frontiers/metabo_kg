@@ -5,7 +5,7 @@ Each parser implements the PathwayParser ABC and returns
 (list[MetaNode], list[MetaEdge]) for a single input file.
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-02-28
+Last Revision: 2026-03-17
 """
 
 from metabokg.parsers.base import PathwayParser
