@@ -1,10 +1,7 @@
 # Outreach and personal correspondence — not for version control
 outreach/
 
-# MetaKG build artifacts (databases, vectors — regenerate with metabokg-build)
 # Snapshots are tracked; only ignore the regenerable artifacts.
-**/.metabokg/*.sqlite
-**/.metabokg/lancedb/
 
 # SQLite WAL-mode temp files (appear alongside any .sqlite file)
 *.sqlite-shm
@@ -15,7 +12,6 @@ data/icho_model/*.xml
 
 # Auto-timestamped simulation outputs — keep named outputs (cho_*.md)
 metabokg-simulate-*.md
-
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -178,7 +174,6 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
-
 # Ruff stuff:
 .ruff_cache/
 
@@ -192,7 +187,6 @@ dmypy.json
 .cursorignore
 .cursorindexingignore
 
-
 # LaTeX intermediate files
 *.aux
 *.out
@@ -204,29 +198,50 @@ dmypy.json
 *.fdb_latexmk
 *.synctex.gz
 
-# PyCodeKG generated artifacts — databases are transient/reproducible, snapshots are tracked
-.pycodekg/lancedb/
-.pycodekg/lancedb-*
-.pycodekg/graph.sqlite
-.pycodekg/graph.sqlite*
-.pycodekg/models
-
-# DocKG generated artifacts — databases are transient/reproducible, snapshots are tracked
-**/.dockg/lancedb/
-**/.dockg/lancedb-*
-**/.dockg/graph.sqlite
-**/.dockg/graph.sqlite*
-**/.dockg/models
-
-.agentkg/
-
-# Local MCP configuration (contains absolute paths)
-.mcp.json
-
 # MacOS
 **/.DS_Store
 
 # venv
 .venv
 
-.agentkg/
+# === KG generated artifacts (normalized across the fleet) ===
+# Databases, vector indexes and model caches are transient and
+# reproducible. snapshots/ is TRACKED and must never be ignored --
+# never use a bare `**/.<ns>/` pattern here, it swallows snapshots too.
+
+**/.pycodekg/lancedb/
+**/.pycodekg/lancedb-*
+**/.pycodekg/*.sqlite
+**/.pycodekg/*.sqlite-shm
+**/.pycodekg/*.sqlite-wal
+**/.pycodekg/*.db
+**/.pycodekg/models
+
+**/.dockg/lancedb/
+**/.dockg/lancedb-*
+**/.dockg/*.sqlite
+**/.dockg/*.sqlite-shm
+**/.dockg/*.sqlite-wal
+**/.dockg/*.db
+**/.dockg/models
+**/.dockg/embeddings.json
+
+# AgentKG local store -- nothing under it is ever tracked
+**/.agentkg/
+
+**/.metabokg/lancedb/
+**/.metabokg/lancedb-*
+**/.metabokg/*.sqlite
+**/.metabokg/*.sqlite-shm
+**/.metabokg/*.sqlite-wal
+**/.metabokg/*.db
+**/.metabokg/models
+
+# Agent scratch dirs (Claude Code / Codex)
+.agents/
+.codex/
+
+# MCP server config -- machine-specific, contains absolute paths
+.mcp.json
+.mcp.json.sav
+# === end KG generated artifacts ===
