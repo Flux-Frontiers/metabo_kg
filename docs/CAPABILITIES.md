@@ -60,7 +60,7 @@
          │         │          │
          ▼         ▼          ▼
    CLI tools   MCP server   Python API
-  (9 commands) (9 tools)
+  (15 commands) (13 tools)
          │
    ┌─────┴─────────────────────────────────────┐
    │          MetabolicSimulator               │

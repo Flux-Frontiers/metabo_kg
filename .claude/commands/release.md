@@ -62,9 +62,9 @@ Replace `<current_version>` with `<new_version>`.
 
 1. Rebuild the PyCodeKG index against the current source:
    ```bash
-   poetry run pycodekg-build-sqlite --repo . --wipe
-   poetry run pycodekg-build-lancedb --repo . --wipe
+   poetry run pycodekg-build --repo .
    ```
+   (The full build always wipes; it has no `--wipe` flag.)
 2. Run the architectural analysis (repo path is positional, not a flag):
    ```bash
    poetry run pycodekg-analyze . --output docs/analysis_v<new_version>.md --quiet
@@ -77,11 +77,11 @@ Replace `<current_version>` with `<new_version>`.
    Add or update these fields if missing.
 4. Delete any previous `docs/analysis_v<old_version>.md` if it exists and differs from the new version (`git rm docs/analysis_v<old_version>.md`).
 
-> Note: the bulk of `.pycodekg/` is gitignored (lancedb, sqlite, models), so the rebuild itself produces no staged changes. Only the `docs/analysis_v<new_version>.md` artifact is committed.
+> Note: the bulk of `.pycodekg/` is gitignored (vectors.sqlite, graph sqlite, models), so the rebuild itself produces no staged changes. Only the `docs/analysis_v<new_version>.md` artifact is committed.
 
 ---
 
-## Step 5: Commit the Release Files
+## Step 6: Commit the Release Files
 
 1. Stage the following files:
    - `CHANGELOG.md`

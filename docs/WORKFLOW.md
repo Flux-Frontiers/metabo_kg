@@ -69,7 +69,7 @@ End-to-end data flow from raw pathway sources to analysis, simulation, and AI-ag
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         STAGE 6 — Access Interfaces                         │
 │  metabokg-viz / viz3d  — interactive graph explorer (Streamlit / PyVista)   │
-│  metabokg-mcp          — MCP server (9 tools for Claude and AI agents)      │
+│  metabokg-mcp          — MCP server (13 tools for Claude and AI agents)     │
 │  Python API            — MetaKG class (build · query · simulate)            │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```

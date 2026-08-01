@@ -21,7 +21,7 @@ class PathwayParser(ABC):
     Abstract base for all metabolic format parsers.
 
     Contract: stateless, pure, deterministic.  The return signature is
-    identical to that of ``extract_repo()`` in the code_kg domain.
+    identical to that of ``extract_repo()`` in the PyCodeKG domain.
 
     Subclasses must implement :meth:`parse` and :meth:`supported_extensions`.
     """

@@ -39,7 +39,7 @@
 |---|---|---|
 | **Python** | 3.12.x | Exactly 3.12 — the package pins `^3.12, <3.13` |
 | **Poetry** | ≥ 2.0 | Package and dependency manager |
-| **Git** | any | For cloning the repo and the `code-kg` dependency |
+| **Git** | any | For cloning the repo, and for the KG extras not yet on PyPI |
 | **Disk space** | ~2 GB | Sentence-transformer model (~80 MB) + KEGG data (~19 MB) + vector store |
 | **RAM** | ≥ 4 GB | Recommended for building the full human metabolome (22K+ nodes) |
 
@@ -566,7 +566,7 @@ Create `.mcp.json` in the project root:
 }
 ```
 
-Restart Claude Code to activate. The server exposes 9 tools: `query_pathway`, `get_compound`, `get_reaction`, `find_path`, `simulate_fba`, `simulate_ode`, `simulate_whatif`, `get_kinetic_params`, `seed_kinetics`.
+Restart Claude Code to activate. The server exposes 13 tools — see [MCP.md](MCP.md#7-tool-reference) for the full reference.
 
 ---
 
@@ -762,12 +762,13 @@ export PATH="$HOME/.local/bin:$PATH"
 source ~/.zshrc
 ```
 
-### `code-kg` dependency fails to install
+### A sister-KG extra fails to install
 
-The `code-kg` package is installed directly from GitHub. Ensure you have Git and network access:
+`pycode-kg` and `doc-kg` come from PyPI, but `agent-kg` and `memory-kg` are not
+published yet and install from GitHub. Ensure you have Git and network access:
 
 ```bash
-git ls-remote https://github.com/Flux-Frontiers/code_kg.git HEAD
+git ls-remote https://github.com/Flux-Frontiers/agent_kg.git HEAD
 ```
 
 If behind a corporate proxy, configure Git:

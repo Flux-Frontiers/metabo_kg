@@ -29,7 +29,7 @@
 #      and installs SKILL.md + references/installation.md into each
 #   2. Installs Claude Code slash commands (metabokg, metabokg-rebuild) to ~/.claude/commands/
 #   3. Installs the /metabokg slash command into the target repo for Cline
-#   4. Installs code-kg[mcp] if metabokg is not found:
+#   4. Installs metabo-kg if metabokg is not found:
 #        a. pip install from latest GitHub release wheel (preferred, no git needed)
 #        b. pip install from git+https (fallback, needs git)
 #        c. poetry add (fallback for Poetry-managed repos)
@@ -332,26 +332,26 @@ fi
 
 if [ -z "$metabokg_BIN" ]; then
     if [ -n "$DRY_RUN" ]; then
-        echo "  [dry-run] would install code-kg[mcp] (wheel from GitHub Releases or git fallback)"
+        echo "  [dry-run] would install metabo-kg (wheel from GitHub Releases or git fallback)"
         metabokg_BIN="metabokg"
     else
         # ── Preferred: install from latest GitHub release wheel (no git needed) ──
         WHEEL_URL="$(_latest_wheel_url || true)"
         if [ -n "$WHEEL_URL" ]; then
-            echo "  → Installing code-kg[mcp] from GitHub release wheel..."
-            pip install --quiet "code-kg[mcp] @ ${WHEEL_URL}"
+            echo "  → Installing metabo-kg from GitHub release wheel..."
+            pip install --quiet "metabo-kg @ ${WHEEL_URL}"
         else
             # ── Fallback: pip from git (always works, needs git) ──────────────
-            echo "  → No release found. Installing code-kg[mcp] from git..."
-            pip install --quiet "code-kg[mcp] @ git+https://github.com/${REPO}.git"
+            echo "  → No release found. Installing metabo-kg from git..."
+            pip install --quiet "metabo-kg @ git+https://github.com/${REPO}.git"
         fi
         metabokg_BIN="$(command -v metabokg 2>/dev/null || true)"
 
         if [ -n "$metabokg_BIN" ]; then
-            echo "  ✓ Installed code-kg — metabokg at: ${metabokg_BIN}"
+            echo "  ✓ Installed metabo-kg — metabokg at: ${metabokg_BIN}"
         else
             echo "  ✗ Installation failed. Install manually:"
-            echo "      pip install 'code-kg[mcp] @ git+https://github.com/${REPO}.git'"
+            echo "      pip install 'metabo-kg @ git+https://github.com/${REPO}.git'"
             exit 1
         fi
     fi

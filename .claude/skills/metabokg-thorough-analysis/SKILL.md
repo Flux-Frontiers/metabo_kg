@@ -3,7 +3,7 @@
 ## Overview
 
 Performs comprehensive graph analysis of a MetaboKG metabolic pathway database,
-analogous to the `codekg-thorough-analysis` skill but applied to biochemical networks.
+analogous to the `pycodekg-thorough-analysis` skill but applied to biochemical networks.
 Extracts metrics like:
 
 - **Hub metabolites** (highest connectivity — cofactors, energy carriers)

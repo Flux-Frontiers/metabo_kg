@@ -1,7 +1,7 @@
 """
 thorough_analysis.py — Polished MetaKG Metabolic Pathway Analysis Report Renderer
 
-Generates a CodeKG-style comprehensive report with executive summary, emoji headers,
+Generates a PyCodeKG-style comprehensive report with executive summary, emoji headers,
 risk indicators, network health assessment, architectural strengths, and structured
 biological recommendations.
 
@@ -45,7 +45,7 @@ def _risk(n: int) -> str:
 
 def render_thorough_report(report: PathwayAnalysisReport, *, markdown: bool = True) -> str:
     """
-    Render a comprehensive metabolic pathway analysis report in CodeKG-style format.
+    Render a comprehensive metabolic pathway analysis report in PyCodeKG-style format.
 
     Features:
     - Executive Summary with KPI table

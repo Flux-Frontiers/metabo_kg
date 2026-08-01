@@ -50,7 +50,7 @@ poetry install --all-extras  # Full install with viz, viz3d, mcp
 - `--no-index`: Skip the vector index (graph SQLite only)
 - `--no-enrich`: Skip enrichment (on by default)
 
-**MCP tools:** `pack`, `query_pathway`, `get_compound`, `get_reaction`, `find_path`, `seed_kinetics`, `simulate_fba`, `simulate_ode`, `simulate_whatif`
+**MCP tools (13):** `pack`, `query_pathway`, `get_compound`, `get_reaction`, `find_path`, `get_kinetic_params`, `seed_kinetics`, `simulate_fba`, `simulate_ode`, `simulate_whatif`, `snapshot_list`, `snapshot_show`, `snapshot_diff` — see [docs/MCP.md](docs/MCP.md)
 
 ### 3D Visualization (`metabokg-viz3d`)
 

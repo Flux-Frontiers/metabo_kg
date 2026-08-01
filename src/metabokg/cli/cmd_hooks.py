@@ -21,12 +21,12 @@ from metabokg.cli.main import cli
 _PRE_COMMIT_HOOK = """\
 #!/usr/bin/env bash
 # MetaboKG pre-commit hook — runs quality checks, keeps local indices in sync,
-# and captures metrics snapshots for CodeKG, MetaboKG, and DocKG.
+# and captures metrics snapshots for PyCodeKG, MetaboKG, and DocKG.
 # Installed by: metabokg install-hooks
-# Skip with: CODEKG_SKIP_SNAPSHOT=1 git commit ...
+# Skip with: METABOKG_SKIP_SNAPSHOT=1 git commit ...
 set -euo pipefail
 
-[ "${CODEKG_SKIP_SNAPSHOT:-0}" = "1" ] && exit 0
+[ "${METABOKG_SKIP_SNAPSHOT:-0}" = "1" ] && exit 0
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 
@@ -42,16 +42,25 @@ fi
 cd "$REPO_ROOT"
 
 TREE_HASH=$(git write-tree)
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
+# `rev-parse --abbrev-ref HEAD` is fatal on an unborn HEAD, which under
+# `set -e` blocked the very first commit of a fresh repo. `branch
+# --show-current` reports the branch before any commit exists.
+BRANCH=$(git branch --show-current)
 
-# --- CodeKG: codebase knowledge graph ---
-"$REPO_ROOT/.venv/bin/codekg" build --repo "$REPO_ROOT" --wipe || exit 1
-"$REPO_ROOT/.venv/bin/codekg" snapshot save \\
-    --repo . \\
-    --tree-hash "$TREE_HASH" \\
-    --branch "$BRANCH" \\
-  || { echo "[codekg] snapshot skipped (run 'codekg build' to initialize)" >&2; exit 0; }
-git add .codekg/snapshots/ 2>/dev/null || true
+# --- PyCodeKG: codebase knowledge graph ---
+# `build` always wipes; it has no --wipe flag (passing one exits 2).
+# Skipped rather than fatal when PyCodeKG is not installed — this hook ships
+# with MetaboKG, which does not depend on it.
+PYCODEKG="$REPO_ROOT/.venv/bin/pycodekg"
+if [ -x "$PYCODEKG" ]; then
+    "$PYCODEKG" build --repo "$REPO_ROOT" || exit 1
+    "$PYCODEKG" snapshot save \\
+        --repo . \\
+        --tree-hash "$TREE_HASH" \\
+        --branch "$BRANCH" \\
+      || { echo "[pycodekg] snapshot skipped" >&2; exit 0; }
+    git add .pycodekg/snapshots/ 2>/dev/null || true
+fi
 
 # --- MetaboKG: metabolic pathway knowledge graph ---
 if [ -f ".metabokg/hsa.sqlite" ]; then
@@ -94,8 +103,8 @@ def install_hooks(repo: str, force: bool) -> None:
 
     After installation, before each commit:
       1. Runs pre-commit framework checks (ruff, ty, detect-secrets)
-      2. Rebuilds local CodeKG index (--wipe)
-      3. Captures snapshots for CodeKG, MetaboKG, and DocKG (if present)
+      2. Rebuilds the local PyCodeKG index, if PyCodeKG is installed
+      3. Captures snapshots for PyCodeKG, MetaboKG, and DocKG (if present)
       4. Stages all snapshot directories atomically
 
     Package versions are auto-detected from installed packages — no
@@ -126,4 +135,4 @@ def install_hooks(repo: str, force: bool) -> None:
 
     click.echo(f"OK Installed pre-commit hook: {hook_path}")
     click.echo("  Snapshots will be captured automatically before each commit.")
-    click.echo("  Skip with: CODEKG_SKIP_SNAPSHOT=1 git commit ...")
+    click.echo("  Skip with: METABOKG_SKIP_SNAPSHOT=1 git commit ...")

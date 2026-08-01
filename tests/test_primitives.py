@@ -1,5 +1,5 @@
 """
-Tests for code_kg.metabokg.primitives — MetaNode, MetaEdge, node_id, synthetic_id.
+Tests for metabokg.primitives — MetaNode, MetaEdge, node_id, synthetic_id.
 """
 
 import json
