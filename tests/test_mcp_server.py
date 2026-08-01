@@ -52,7 +52,7 @@ def server(tmp_path: Path):
     from metabokg import MetaKG
     from metabokg.mcp_tools import create_server
 
-    kg = MetaKG(db_path=tmp_path / "hsa.sqlite", lancedb_dir=tmp_path / "lancedb")
+    kg = MetaKG(db_path=tmp_path / "hsa.sqlite", vectors_path=tmp_path / "vectors.sqlite")
     return create_server(kg)
 
 

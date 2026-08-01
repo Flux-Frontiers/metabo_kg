@@ -5,7 +5,7 @@ Registers:
   metabokg info  — show which corpus is active and its node/edge counts
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-04-20
+Last Revision: 2026-08-01
 License: Elastic 2.0
 """
 
@@ -16,13 +16,13 @@ from pathlib import Path
 import click
 
 from metabokg.cli.main import cli
-from metabokg.cli.options import db_option, lancedb_option, resolve_db, resolve_lancedb
+from metabokg.cli.options import db_option, resolve_db, resolve_vectors, vectors_option
 
 
 @cli.command("info")
 @db_option
-@lancedb_option
-def info(db: str | None, lancedb: str | None) -> None:
+@vectors_option
+def info(db: str | None, vectors: str | None) -> None:
     """Show the active MetaboKG corpus: resolved paths and node/edge counts.
 
     Example:
@@ -32,16 +32,18 @@ def info(db: str | None, lancedb: str | None) -> None:
         metabokg info --db data/cge_pathways/.metabokg/cge.sqlite
     """
     db_path = resolve_db(db)
-    lancedb_dir = resolve_lancedb(lancedb)
+    vectors_path = resolve_vectors(vectors)
 
     db_file = Path(db_path)
-    lancedb_path = Path(lancedb_dir)
+    vectors_file = Path(vectors_path)
 
     corpus = db_file.stem  # e.g. "hsa" from "hsa.sqlite"
 
     click.echo(f"Corpus  : {corpus}")
     click.echo(f"DB      : {db_path}")
-    click.echo(f"LanceDB : {lancedb_dir}  {'[exists]' if lancedb_path.exists() else '[not built]'}")
+    click.echo(
+        f"Vectors : {vectors_path}  {'[exists]' if vectors_file.exists() else '[not built]'}"
+    )
 
     if not db_file.exists():
         click.echo("\n[not built — run 'metabokg build' first]")

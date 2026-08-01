@@ -747,7 +747,7 @@ def _build_qt_window(
 
 def launch(
     db_path: str,
-    lancedb_dir: str | None = None,
+    vectors_path: str | None = None,
     layout_name: str = "cake",
     width: int = 1400,
     height: int = 900,
@@ -769,7 +769,7 @@ def launch(
     - Staged rendering (re-render only on "Render Graph" button press).
 
     :param db_path: Path to the MetaboKG SQLite database.
-    :param lancedb_dir: Path to the LanceDB directory (optional, unused in rendering).
+    :param vectors_path: Path to the sqlite-vec vector store (optional, unused in rendering).
     :param layout_name: Layout strategy: ``"allium"`` (default) or ``"cake"``.
     :param width: Window width in pixels (default: 1400).
     :param height: Window height in pixels (default: 900).

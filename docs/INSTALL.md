@@ -40,7 +40,7 @@
 | **Python** | 3.12.x | Exactly 3.12 — the package pins `^3.12, <3.13` |
 | **Poetry** | ≥ 2.0 | Package and dependency manager |
 | **Git** | any | For cloning the repo and the `code-kg` dependency |
-| **Disk space** | ~2 GB | Sentence-transformer model (~80 MB) + KEGG data (~19 MB) + LanceDB vectors |
+| **Disk space** | ~2 GB | Sentence-transformer model (~80 MB) + KEGG data (~19 MB) + vector store |
 | **RAM** | ≥ 4 GB | Recommended for building the full human metabolome (22K+ nodes) |
 
 ### Check your Python version
@@ -107,7 +107,7 @@ poetry install
 - `metabokg-mcp` — MCP server for Claude and other AI assistants
 - Full Python API (`MetaKG`, `MetaStore`, `MetaIndex`)
 
-**Included packages:** `lancedb`, `numpy`, `sentence-transformers`, `click`, `mcp`, `code-kg`
+**Included packages:** `kgmodule-utils[semantic,sqlite-vec]`, `numpy`, `sentence-transformers`, `click`, `mcp`
 
 > **Note:** `mcp` is a core dependency — the MCP server is always available without any extra flags.
 
@@ -303,7 +303,7 @@ Each script makes one KEGG REST API request per pathway with a 1-second courtesy
 
 ## 6. Building the Knowledge Graph
 
-The build step parses all pathway files and writes the graph to SQLite + LanceDB.
+The build step parses all pathway files and writes the graph to SQLite + a sqlite-vec vector store.
 
 ### Basic build
 
@@ -312,7 +312,7 @@ metabokg-build --data ./data/hsa_pathways
 ```
 
 This wipes any existing database and rebuilds from scratch using default paths:
-`.metabokg/hsa.sqlite` for SQLite and `.metabokg/lancedb` for the vector index. Enrichment (human-readable names) is enabled by default.
+`.metabokg/hsa.sqlite` for the graph and `.metabokg/vectors.sqlite` for the vector index. Enrichment (human-readable names) is enabled by default.
 
 ### Full build with all options
 
@@ -320,7 +320,7 @@ This wipes any existing database and rebuilds from scratch using default paths:
 metabokg-build \
   --data     ./data/hsa_pathways \
   --db       .metabokg/hsa.sqlite \
-  --lancedb  .metabokg/lancedb \
+  --vectors  .metabokg/vectors.sqlite \
   --model    bge-small-en-v1.5
 ```
 
@@ -330,9 +330,9 @@ metabokg-build \
 |---|---|---|
 | `--data PATH` | *(required)* | Directory containing pathway files |
 | `--db PATH` | `.metabokg/hsa.sqlite` | SQLite output path |
-| `--lancedb PATH` | `.metabokg/lancedb` | LanceDB vector index directory |
+| `--vectors PATH` | `.metabokg/vectors.sqlite` | sqlite-vec vector store |
 | `--model NAME` | `bge-small-en-v1.5` | Sentence-transformer model for embeddings |
-| `--no-index` | off | Skip building the LanceDB vector index |
+| `--no-index` | off | Skip building the sqlite-vec vector index |
 | `--no-wipe` | off | Keep existing data instead of wiping before build |
 | `--no-enrich` | off | Skip name enrichment (on by default) |
 | `--enrich-data DIR` | `data/` | Directory containing KEGG name TSV files |
@@ -517,7 +517,7 @@ metabokg-mcp --db .metabokg/hsa.sqlite --transport stdio
 | Flag | Default | Description |
 |---|---|---|
 | `--db PATH` | `.metabokg/hsa.sqlite` | SQLite database path |
-| `--lancedb PATH` | `.metabokg/lancedb` | LanceDB vector index directory |
+| `--vectors PATH` | `.metabokg/vectors.sqlite` | sqlite-vec vector store |
 | `--model NAME` | `bge-small-en-v1.5` | Embedding model |
 | `--transport` | `stdio` | `stdio` (Claude Desktop/Code) or `sse` (HTTP) |
 
@@ -532,7 +532,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
       "command": "/path/to/venv/bin/metabokg-mcp",
       "args": [
         "--db", "/absolute/path/to/metabo_kg/.metabokg/hsa.sqlite",
-        "--lancedb", "/absolute/path/to/metabo_kg/.metabokg/lancedb"
+        "--vectors", "/absolute/path/to/metabo_kg/.metabokg/vectors.sqlite"
       ]
     }
   }
@@ -559,7 +559,7 @@ Create `.mcp.json` in the project root:
       "command": "metabokg-mcp",
       "args": [
         "--db", "/absolute/path/to/metabo_kg/.metabokg/hsa.sqlite",
-        "--lancedb", "/absolute/path/to/metabo_kg/.metabokg/lancedb"
+        "--vectors", "/absolute/path/to/metabo_kg/.metabokg/vectors.sqlite"
       ]
     }
   }
@@ -587,7 +587,7 @@ Opens automatically at `http://localhost:8500`.
 | Flag | Default | Description |
 |---|---|---|
 | `--db PATH` | `.metabokg/hsa.sqlite` | SQLite database path |
-| `--lancedb PATH` | `.metabokg/lancedb` | LanceDB vector index directory |
+| `--vectors PATH` | `.metabokg/vectors.sqlite` | sqlite-vec vector store |
 | `--port INT` | `8500` | Streamlit server port |
 | `--no-browser` | off | Don't open browser automatically |
 
@@ -685,7 +685,7 @@ metabo_kg/
 │   ├── parsers/         # KGML, SBML, BioPAX, CSV parsers
 │   ├── primitives.py    # MetaNode, MetaEdge data types
 │   ├── store.py         # SQLite persistence (MetaStore)
-│   ├── index.py         # LanceDB vector indexing (MetaIndex)
+│   ├── index.py         # sqlite-vec vector indexing (MetaIndex)
 │   ├── embed.py         # Sentence-transformer embeddings
 │   ├── graph.py         # File discovery and parser dispatch
 │   ├── orchestrator.py  # High-level MetaboKG API
@@ -709,14 +709,14 @@ All CLI defaults can be overridden with environment variables:
 | Variable | Default | Description |
 |---|---|---|
 | `METABOKG_DB` | `.metabokg/hsa.sqlite` | SQLite database path |
-| `METABOKG_LANCEDB` | `.metabokg/lancedb` | LanceDB vector index directory |
+| `METABOKG_VECTORS` | `.metabokg/vectors.sqlite` | sqlite-vec vector store |
 | `METABOKG_MODEL` | `bge-small-en-v1.5` | Sentence-transformer model name |
 
 Example for a Docker deployment:
 
 ```bash
 export METABOKG_DB="/data/hsa.sqlite"
-export METABOKG_LANCEDB="/data/lancedb"
+export METABOKG_VECTORS="/data/vectors.sqlite"
 metabokg-mcp --transport sse
 ```
 
@@ -828,7 +828,7 @@ ls data/hsa_pathways/*.kgml | wc -l
 # Should be > 0
 ```
 
-### LanceDB index missing — semantic search returns no results
+### Vector index missing — semantic search returns no results
 
 The vector index must be built during `metabokg-build`. If you used `--no-index`, rebuild:
 

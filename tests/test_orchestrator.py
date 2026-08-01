@@ -25,7 +25,7 @@ def kg_with_data(tmp_path):
     """Create a MetaKG instance with some test data."""
     kg = MetaKG(
         db_path=tmp_path / "test.sqlite",
-        lancedb_dir=tmp_path / "lancedb",
+        vectors_path=tmp_path / "vectors.sqlite",
     )
 
     # Write test data
@@ -110,7 +110,7 @@ def empty_kg(tmp_path):
     """Create an empty MetaKG instance."""
     kg = MetaKG(
         db_path=tmp_path / "empty.sqlite",
-        lancedb_dir=tmp_path / "empty_lancedb",
+        vectors_path=tmp_path / "empty_vectors.sqlite",
     )
     yield kg
     kg.close()

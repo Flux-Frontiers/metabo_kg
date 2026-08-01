@@ -5,7 +5,7 @@ Registers:
   metabokg query  — semantic (vector) or text search across the knowledge graph
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-04-20
+Last Revision: 2026-08-01
 License: Elastic 2.0
 """
 
@@ -16,17 +16,17 @@ import click
 from metabokg.cli.main import cli
 from metabokg.cli.options import (
     db_option,
-    lancedb_option,
     model_option,
     resolve_db,
-    resolve_lancedb,
+    resolve_vectors,
+    vectors_option,
 )
 
 
 @cli.command("query")
 @click.argument("query_text")
 @db_option
-@lancedb_option
+@vectors_option
 @model_option
 @click.option("--k", default=10, show_default=True, type=int, help="Number of results to return.")
 @click.option(
@@ -45,7 +45,7 @@ from metabokg.cli.options import (
 def query(
     query_text: str,
     db: str | None,
-    lancedb: str | None,
+    vectors: str | None,
     model: str,
     k: int,
     hop: int,
@@ -53,7 +53,7 @@ def query(
 ) -> None:
     """Search the MetaboKG knowledge graph by semantic similarity or text.
 
-    Uses vector (semantic) search via LanceDB by default; falls back to
+    Uses vector (semantic) search via sqlite-vec by default; falls back to
     substring text search if the index is unavailable or --text-only is set.
 
     Example:
@@ -65,7 +65,7 @@ def query(
     from pathlib import Path
 
     db_path = resolve_db(db)
-    lancedb_dir = resolve_lancedb(lancedb)
+    vectors_path = resolve_vectors(vectors)
 
     if not Path(db_path).exists():
         raise click.ClickException(f"database not found: {db_path}\nRun 'metabokg build' first.")
@@ -74,26 +74,25 @@ def query(
         _run_text_query(db_path, query_text, k, hop)
         return
 
-    lancedb_path = Path(lancedb_dir)
-    if lancedb_path.exists():
-        _run_vector_query(db_path, lancedb_dir, model, query_text, k, hop)
+    if Path(vectors_path).exists():
+        _run_vector_query(db_path, vectors_path, model, query_text, k, hop)
     else:
         click.echo(
-            f"LanceDB index not found at '{lancedb_dir}' — falling back to text search.",
+            f"Vector index not found at '{vectors_path}' — falling back to text search.",
             err=True,
         )
         _run_text_query(db_path, query_text, k, hop)
 
 
 def _run_vector_query(
-    db_path: str, lancedb_dir: str, model: str, query_text: str, k: int, hop: int
+    db_path: str, vectors_path: str, model: str, query_text: str, k: int, hop: int
 ) -> None:
     from metabokg import MetaKG
 
-    kg = MetaKG(db_path=db_path, lancedb_dir=lancedb_dir, model=model)
+    kg = MetaKG(db_path=db_path, vectors_path=vectors_path, model=model)
     click.echo(f"Semantic search: '{query_text}'  (vector, k={k}, hop={hop})", err=True)
     click.echo(f"  db      : {db_path}", err=True)
-    click.echo(f"  lancedb : {lancedb_dir}\n", err=True)
+    click.echo(f"  vectors : {vectors_path}\n", err=True)
 
     results = kg.query(query_text, k=k, hop=hop)
     hits = results.hits

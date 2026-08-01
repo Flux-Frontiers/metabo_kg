@@ -1,7 +1,7 @@
 [![CI](https://github.com/flux-frontiers/metabo_kg/actions/workflows/ci.yml/badge.svg)](https://github.com/flux-frontiers/metabo_kg/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/)
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic--2.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
-[![Version](https://img.shields.io/badge/version-0.9.1-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
+[![Version](https://img.shields.io/badge/version-0.10.0-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 [![DOI](https://zenodo.org/badge/1184537477.svg)](https://zenodo.org/badge/latestdoi/1184537477)
 
@@ -9,7 +9,7 @@
 
 **MetaboKG turns the world's metabolic pathway databases into a single, local, queryable knowledge graph that lets you ask it questions in English, simulate flux through it, and hand it to an LLM as structured context.**
 
-It ingests pathways in the formats biology actually publishes in (KGML, SBML, BioPAX, CSV), normalizes them into a unified compound/reaction/enzyme/pathway graph backed by SQLite, and indexes the nodes in LanceDB so that *"glucose metabolism"* and *"hexokinase"* both find the right places to start exploring. From there you can trace shortest paths between metabolites, run flux balance analysis or kinetic ODE simulations, knock out enzymes to see what changes, render the result in 2D or 3D, or expose the whole thing to Claude over MCP.
+It ingests pathways in the formats biology actually publishes in (KGML, SBML, BioPAX, CSV), normalizes them into a unified compound/reaction/enzyme/pathway graph backed by SQLite, and indexes the nodes in a sqlite-vec store so that *"glucose metabolism"* and *"hexokinase"* both find the right places to start exploring. From there you can trace shortest paths between metabolites, run flux balance analysis or kinetic ODE simulations, knock out enzymes to see what changes, render the result in 2D or 3D, or expose the whole thing to Claude over MCP.
 
 Everything runs on your laptop. No cloud APIs, no quotas, no data leaving the machine.
 
@@ -94,7 +94,7 @@ To bring your own data, drop KGML / SBML / BioPAX / CSV files in a directory and
 
 ## The graph and how to query it
 
-MetaboKG is a **structural knowledge graph first**, with semantic search layered on top. The primary store is SQLite: four node kinds (compound, reaction, enzyme, pathway) connected by seven typed edge relations (`SUBSTRATE_OF`, `PRODUCT_OF`, `CATALYZES`, `CONTAINS`, `INHIBITS`, `ACTIVATES`, `XREF`). LanceDB is a vector index over those nodes, not the source of truth. You can query the graph without ever touching the embeddings.
+MetaboKG is a **structural knowledge graph first**, with semantic search layered on top. The primary store is SQLite: four node kinds (compound, reaction, enzyme, pathway) connected by seven typed edge relations (`SUBSTRATE_OF`, `PRODUCT_OF`, `CATALYZES`, `CONTAINS`, `INHIBITS`, `ACTIVATES`, `XREF`). The vector store is an index over those nodes, not the source of truth. You can query the graph without ever touching the embeddings.
 
 ### Enrichment turns accessions into names
 
@@ -110,11 +110,11 @@ After enrichment, knockouts and queries work directly against gene symbols (`Ldh
 
 The same graph is reachable through three orthogonal access paths; pick whichever fits the question:
 
-1. **Semantic search.** A query like *"hexokinase"* is embedded with a local sentence-transformer (`BAAI/bge-small-en-v1.5` by default, 384-dim, ~130 MB cached after first use); LanceDB returns the `k` closest nodes by cosine similarity; each seed is then expanded `hop` BFS steps along typed edges so reaction context arrives alongside the names that matched. This is what `metabokg-query`, `metabokg-pack`, and the MCP `pack` tool use under the hood. Best for fuzzy intent (*"glucose metabolism"*, *"oxidative stress response"*).
+1. **Semantic search.** A query like *"hexokinase"* is embedded with a local sentence-transformer (`BAAI/bge-small-en-v1.5` by default, 384-dim, ~130 MB cached after first use); sqlite-vec returns the `k` closest nodes by cosine similarity; each seed is then expanded `hop` BFS steps along typed edges so reaction context arrives alongside the names that matched. This is what `metabokg-query`, `metabokg-pack`, and the MCP `pack` tool use under the hood. Best for fuzzy intent (*"glucose metabolism"*, *"oxidative stress response"*).
 2. **Structural traversal.** Direct graph queries that bypass embeddings entirely: `get_compound("C00031")`, `get_reaction("R00710")`, `query_pathway("hsa00010")`, `find_path(source, target, max_depth=N)` for shortest paths between metabolites. Available from the CLI, the Python API, and the MCP server. Best when you already have an ID or want exact graph topology.
 3. **Simulation.** FBA, ODE kinetics, and what-if perturbations (next section). The simulator reads stoichiometry and kinetic parameters straight off the graph and returns flux distributions or time-courses.
 
-When no LanceDB index is built (`--no-index`, or `--text-only` at query time), the semantic path falls back to case-insensitive substring matching. The embedding model is swappable: any `sentence-transformers`-compatible HuggingFace ID or local model directory works as a drop-in replacement; just rebuild the index against the new model.
+When no vector index is built (`--no-index`, or `--text-only` at query time), the semantic path falls back to case-insensitive substring matching. The embedding model is swappable: any `sentence-transformers`-compatible HuggingFace ID or local model directory works as a drop-in replacement; just rebuild the index against the new model.
 
 Full schema, edge semantics, and enrichment internals live in [docs/CAPABILITIES.md, sections 3-5](docs/CAPABILITIES.md).
 
@@ -162,7 +162,7 @@ metabokg/
 +-- graph.py         # MetabolicGraph: file discovery + dispatch
 +-- primitives.py    # MetaNode, MetaEdge: core data types
 +-- store.py         # MetaStore: SQLite persistence + graph queries
-+-- index.py         # MetaIndex: LanceDB vector indexing
++-- index.py         # MetaIndex: sqlite-vec vector indexing
 +-- embed.py         # embedding utilities
 +-- orchestrator.py  # MetaKG: the public facade
 +-- cli.py           # all metabokg-* command entry points
@@ -206,13 +206,13 @@ If you use MetaboKG in your research, please cite it:
 
 [![DOI](https://zenodo.org/badge/1184537477.svg)](https://zenodo.org/badge/latestdoi/1184537477)
 
-> Suchanek, E. G. (2026). *MetaboKG: Metabolic Pathway Knowledge Graph* (Version 0.9.1) [Software]. Flux-Frontiers. https://github.com/flux-frontiers/metabo_kg
+> Suchanek, E. G. (2026). *MetaboKG: Metabolic Pathway Knowledge Graph* (Version 0.10.0) [Software]. Flux-Frontiers. https://github.com/flux-frontiers/metabo_kg
 
 ```bibtex
 @software{suchanek_metabo_kg,
   author    = {Suchanek, Eric G.},
   title     = {{MetaboKG}: Metabolic Pathway Knowledge Graph},
-  version   = {0.9.1},
+  version   = {0.10.0},
   year      = {2026},
   publisher = {Flux-Frontiers},
   url       = {https://github.com/flux-frontiers/metabo_kg},
@@ -236,7 +236,7 @@ Full citation metadata in [`CITATION.cff`](CITATION.cff).
 - Sister projects [PyCodeKG](https://github.com/flux-frontiers/pycode_kg) and [DocKG](https://github.com/flux-frontiers/doc_kg) for the semantic analysis that made this codebase legible to itself
 - Layout algorithms adapted from [repo_vis](https://github.com/Suchanek/repo_vis)
 - KEGG, Reactome, MetaCyc, and the iCHO2441 authors (Hefzi et al. 2016) for pathway data
-- PyVista, Streamlit, LanceDB, and sentence-transformers for the foundations
+- PyVista, Streamlit, sqlite-vec, and sentence-transformers for the foundations
 
 ---
 

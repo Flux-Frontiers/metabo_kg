@@ -30,7 +30,7 @@ from pathlib import Path
 
 def main(
     db: str | None = None,
-    lancedb: str | None = None,
+    vectors: str | None = None,
     layout: str = "allium",
     width: int = 1400,
     height: int = 900,
@@ -38,10 +38,10 @@ def main(
     export_png: str | None = None,
 ) -> None:
     """Launch the 3-D knowledge-graph visualiser."""
-    from metabokg.cli.options import resolve_db, resolve_lancedb
+    from metabokg.cli.options import resolve_db, resolve_vectors
 
     db_str = resolve_db(db)
-    lancedb_str = resolve_lancedb(lancedb)
+    vectors_str = resolve_vectors(vectors)
 
     db_path = Path(db_str)
     if not db_path.exists():
@@ -54,7 +54,7 @@ def main(
 
     launch(
         db_path=str(db_path),
-        lancedb_dir=lancedb_str,
+        vectors_path=vectors_str,
         layout_name=layout,
         width=width,
         height=height,

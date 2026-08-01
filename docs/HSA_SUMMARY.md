@@ -1,6 +1,6 @@
 # MetaboKG: Human Metabolic Knowledge Graph
 
-**A unified, local-first metabolic pathway knowledge graph system with dual-layer query architecture (SQLite + LanceDB), semantic search, and interactive visualization.**
+**A unified, local-first metabolic pathway knowledge graph system with dual-layer query architecture (SQLite + sqlite-vec), semantic search, and interactive visualization.**
 
 ---
 
@@ -10,7 +10,7 @@
 - **Multi-format unification**: KGML, SBML, BioPAX, CSV pathway parsing → single reproducible graph
 - **Dual-layer architecture**:
   - SQLite for precise structural queries (graph traversal, shortest paths, stoichiometry)
-  - LanceDB for semantic similarity search (natural language: "glucose metabolism", "energy production")
+  - sqlite-vec for semantic similarity search (natural language: "glucose metabolism", "energy production")
 - **Local-first design**: No external services, reproducible snapshots, version-controllable data
 - **MCP server integration**: Claude and other LLMs can query the graph directly
 
@@ -70,12 +70,12 @@ poetry run python scripts/download_human_kegg.py --output data/hsa_pathways --dr
 
 ### 2. Build the Knowledge Graph
 ```bash
-# Build SQLite + LanceDB from pathway files
+# Build SQLite + vectors.sqlite from pathway files
 poetry run metabokg-build --data data/hsa_pathways --wipe
 
 # Result:
 # - .metabokg/meta.sqlite (10-15 MB, indexed)
-# - .metabokg/lancedb/ (semantic vectors)
+# - .metabokg/vectors.sqlite (semantic vectors)
 # - Total size: ~25-30 MB with all indices
 ```
 
@@ -115,7 +115,7 @@ poetry run metabokg-mcp
 - **Stoichiometric detail**: Substrate/product coefficients, reversibility
 - **Graph metrics**: Hub metabolites (highest connectivity)
 
-### Semantic Queries (LanceDB)
+### Semantic Queries (sqlite-vec)
 - **Natural language search**: "energy metabolism", "fatty acid oxidation"
 - **Similarity ranking**: Find related pathways/compounds by meaning
 - **Cross-pathway discovery**: What's related to glycolysis?
@@ -155,7 +155,7 @@ poetry run metabokg-mcp
 metabo_kg/
 ├── src/metabokg/
 │   ├── app.py                 # Streamlit explorer (22K LOC, interactive UI)
-│   ├── store.py               # GraphStore: SQLite + LanceDB queries
+│   ├── store.py               # GraphStore: SQLite structural queries
 │   ├── parsers/               # KGML, SBML, BioPAX, CSV parsers
 │   ├── simulate.py            # FBA, ODE, what-if simulations
 │   └── orchestrator.py        # MetaKG public API
@@ -165,7 +165,7 @@ metabo_kg/
 ├── data/hsa_pathways/         # 369 human pathway KGML files (~19 MB)
 ├── .metabokg/
 │   ├── meta.sqlite            # Knowledge graph (22,290 nodes, 11,298 edges)
-│   └── lancedb/               # Vector index (20,151 embeddings)
+│   └── vectors.sqlite         # Vector index (20,151 embeddings)
 └── tests/                     # 97 comprehensive tests (FBA, ODE, what-if)
 ```
 
@@ -279,6 +279,6 @@ poetry run metabokg-viz
 
 ---
 
-**Built with**: Python 3.10+, SQLite, LanceDB, Streamlit, SciPy, Sentence-Transformers
+**Built with**: Python 3.12+, SQLite, sqlite-vec, Streamlit, SciPy, Sentence-Transformers
 
 **Status**: Production-ready for metabolic pathway exploration, simulation, and LLM integration (Feb 28, 2026)

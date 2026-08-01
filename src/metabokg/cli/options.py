@@ -2,7 +2,7 @@
 options.py — Reusable Click option decorators for MetaKG CLI commands.
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-04-19
+Last Revision: 2026-08-01
 License: Elastic 2.0
 """
 
@@ -15,7 +15,7 @@ import click
 from metabokg.embed import DEFAULT_MODEL
 
 _DEFAULT_DB = "data/hsa_pathways/.metabokg/hsa.sqlite"
-_DEFAULT_LANCEDB = "data/hsa_pathways/.metabokg/lancedb"
+_DEFAULT_VECTORS = "data/hsa_pathways/.metabokg/vectors.sqlite"
 
 
 def resolve_db(db: str | None) -> str:
@@ -23,9 +23,9 @@ def resolve_db(db: str | None) -> str:
     return db or os.environ.get("METABOKG_DB", _DEFAULT_DB)
 
 
-def resolve_lancedb(lancedb: str | None) -> str:
-    """Return the effective lancedb path: explicit arg > METABOKG_LANCEDB env > CWD default."""
-    return lancedb or os.environ.get("METABOKG_LANCEDB", _DEFAULT_LANCEDB)
+def resolve_vectors(vectors: str | None) -> str:
+    """Return the effective vectors path: explicit arg > METABOKG_VECTORS env > CWD default."""
+    return vectors or os.environ.get("METABOKG_VECTORS", _DEFAULT_VECTORS)
 
 
 db_option = click.option(
@@ -35,11 +35,11 @@ db_option = click.option(
     help=f"Path to MetaKG SQLite database (default: {_DEFAULT_DB} or METABOKG_DB env).",
 )
 
-lancedb_option = click.option(
-    "--lancedb",
+vectors_option = click.option(
+    "--vectors",
     default=None,
     show_default=False,
-    help=f"Path to LanceDB directory (default: {_DEFAULT_LANCEDB} or METABOKG_LANCEDB env).",
+    help=f"Path to the sqlite-vec vector store (default: {_DEFAULT_VECTORS} or METABOKG_VECTORS env).",
 )
 
 model_option = click.option(

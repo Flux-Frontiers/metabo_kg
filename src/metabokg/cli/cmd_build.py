@@ -2,11 +2,11 @@
 cmd_build.py — build and enrich subcommands.
 
 Registers:
-  metabokg build    — parse pathway files → SQLite + LanceDB
+  metabokg build    — parse pathway files → SQLite + vectors.sqlite
   metabokg enrich   — enrich node names in an existing database
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-04-20
+Last Revision: 2026-08-01
 License: Elastic 2.0
 """
 
@@ -20,32 +20,32 @@ from metabokg.cli.main import cli
 from metabokg.cli.options import (
     data_option,
     db_option,
-    lancedb_option,
     model_option,
+    vectors_option,
 )
 
 
-def _colocate_defaults(data_dir: Path, db: str | None, lancedb: str | None) -> tuple[str, str]:
-    """Derive db and lancedb paths when not explicitly given.
+def _colocate_defaults(data_dir: Path, db: str | None, vectors: str | None) -> tuple[str, str]:
+    """Derive db and vectors paths when not explicitly given.
 
     db name is derived from the data directory: 'hsa_pathways' → 'hsa.sqlite'.
-    lancedb defaults to the same .metabokg directory as the resolved db.
+    vectors defaults to the same .metabokg directory as the resolved db.
     """
     dot_dir = data_dir / ".metabokg"
     dot_dir.mkdir(parents=True, exist_ok=True)
     if db is None:
         org = data_dir.name.split("_")[0]
         db = str(dot_dir / f"{org}.sqlite")
-    resolved_lancedb = lancedb or str(Path(db).parent / "lancedb")
-    return db, resolved_lancedb
+    resolved_vectors = vectors or str(Path(db).parent / "vectors.sqlite")
+    return db, resolved_vectors
 
 
 @cli.command("build")
 @data_option
 @db_option
-@lancedb_option
+@vectors_option
 @model_option
-@click.option("--no-index", is_flag=True, help="Skip building the LanceDB vector index.")
+@click.option("--no-index", is_flag=True, help="Skip building the sqlite-vec vector index.")
 @click.option("--no-wipe", is_flag=True, help="Keep existing data instead of wiping before build.")
 @click.option(
     "--no-enrich",
@@ -66,7 +66,7 @@ def _colocate_defaults(data_dir: Path, db: str | None, lancedb: str | None) -> t
 def build(
     data: str,
     db: str,
-    lancedb: str,
+    vectors: str,
     model: str,
     no_index: bool,
     no_wipe: bool,
@@ -81,11 +81,11 @@ def build(
     data_dir = Path(data).resolve()
     if not data_dir.exists():
         raise click.ClickException(f"data directory not found: {data_dir}")
-    db, lancedb = _colocate_defaults(data_dir, db, lancedb)
+    db, vectors = _colocate_defaults(data_dir, db, vectors)
 
     from metabokg import MetaKG
 
-    kg = MetaKG(db_path=db, lancedb_dir=lancedb, model=model)
+    kg = MetaKG(db_path=db, vectors_path=vectors, model=model)
     wipe = not no_wipe
     click.echo(f"Building MetaKG from {data_dir} (wipe={wipe})...", err=True)
     stats = kg.build(
@@ -141,9 +141,9 @@ def enrich(db: str, data: str | None) -> None:
 @cli.command("update")
 @data_option
 @db_option
-@lancedb_option
+@vectors_option
 @model_option
-@click.option("--no-index", is_flag=True, help="Skip building the LanceDB vector index.")
+@click.option("--no-index", is_flag=True, help="Skip building the sqlite-vec vector index.")
 @click.option(
     "--no-enrich",
     is_flag=True,
@@ -163,7 +163,7 @@ def enrich(db: str, data: str | None) -> None:
 def update(
     data: str,
     db: str,
-    lancedb: str,
+    vectors: str,
     model: str,
     no_index: bool,
     no_enrich: bool,
@@ -179,11 +179,11 @@ def update(
     data_dir = Path(data).resolve()
     if not data_dir.exists():
         raise click.ClickException(f"data directory not found: {data_dir}")
-    db, lancedb = _colocate_defaults(data_dir, db, lancedb)
+    db, vectors = _colocate_defaults(data_dir, db, vectors)
 
     from metabokg import MetaKG
 
-    kg = MetaKG(db_path=db, lancedb_dir=lancedb, model=model)
+    kg = MetaKG(db_path=db, vectors_path=vectors, model=model)
     click.echo(f"Updating MetaKG from {data_dir} (no wipe)...", err=True)
     stats = kg.build(
         data_dir=data_dir,

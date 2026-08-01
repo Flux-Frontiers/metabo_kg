@@ -14,16 +14,16 @@ import click
 from metabokg.cli.main import cli
 from metabokg.cli.options import (
     db_option,
-    lancedb_option,
     model_option,
     resolve_db,
-    resolve_lancedb,
+    resolve_vectors,
+    vectors_option,
 )
 
 
 @cli.command("mcp")
 @db_option
-@lancedb_option
+@vectors_option
 @model_option
 @click.option(
     "--transport",
@@ -32,13 +32,13 @@ from metabokg.cli.options import (
     type=click.Choice(["stdio", "sse"]),
     help="MCP transport: stdio or sse (HTTP).",
 )
-def mcp(db: str | None, lancedb: str | None, model: str, transport: str) -> None:
+def mcp(db: str | None, vectors: str | None, model: str, transport: str) -> None:
     """Start the MetaKG MCP server."""
     from metabokg import MetaKG
     from metabokg.mcp_tools import create_server
 
     db_path = Path(resolve_db(db))
-    lancedb = resolve_lancedb(lancedb)
+    vectors = resolve_vectors(vectors)
     if not db_path.exists():
         click.echo(
             f"WARNING: database not found at '{db_path}'.\nRun 'metabokg build' first.",
@@ -48,13 +48,13 @@ def mcp(db: str | None, lancedb: str | None, model: str, transport: str) -> None
     click.echo(
         f"MetaKG MCP server starting\n"
         f"  db       : {db_path}\n"
-        f"  lancedb  : {lancedb}\n"
+        f"  vectors  : {vectors}\n"
         f"  model    : {model}\n"
         f"  transport: {transport}",
         err=True,
     )
 
-    kg = MetaKG(db_path=db_path, lancedb_dir=lancedb, model=model)
+    kg = MetaKG(db_path=db_path, vectors_path=vectors, model=model)
     server = create_server(kg)
     server.run(transport=transport)  # type: ignore[arg-type]
 

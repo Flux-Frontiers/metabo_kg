@@ -2,7 +2,7 @@
 metabokg — Metabolic pathway parser and semantic knowledge graph.
 
 Parses pathway data from KEGG KGML, SBML, BioPAX, and CSV formats into a
-semantic knowledge graph stored in SQLite + LanceDB, exposed via MCP tools.
+semantic knowledge graph stored in SQLite + sqlite-vec, exposed via MCP tools.
 
 Quick start::
 

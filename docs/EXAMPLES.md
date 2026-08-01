@@ -7,12 +7,12 @@ called out explicitly.
 The CLI build command collocates all outputs under the data directory, so
 `metabokg-build --data data/hsa_pathways` produces
 `data/hsa_pathways/.metabokg/hsa.sqlite` and
-`data/hsa_pathways/.metabokg/lancedb`.  Python API examples pass these paths
+`data/hsa_pathways/.metabokg/vectors.sqlite`.  Python API examples pass these paths
 explicitly so they work regardless of CWD.
 
 > **Runnable companion:** every Python block below is reproduced as a function
 > in [`scripts/examples.py`](../scripts/examples.py) and is exercised end-to-end
-> against the live SQLite + LanceDB databases.  Run all of them with
+> against the live SQLite + sqlite-vec stores.  Run all of them with
 > `poetry run python scripts/examples.py` or a single section by name, e.g.
 > `poetry run python scripts/examples.py ex_06_fba`.  If any expected output in
 > this document drifts from what the script prints, this document is wrong.
@@ -45,7 +45,7 @@ python scripts/download_human_kegg.py --output data/hsa_pathways
 # Optional: download name TSVs for enrichment
 python scripts/download_kegg_names.py
 
-# Build: parse → SQLite → enrich → LanceDB → seed kinetics
+# Build: parse → SQLite → enrich → vectors → seed kinetics
 # Outputs land in data/hsa_pathways/.metabokg/hsa.sqlite
 metabokg-build --data ./data/hsa_pathways
 
@@ -66,12 +66,12 @@ metabokg-build --data ./data/cge_pathways
 ```python
 from metabokg import MetaKG
 
-# db_path and lancedb_dir default to CWD/.metabokg/; pass explicit paths
+# db_path and vectors_path default to CWD/.metabokg/; pass explicit paths
 # when the build was run against a sub-directory data source.
-HSA_DB    = "data/hsa_pathways/.metabokg/hsa.sqlite"
-HSA_LANCE = "data/hsa_pathways/.metabokg/lancedb"
+HSA_DB      = "data/hsa_pathways/.metabokg/hsa.sqlite"
+HSA_VECTORS = "data/hsa_pathways/.metabokg/vectors.sqlite"
 
-with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
+with MetaKG(db_path=HSA_DB, vectors_path=HSA_VECTORS) as kg:
     s = kg.store.stats()
     print(f"nodes={s['total_nodes']}  edges={s['total_edges']}")
     nc = s['node_counts']
@@ -108,14 +108,14 @@ echo '{"tool":"query_pathway","arguments":{"name":"fatty acid oxidation","k":5}}
 ```python
 from metabokg import MetaKG
 
-HSA_DB    = "data/hsa_pathways/.metabokg/hsa.sqlite"
-HSA_LANCE = "data/hsa_pathways/.metabokg/lancedb"
+HSA_DB      = "data/hsa_pathways/.metabokg/hsa.sqlite"
+HSA_VECTORS = "data/hsa_pathways/.metabokg/vectors.sqlite"
 
-with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
+with MetaKG(db_path=HSA_DB, vectors_path=HSA_VECTORS) as kg:
     results = kg.query_pathway("fatty acid oxidation", k=5)
     for hit in results.hits:
-        # hits carry _distance (LanceDB cosine); convert to similarity score
-        score = 1.0 - hit["_distance"] / 2.0
+        # hits carry _distance (sqlite-vec cosine); convert to similarity score
+        score = 1.0 - hit["_distance"]
         print(f"{hit['name']:<40}  score={score:.3f}")
 ```
 
@@ -135,10 +135,10 @@ Fatty acid biosynthesis                   score=0.703
 from metabokg import MetaKG
 from metabokg.primitives import PATHWAY_CATEGORY_METABOLIC
 
-HSA_DB    = "data/hsa_pathways/.metabokg/hsa.sqlite"
-HSA_LANCE = "data/hsa_pathways/.metabokg/lancedb"
+HSA_DB      = "data/hsa_pathways/.metabokg/hsa.sqlite"
+HSA_VECTORS = "data/hsa_pathways/.metabokg/vectors.sqlite"
 
-with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
+with MetaKG(db_path=HSA_DB, vectors_path=HSA_VECTORS) as kg:
     pathways = kg.store.all_nodes(kind="pathway", category=PATHWAY_CATEGORY_METABOLIC)
     print(f"{len(pathways)} metabolic pathways")
 ```
@@ -157,10 +157,10 @@ Expected output:
 ```python
 from metabokg import MetaKG
 
-HSA_DB    = "data/hsa_pathways/.metabokg/hsa.sqlite"
-HSA_LANCE = "data/hsa_pathways/.metabokg/lancedb"
+HSA_DB      = "data/hsa_pathways/.metabokg/hsa.sqlite"
+HSA_VECTORS = "data/hsa_pathways/.metabokg/vectors.sqlite"
 
-with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
+with MetaKG(db_path=HSA_DB, vectors_path=HSA_VECTORS) as kg:
     pyruvate = kg.store.node("cpd:kegg:C00022")
     print(pyruvate["name"])        # Pyruvate
     print(pyruvate["formula"])     # None (formula not stored for all compounds)
@@ -175,7 +175,7 @@ None
 ### Fetch a reaction with full stoichiometric detail
 
 ```python
-with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
+with MetaKG(db_path=HSA_DB, vectors_path=HSA_VECTORS) as kg:
     rxn = kg.store.reaction_detail("rxn:kegg:R00200")
     print("Substrates:", [s["name"] for s in rxn["substrates"]])
     print("Products:  ", [p["name"] for p in rxn["products"]])
@@ -192,7 +192,7 @@ Enzymes:    ['PKLR, PK1, PKL, PKRL, RPK']
 ### Walk neighbours of a node
 
 ```python
-with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
+with MetaKG(db_path=HSA_DB, vectors_path=HSA_VECTORS) as kg:
     # Reactions that consume glucose-6-phosphate
     nbrs = kg.store.neighbours(
         "cpd:kegg:C00092",
@@ -214,7 +214,7 @@ rxn:kegg:R07324: 1D-myo-inositol-3-phosphate lyase (isomerizing)
 ### Resolve a human-readable name to a node ID
 
 ```python
-with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
+with MetaKG(db_path=HSA_DB, vectors_path=HSA_VECTORS) as kg:
     node_id = kg.store.resolve_id("Glycolysis / Gluconeogenesis")
     print(node_id)   # pwy:kegg:hsa00010
 ```
@@ -240,10 +240,10 @@ metabokg-mcp   # then send find_path tool call
 ```python
 from metabokg import MetaKG
 
-HSA_DB    = "data/hsa_pathways/.metabokg/hsa.sqlite"
-HSA_LANCE = "data/hsa_pathways/.metabokg/lancedb"
+HSA_DB      = "data/hsa_pathways/.metabokg/hsa.sqlite"
+HSA_VECTORS = "data/hsa_pathways/.metabokg/vectors.sqlite"
 
-with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
+with MetaKG(db_path=HSA_DB, vectors_path=HSA_VECTORS) as kg:
     result = kg.find_path(
         "cpd:kegg:C00031",   # Glucose
         "cpd:kegg:C00024",   # Acetyl-CoA
@@ -264,7 +264,7 @@ acetyl-CoA — a real shortest path under the live edge set):
 ### Cross-pathway hub metabolites
 
 ```python
-with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
+with MetaKG(db_path=HSA_DB, vectors_path=HSA_VECTORS) as kg:
     # ATP: how many pathways does it appear in?
     atp = kg.store.node("cpd:kegg:C00002")
     nbrs = kg.store.neighbours("cpd:kegg:C00002", rels=("CONTAINS",))
@@ -301,10 +301,10 @@ metabokg simulate fba --pathway hsa00010 --output fba_glycolysis.md
 ```python
 from metabokg import MetaKG
 
-HSA_DB    = "data/hsa_pathways/.metabokg/hsa.sqlite"
-HSA_LANCE = "data/hsa_pathways/.metabokg/lancedb"
+HSA_DB      = "data/hsa_pathways/.metabokg/hsa.sqlite"
+HSA_VECTORS = "data/hsa_pathways/.metabokg/vectors.sqlite"
 
-with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
+with MetaKG(db_path=HSA_DB, vectors_path=HSA_VECTORS) as kg:
     result = kg.simulate_fba("pwy:kegg:hsa00010", maximize=True)
     print(f"Status:    {result['status']}")
     print(f"Objective: {result['objective_value']:.4f}")
@@ -327,7 +327,7 @@ Objective: 151.5152
 ### Target a specific objective reaction
 
 ```python
-with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
+with MetaKG(db_path=HSA_DB, vectors_path=HSA_VECTORS) as kg:
     # Maximise pyruvate kinase flux specifically
     result = kg.simulate_fba(
         "pwy:kegg:hsa00010",
@@ -366,10 +366,10 @@ metabokg simulate ode \
 ```python
 from metabokg import MetaKG
 
-HSA_DB    = "data/hsa_pathways/.metabokg/hsa.sqlite"
-HSA_LANCE = "data/hsa_pathways/.metabokg/lancedb"
+HSA_DB      = "data/hsa_pathways/.metabokg/hsa.sqlite"
+HSA_VECTORS = "data/hsa_pathways/.metabokg/vectors.sqlite"
 
-with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
+with MetaKG(db_path=HSA_DB, vectors_path=HSA_VECTORS) as kg:
     result = kg.simulate_ode(
         "pwy:kegg:hsa00010",
         t_end=20,
@@ -430,10 +430,10 @@ metabokg simulate whatif \
 import json
 from metabokg import MetaKG
 
-HSA_DB    = "data/hsa_pathways/.metabokg/hsa.sqlite"
-HSA_LANCE = "data/hsa_pathways/.metabokg/lancedb"
+HSA_DB      = "data/hsa_pathways/.metabokg/hsa.sqlite"
+HSA_VECTORS = "data/hsa_pathways/.metabokg/vectors.sqlite"
 
-with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
+with MetaKG(db_path=HSA_DB, vectors_path=HSA_VECTORS) as kg:
     scenario = {
         "name": "hexokinase_knockout",
         "enzyme_knockouts": ["enz:kegg:hsa:2539"],
@@ -468,7 +468,7 @@ Objective change: +0.0%
 ### ODE what-if — substrate override
 
 ```python
-with MetaKG(db_path=HSA_DB, lancedb_dir=HSA_LANCE) as kg:
+with MetaKG(db_path=HSA_DB, vectors_path=HSA_VECTORS) as kg:
     # Double glucose, knock out LDHA (lactate dehydrogenase)
     scenario = {
         "name": "high_glucose_no_ldha",
@@ -514,10 +514,10 @@ metabokg simulate seed-cho --db data/cge_pathways/.metabokg/cge.sqlite
 ```python
 from metabokg import MetaKG
 
-CGE_DB    = "data/cge_pathways/.metabokg/cge.sqlite"
-CGE_LANCE = "data/cge_pathways/.metabokg/lancedb"
+CGE_DB      = "data/cge_pathways/.metabokg/cge.sqlite"
+CGE_VECTORS = "data/cge_pathways/.metabokg/vectors.sqlite"
 
-with MetaKG(db_path=CGE_DB, lancedb_dir=CGE_LANCE) as kg:
+with MetaKG(db_path=CGE_DB, vectors_path=CGE_VECTORS) as kg:
     s = kg.store.stats()
     print(f"CHO graph: {s['total_nodes']} nodes, {s['total_edges']} edges")
 ```
@@ -546,8 +546,8 @@ metabokg simulate ode \
 ```python
 from metabokg import MetaKG
 
-CGE_DB    = "data/cge_pathways/.metabokg/cge.sqlite"
-CGE_LANCE = "data/cge_pathways/.metabokg/lancedb"
+CGE_DB      = "data/cge_pathways/.metabokg/cge.sqlite"
+CGE_VECTORS = "data/cge_pathways/.metabokg/vectors.sqlite"
 
 # Fed-batch initial conditions: high glucose, low pyruvate
 init_concs = {
@@ -556,7 +556,7 @@ init_concs = {
     "cpd:kegg:C00186": 0.5,   # L-Lactate: 0.5 mM
 }
 
-with MetaKG(db_path=CGE_DB, lancedb_dir=CGE_LANCE) as kg:
+with MetaKG(db_path=CGE_DB, vectors_path=CGE_VECTORS) as kg:
     result = kg.simulate_ode(
         "pwy:kegg:cge00010",         # CHO Glycolysis
         t_end=20,
@@ -587,10 +587,10 @@ lactate accumulation in CHO fed-batch culture.
 import json
 from metabokg import MetaKG
 
-CGE_DB    = "data/cge_pathways/.metabokg/cge.sqlite"
-CGE_LANCE = "data/cge_pathways/.metabokg/lancedb"
+CGE_DB      = "data/cge_pathways/.metabokg/cge.sqlite"
+CGE_VECTORS = "data/cge_pathways/.metabokg/vectors.sqlite"
 
-with MetaKG(db_path=CGE_DB, lancedb_dir=CGE_LANCE) as kg:
+with MetaKG(db_path=CGE_DB, vectors_path=CGE_VECTORS) as kg:
     # 80% LDHA knockdown (siRNA-level suppression)
     scenario = {
         "name": "LDHA_80pct_knockdown",
@@ -612,11 +612,11 @@ with MetaKG(db_path=CGE_DB, lancedb_dir=CGE_LANCE) as kg:
 import json
 from metabokg import MetaKG
 
-CGE_DB    = "data/cge_pathways/.metabokg/cge.sqlite"
-CGE_LANCE = "data/cge_pathways/.metabokg/lancedb"
+CGE_DB      = "data/cge_pathways/.metabokg/cge.sqlite"
+CGE_VECTORS = "data/cge_pathways/.metabokg/vectors.sqlite"
 
 # TCA cycle flux matters for energy yield driving recombinant protein synthesis
-with MetaKG(db_path=CGE_DB, lancedb_dir=CGE_LANCE) as kg:
+with MetaKG(db_path=CGE_DB, vectors_path=CGE_VECTORS) as kg:
     scenario = {
         "name": "high_glutamine_tca",
         "initial_conc_overrides": {
@@ -644,10 +644,10 @@ Perturbed objective: 347.8261
 ```python
 from metabokg import MetaKG
 
-CGE_DB    = "data/cge_pathways/.metabokg/cge.sqlite"
-CGE_LANCE = "data/cge_pathways/.metabokg/lancedb"
+CGE_DB      = "data/cge_pathways/.metabokg/cge.sqlite"
+CGE_VECTORS = "data/cge_pathways/.metabokg/vectors.sqlite"
 
-with MetaKG(db_path=CGE_DB, lancedb_dir=CGE_LANCE) as kg:
+with MetaKG(db_path=CGE_DB, vectors_path=CGE_VECTORS) as kg:
     # store.all_kinetic_params() returns all params; filter by reaction_id
     all_params = kg.store.all_kinetic_params()
     params = [p for p in all_params if p.get("reaction_id") == "rxn:kegg:R00299"]

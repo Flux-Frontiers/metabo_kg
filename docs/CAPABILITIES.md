@@ -39,7 +39,7 @@
            │  (nodes + edges)
            ▼
   ┌────────────────┐        ┌──────────────────┐
-  │   MetaStore    │◄──────►│    LanceDB        │
+  │   MetaStore    │◄──────►│    sqlite-vec     │
   │  (SQLite WAL)  │        │  (vector index)   │
   └───────┬────────┘        └──────────────────┘
           │
@@ -68,7 +68,7 @@
    └───────────────────────────────────────────┘
 ```
 
-MetaboKG keeps all graph data in a local **SQLite** file (`.metabokg/hsa.sqlite`) and an optional **LanceDB** directory (`.metabokg/lancedb`) for vector-similarity search.  An optional enrichment pass replaces bare KEGG accessions with human-readable names stored directly in the database.  All components interact through a single stable API; the MCP server and CLI are thin wrappers.
+MetaboKG keeps all graph data in a local **SQLite** file (`.metabokg/hsa.sqlite`) and an optional **sqlite-vec** store (`.metabokg/vectors.sqlite`) for vector-similarity search.  An optional enrichment pass replaces bare KEGG accessions with human-readable names stored directly in the database.  All components interact through a single stable API; the MCP server and CLI are thin wrappers.
 
 ---
 
@@ -232,9 +232,9 @@ Multiple substrates/products in one cell can be separated by `;` or `|`.  Rows s
 metabokg-build \
   --data     <DIR>                    # required: directory of pathway files
   --db       .metabokg/hsa.sqlite      # SQLite output path
-  --lancedb  .metabokg/lancedb         # LanceDB vector index directory
+  --vectors  .metabokg/vectors.sqlite  # sqlite-vec vector store
   --model    bge-small-en-v1.5       # SentenceTransformer model
-  --no-index                         # skip LanceDB index build
+  --no-index                         # skip vector index build
   --no-wipe                          # keep existing data (default: wipe before build)
   --enrich                           # run name enrichment after build
   --enrich-data  DIR                 # KEGG TSV directory (default: data/)
@@ -252,7 +252,7 @@ metabokg-update --data <DIR>
 2. Each file is passed to parsers in priority order (KGML → SBML → BioPAX → CSV); first match wins
 3. All `MetaNode` and `MetaEdge` objects are bulk-written to SQLite
 4. The `xref_index` table is populated by expanding `xrefs` JSON blobs
-5. Unless `--no-index`, compound + reaction + pathway nodes are embedded and loaded into LanceDB
+5. Unless `--no-index`, compound + reaction + pathway nodes are embedded and loaded into the vector store
 6. If `--enrich` is set, name enrichment runs immediately after indexing (see §5)
 
 **Build stats printed to stderr:**
@@ -261,7 +261,7 @@ metabokg-update --data <DIR>
 nodes: 342 (compound: 198, reaction: 87, enzyme: 41, pathway: 16)
 edges: 891 (SUBSTRATE_OF: 234, PRODUCT_OF: 234, CATALYZES: 87, CONTAINS: 336)
 xref_index: 621 rows
-lancedb: 301 rows indexed (dim=384)  # compound + reaction + pathway only
+indexed: 301 vectors  dim=384        # compound + reaction + pathway only
 parse_errors: 0
 Enrichment: 87 reaction names from graph, 198 compound names from TSV, 54 reaction names from TSV, 12 reaction names from detail TSV, 41 enzyme names from gene TSV
 ```
@@ -467,7 +467,7 @@ substrate of the TCA cycle via pyruvate dehydrogenase.
 ```python
 from metabokg import MetaKG
 
-kg = MetaKG(db_path=".metabokg/hsa.sqlite", lancedb_dir=".metabokg/lancedb")
+kg = MetaKG(db_path=".metabokg/hsa.sqlite", vectors_path=".metabokg/vectors.sqlite")
 
 # Semantic pathway search — returns top-k pathway nodes
 result = kg.query_pathway("glucose catabolism", k=5)
@@ -917,7 +917,7 @@ print(md)
 
 ```bash
 metabokg-mcp --db .metabokg/hsa.sqlite \
-           --lancedb .metabokg/lancedb \
+           --vectors .metabokg/vectors.sqlite \
            --model bge-small-en-v1.5 \
            --transport stdio   # or sse
 ```
@@ -1108,9 +1108,9 @@ All commands use [Click](https://click.palletsprojects.com/) and support `--help
 ```
 metabokg-build --data <DIR>
              [--db   .metabokg/hsa.sqlite]
-             [--lancedb .metabokg/lancedb]
+             [--vectors .metabokg/vectors.sqlite]
              [--model bge-small-en-v1.5]
-             [--no-index]          skip LanceDB index
+             [--no-index]          skip the vector index
              [--no-wipe]           keep existing data (default: wipe before build)
              [--enrich]            run name enrichment after building
              [--enrich-data DIR]   KEGG TSV directory (default: data/)
@@ -1123,7 +1123,7 @@ Incrementally merge new pathway files into an existing database without wiping.
 ```
 metabokg-update --data <DIR>
               [--db   .metabokg/hsa.sqlite]
-              [--lancedb .metabokg/lancedb]
+              [--vectors .metabokg/vectors.sqlite]
               [--model bge-small-en-v1.5]
               [--no-index]
               [--enrich]
@@ -1153,7 +1153,7 @@ python scripts/download_kegg_reactions.py --kgml-dir data/hsa_pathways [--force]
 
 ```
 metabokg-mcp [--db   .metabokg/hsa.sqlite]
-           [--lancedb .metabokg/lancedb]
+           [--vectors .metabokg/vectors.sqlite]
            [--model bge-small-en-v1.5]
            [--transport stdio|sse]
 ```
@@ -1215,7 +1215,7 @@ Launches a **Streamlit** web application for interactive pathway exploration (re
 
 ```
 metabokg-viz [--db   .metabokg/hsa.sqlite]
-             [--lancedb .metabokg/lancedb]
+             [--vectors .metabokg/vectors.sqlite]
              [--port 8500]
              [--no-browser]
 ```
@@ -1241,10 +1241,9 @@ metabokg-viz3d [--db     .metabokg/hsa.sqlite]
 from metabokg import MetaKG
 
 kg = MetaKG(
-    db_path     = ".metabokg/hsa.sqlite",
-    lancedb_dir = ".metabokg/lancedb",
-    model       = "bge-small-en-v1.5",
-    table       = "metabokg_nodes",
+    db_path      = ".metabokg/hsa.sqlite",
+    vectors_path = ".metabokg/vectors.sqlite",
+    model        = "bge-small-en-v1.5",
 )
 
 kg.build(data_dir, wipe=False, build_index=True,
@@ -1428,7 +1427,7 @@ for concurrent read performance (required for multi-threaded Streamlit deploymen
 
 ```toml
 python                = "^3.12, <3.13"
-lancedb               = ">=0.29.0"
+kgmodule-utils        = {version = ">=0.9.0", extras = ["semantic", "sqlite-vec"]}
 numpy                 = ">=1.24.0"
 sentence-transformers = ">=2.7.0"
 click                 = ">=8.0"

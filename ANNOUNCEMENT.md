@@ -26,7 +26,7 @@ MetaboKG handles that integration once. You get a unified compound / reaction / 
 | `metabokg-cge` | 366 KEGG pathways for *C. griseus* (CHO), the workhorse of biopharma |
 | `metabokg-icho` | iCHO2441 genome-scale model (SBML/FBC v2): 6,337 reactions, 4,174 metabolites, 2,441 gene products |
 
-**Hybrid retrieval.** A query like *"hexokinase"* embeds against a local sentence-transformer, pulls the top-k nearest nodes from LanceDB, then expands `hop` BFS steps along typed edges (`SUBSTRATE_OF`, `PRODUCT_OF`, `CATALYZES`, `INHIBITS`, `ACTIVATES`, `XREF`). You get vector recall *and* graph context in one shot.
+**Hybrid retrieval.** A query like *"hexokinase"* embeds against a local sentence-transformer, pulls the top-k nearest nodes from sqlite-vec, then expands `hop` BFS steps along typed edges (`SUBSTRATE_OF`, `PRODUCT_OF`, `CATALYZES`, `INHIBITS`, `ACTIVATES`, `XREF`). You get vector recall *and* graph context in one shot.
 
 **Simulation.** With the `simulate` extra installed, the same graph becomes a numerical substrate:
 - **FBA:** steady-state flux optimization (HiGHS backend)

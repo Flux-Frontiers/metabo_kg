@@ -7,9 +7,9 @@
         "run",
         "metabokg-mcp",
         "--db",
-        ".metabokg/meta.sqlite",
-        "--lancedb",
-        ".metabokg/lancedb"
+        "data/hsa_pathways/.metabokg/hsa.sqlite",
+        "--vectors",
+        "data/hsa_pathways/.metabokg/vectors.sqlite"
       ],
       "env": {
         "POETRY_VIRTUALENVS_IN_PROJECT": "false"

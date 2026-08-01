@@ -4,7 +4,7 @@
 
 Complete workflow for building, parameterizing, and simulating a *Cricetulus
 griseus* (CHO) metabolic knowledge graph in MetaboKG. All commands use default
-paths (`.metabokg/hsa.sqlite`, `.metabokg/lancedb`).
+paths (`.metabokg/hsa.sqlite`, `.metabokg/vectors.sqlite`).
 
 ---
 
@@ -52,7 +52,7 @@ Runs the full build pipeline automatically:
 3. Enrich compound names from `kegg_compound_names.tsv`
 4. Enrich reaction names from `kegg_reaction_names.tsv`
 5. **Enrich enzyme names from `cge_gene_names.tsv`** (Phase 3 — new)
-6. Build LanceDB vector index
+6. Build sqlite-vec vector index
 
 After Phase 3, enzymes are addressable by gene symbol:
 ```bash

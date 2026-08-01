@@ -21,5 +21,5 @@ echo ">> dockg snapshot save $VERSION"
 "$VENV/dockg-snapshot" save "$VERSION"
 
 # Stage the freshly written snapshots so they ride along with this commit.
-# (Build artifacts -- graph.sqlite, lancedb -- are gitignored and skipped.)
+# (Build artifacts -- graph.sqlite, vectors.sqlite -- are gitignored and skipped.)
 git add .pycodekg/snapshots .dockg/snapshots

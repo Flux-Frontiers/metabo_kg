@@ -15,6 +15,107 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [0.10.0] - 2026-08-01
+
+LanceDB → sqlite-vec migration (fleet Phase 2). The vector store moves from a
+`lancedb/` directory to a single `vectors.sqlite` file. **Breaking**: the
+`MetaKG` constructor parameter and the CLI flag both change, with no fallback.
+
+Vector stores are derived from SQLite and rebuildable — there is no conversion
+step. Delete `.metabokg/lancedb/` and rebuild:
+
+```bash
+find . -maxdepth 3 -type d -name lancedb -not -path './.venv/*' -exec rm -rf {} +
+metabokg-init --force        # or: metabokg-build --data <DIR> per corpus
+```
+
+### Added
+
+- **`tests/test_index.py`** — 20 cases over `MetaIndex`, which had no test file
+  at all. A deterministic stub embedder keeps the whole file model-free. Two of
+  the classes pin regressions this migration introduced (see *Fixed*); the rest
+  cover what the port could have silently dropped — that `kind`/`name` survive
+  a round-trip, that the embedding `text` is stored verbatim, that enzymes stay
+  excluded, and that batch size does not change results.
+
+### Changed
+
+- **`MetaIndex` now writes to `SqliteVecBackend`** instead of a LanceDB table.
+  The embedding text built by `_build_meta_index_text` is untouched — only
+  where the vectors live changed. `build()` reports `vectors_path` in place of
+  `lancedb_dir`/`table`.
+
+- **Distances are now cosine, and the scale changed.** The old table was created
+  with `db.create_table(...)` and no explicit metric, so LanceDB defaulted to
+  **squared L2**; sqlite-vec uses cosine. For normalised embeddings these differ
+  by a factor of ~2 (squared-L2 = 2·(1 − cos)), so raw `_distance` values roughly
+  halve. Ranking is unaffected. Nothing in `src/` derives a score from the
+  distance — `SeedHit.distance` reaches consumers as a raw `_distance`
+  passthrough — but `docs/EXAMPLES.md` did, and its
+  `score = 1.0 - _distance / 2.0` is now `score = 1.0 - _distance`. Both
+  expressions recover the same cosine similarity, so the documented example
+  output is unchanged.
+
+- **`MetaKG(lancedb_dir=...)` → `MetaKG(vectors_path=...)`**, taking a file
+  rather than a directory. The LanceDB-only `table` parameter is removed, along
+  with the `MetaKG.table_name` attribute.
+
+- **CLI: `--lancedb PATH` → `--vectors PATH`** on `build`, `update`, `query`,
+  `pack`, `mcp`, `info`, `viz`, and `viz3d`; **`METABOKG_LANCEDB` →
+  `METABOKG_VECTORS`**. Colocated defaults derive `<data>/.metabokg/vectors.sqlite`
+  instead of `<data>/.metabokg/lancedb/`.
+
+- **`kgmodule-utils[semantic,sqlite-vec]>=0.9.0`** replaces the bare
+  `kgmodule-utils>=0.8.0`; lock regenerated.
+
+- **ruff now excludes `*.md` and `.claude/`.** ruff 0.16 formats Python blocks
+  embedded in Markdown as stable behaviour (0.15 gated it behind preview);
+  measured here, 12 Markdown files would be reformatted, so `ruff format
+  --check .` in CI would start failing on prose. `ftree_kg` and `doc_kg` carry
+  the same exclusion.
+
+- **Docs, skills, and MCP config swept** for the flag, path, and env-var
+  renames — `README`, `CLAUDE.md`, `ANNOUNCEMENT.md`, `docs/{INSTALL,
+  CAPABILITIES,CHEATSHEET,EXAMPLES,WORKFLOW,HSA_SUMMARY,cho_workflow}.md`,
+  `.claude/skills/metabokg/**`, `.claude/commands/metabokg-build.md`,
+  `.vscode/metabokg-build.prompt.md`, and `.vscode/mcp.json` (which passed
+  `--lancedb` and would now fail outright; its `--db` also pointed at a
+  `.metabokg/meta.sqlite` that no command produces).
+
+### Removed
+
+- **`lancedb>=0.29.0`** as a direct dependency. It still arrives transitively
+  via `kgmodule-utils[semantic]` until KG_utils splits its extras, so the venv
+  will not shrink yet.
+
+- **`escape_id()`** from `metabokg.embed` — it existed only to quote ids for
+  LanceDB delete predicates, and `SqliteVecBackend.upsert` uses bound
+  parameters. Its last caller was an OR-joined `id = '...'` string, one term
+  per node in the batch: the shape that overflowed LanceDB's Rust expression
+  evaluator on large batches.
+
+### Fixed
+
+- **Rebuilding into an existing store raised `UNIQUE constraint failed:
+  vec_meta.id`.** `SqliteVecBackend` decides at `open()` whether `upsert` needs
+  its delete-before-insert dedup — a freshly created or wiped store has nothing
+  to replace — and never revisits that verdict. `MetaIndex` caches its backend,
+  so the first build's "fresh" verdict survived into the second, and any
+  `kg.build()` following a `kg.build(wipe=True)` on the same instance failed.
+  The backend is now re-opened for each write pass.
+
+- **`stats()` on an unbuilt index created the store as a side effect.** Opening
+  the backend creates the tables, so merely reporting on a missing index left a
+  zero-row `vectors.sqlite` behind — which reads as "built" to every `.exists()`
+  check in the CLI, sending `query` and `pack` down the vector path against an
+  empty index. `stats()` now returns `{}` without touching disk, and `search()`
+  raises `FileNotFoundError` naming the build command instead of silently
+  returning nothing.
+
+- **Stale PyCodeKG command table in `CLAUDE.md`** — `pycodekg-build-lancedb` was
+  renamed `pycodekg-build-index` in pycode_kg 0.20.0, and `pycodekg-build` no
+  longer accepts `--wipe` (a full build always wipes).
+
 ## [0.9.1] - 2026-07-29
 
 ### Added
