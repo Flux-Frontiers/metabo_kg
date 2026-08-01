@@ -209,9 +209,68 @@ class TestAbsentStore:
         assert not index.vectors_path.exists()
 
 
+class TestColdRead:
+    """`metabokg query` and `metabokg pack` open a store they did not build.
+
+    That path goes through `_get_backend`, not `_open_for_build`, so it is
+    distinct from every case above — all of which build first.
+    """
+
+    def test_search_works_without_a_prior_build(self, built):
+        cold = MetaIndex(built.vectors_path, embedder=StubEmbedder())
+        hits = cold.search("Glycolysis pathway", k=_INDEXED)
+        assert len(hits) == _INDEXED
+        assert all(h.kind and h.name for h in hits)
+
+    def test_stats_works_without_a_prior_build(self, built):
+        cold = MetaIndex(built.vectors_path, embedder=StubEmbedder())
+        assert cold.stats()["indexed_rows"] == _INDEXED
+
+    def test_cold_reads_agree_with_the_builder(self, built):
+        cold = MetaIndex(built.vectors_path, embedder=StubEmbedder())
+        assert [h.id for h in cold.search("glucose", k=_INDEXED)] == [
+            h.id for h in built.search("glucose", k=_INDEXED)
+        ]
+
+
 class TestStats:
     def test_counts_indexed_rows(self, built):
         assert built.stats() == {"indexed_rows": _INDEXED, "dim": StubEmbedder.dim}
+
+    def test_a_corrupt_store_reports_empty_rather_than_raising(self, index):
+        """`metabokg info` must survive a truncated or non-sqlite store file."""
+        index.vectors_path.parent.mkdir(parents=True, exist_ok=True)
+        index.vectors_path.write_text("not a sqlite database")
+        assert index.stats() == {}
+
+
+class TestEmbeddingText:
+    """`_build_meta_index_text` is the product — the migration must not alter it."""
+
+    def test_includes_kind_name_formula_and_xrefs(self):
+        text = _build_meta_index_text(NODES[0])
+        assert text.startswith(f"KIND: {KIND_COMPOUND}\nNAME: D-Glucose")
+        assert "FORMULA: C6H12O6" in text
+        assert "XREF KEGG: C00031" in text
+        assert "XREF CHEBI: 17234" in text
+        assert text.endswith("DESCRIPTION:\nA hexose sugar")
+
+    def test_omits_absent_optional_fields(self):
+        text = _build_meta_index_text(NODES[2])
+        assert "FORMULA:" not in text
+        assert "XREF" not in text
+
+    @pytest.mark.parametrize("bad", ["{not json", "", None, 12345])
+    def test_malformed_xrefs_do_not_break_the_build(self, bad):
+        """Bad xrefs must degrade to "no XREF lines", never abort indexing."""
+        node = {**NODES[1], "xrefs": bad}
+        text = _build_meta_index_text(node)
+        assert "XREF" not in text
+        assert "NAME: pyruvate kinase" in text
+
+    def test_a_node_with_malformed_xrefs_still_indexes(self, index):
+        index.build(StubStore([{**NODES[1], "xrefs": "{not json"}]), wipe=True)
+        assert index.stats()["indexed_rows"] == 1
 
 
 def test_repr_names_the_vector_store(index):

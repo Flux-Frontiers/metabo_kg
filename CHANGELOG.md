@@ -31,12 +31,33 @@ metabokg-init --force        # or: metabokg-build --data <DIR> per corpus
 
 ### Added
 
-- **`tests/test_index.py`** — 20 cases over `MetaIndex`, which had no test file
-  at all. A deterministic stub embedder keeps the whole file model-free. Two of
-  the classes pin regressions this migration introduced (see *Fixed*); the rest
-  cover what the port could have silently dropped — that `kind`/`name` survive
-  a round-trip, that the embedding `text` is stored verbatim, that enzymes stay
-  excluded, and that batch size does not change results.
+- **Test coverage for the migrated surface** — 105 new cases across four files,
+  all model-free (a deterministic stub embedder and a stub `MetaKG`), so the
+  suite still runs without downloading anything. Coverage on the touched
+  modules went from **0% to 79–100%**; `index.py` is at 100%.
+
+  - `tests/test_index.py` (31) — `MetaIndex` had no test file at all. Two
+    classes pin regressions this migration introduced (see *Fixed*); the rest
+    cover what the port could have silently dropped: that `kind`/`name` survive
+    a round-trip, that the embedding text is stored verbatim, that enzymes stay
+    excluded, that batch size does not change results, and that the cold-read
+    path used by `query`/`pack` agrees with the builder.
+  - `tests/test_cli_vectors.py` (63) — every command touched by the rename was
+    at 0%, which is the exact condition under which a bulk rename leaves a
+    latent `NameError`. `--help` does not catch that (Click renders help
+    without calling the body), so these invoke each command and assert the flag
+    value reaches `MetaKG(vectors_path=...)`.
+  - `tests/test_init_status.py` (11) — the `init --check` readiness table, where
+    `lancedb_ok` → `vectors_ok` is produced in one function and consumed in
+    another with nothing between them. Includes a guard that a leftover
+    `lancedb/` directory does *not* count as built, so `--force` still fires on
+    an un-migrated corpus.
+  - `tests/test_orchestrator.py` (+12) — the `MetaKG` vector-store seam: the
+    lazy `index` property (the only `MetaIndex` construction site), the
+    `get_stats()` probe, and that `lancedb_dir`/`table` now raise `TypeError`.
+
+  Each guard was mutation-tested: reverting any individual rename or fix in
+  `src/` fails between 1 and 8 of these, never zero.
 
 ### Changed
 

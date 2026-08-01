@@ -441,3 +441,117 @@ class TestMetaKGQueryPathway:
         kg_with_data._index = _mock_index([])
         result = kg_with_data.query_pathway("nonexistent pathway", k=5)
         assert result.hits == []
+
+
+# ---------------------------------------------------------------------------
+# Vector-store seam (0.10.0: lancedb_dir -> vectors_path)
+# ---------------------------------------------------------------------------
+
+
+class TestVectorsPath:
+    """MetaKG's public vector-store surface after the sqlite-vec migration."""
+
+    def test_default_is_a_sqlite_file_beside_the_graph(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        kg = MetaKG()
+        assert kg.vectors_path == tmp_path / ".metabokg" / "vectors.sqlite"
+
+    def test_explicit_path_is_honoured(self, tmp_path):
+        kg = MetaKG(db_path=tmp_path / "g.sqlite", vectors_path=tmp_path / "v.sqlite")
+        assert kg.vectors_path == tmp_path / "v.sqlite"
+
+    def test_string_paths_are_coerced(self, tmp_path):
+        kg = MetaKG(db_path=str(tmp_path / "g.sqlite"), vectors_path=str(tmp_path / "v.sqlite"))
+        assert kg.vectors_path == tmp_path / "v.sqlite"
+
+    def test_removed_parameters_are_rejected(self, tmp_path):
+        """`lancedb_dir` and `table` are gone — passing them must fail loudly."""
+        with pytest.raises(TypeError):
+            MetaKG(db_path=tmp_path / "g.sqlite", lancedb_dir=tmp_path / "lancedb")
+        with pytest.raises(TypeError):
+            MetaKG(db_path=tmp_path / "g.sqlite", table="metabokg_nodes")
+
+    def test_repr_names_the_vector_store(self, kg_with_data):
+        text = repr(kg_with_data)
+        assert "vectors_path" in text
+        assert "lancedb" not in text.lower()
+
+    def test_index_property_builds_against_vectors_path(self, tmp_path, monkeypatch):
+        """The lazy `index` property is the only construction site for MetaIndex."""
+        captured = {}
+
+        class _StubEmbedder:
+            dim = 8
+
+        monkeypatch.setattr(
+            "metabokg.embed.SentenceTransformerEmbedder", lambda _m: _StubEmbedder()
+        )
+        monkeypatch.setattr(
+            "metabokg.orchestrator.MetaIndex",
+            lambda path, **kw: captured.update(path=path, **kw) or MagicMock(),
+        )
+        kg = MetaKG(db_path=tmp_path / "g.sqlite", vectors_path=tmp_path / "v.sqlite")
+        _ = kg.index
+
+        assert captured["path"] == tmp_path / "v.sqlite"
+        assert "table" not in captured
+
+    def test_index_property_is_cached(self, tmp_path, monkeypatch):
+        calls = []
+        monkeypatch.setattr(
+            "metabokg.embed.SentenceTransformerEmbedder", lambda _m: MagicMock(dim=8)
+        )
+        monkeypatch.setattr(
+            "metabokg.orchestrator.MetaIndex",
+            lambda path, **kw: calls.append(path) or MagicMock(),
+        )
+        kg = MetaKG(db_path=tmp_path / "g.sqlite", vectors_path=tmp_path / "v.sqlite")
+        _, _ = kg.index, kg.index
+        assert len(calls) == 1
+
+
+class TestRuntimeStatsIndexProbe:
+    """`stats()` probes for the store by file, not by a LanceDB directory."""
+
+    def test_absent_store_reports_no_index(self, kg_with_data):
+        assert not kg_with_data.vectors_path.exists()
+        stats = kg_with_data.get_stats()
+        assert stats.indexed_rows is None
+        assert stats.index_dim is None
+
+    def test_probing_does_not_create_the_store(self, kg_with_data):
+        kg_with_data.get_stats()
+        assert not kg_with_data.vectors_path.exists()
+
+    def test_present_store_is_read(self, kg_with_data):
+        kg_with_data.vectors_path.parent.mkdir(parents=True, exist_ok=True)
+        kg_with_data.vectors_path.touch()
+        kg_with_data._index = MagicMock()
+        kg_with_data._index.stats.return_value = {"indexed_rows": 42, "dim": 384}
+
+        stats = kg_with_data.get_stats()
+        assert stats.indexed_rows == 42
+        assert stats.index_dim == 384
+
+    def test_a_failing_index_does_not_break_stats(self, kg_with_data):
+        """Graph counts must still come back when the vector store is unreadable."""
+        kg_with_data.vectors_path.parent.mkdir(parents=True, exist_ok=True)
+        kg_with_data.vectors_path.touch()
+        kg_with_data._index = MagicMock()
+        kg_with_data._index.stats.side_effect = RuntimeError("corrupt store")
+
+        stats = kg_with_data.get_stats()
+        assert stats.indexed_rows is None
+        assert stats.total_nodes > 0
+
+    def test_build_stats_report_the_vectors_path(self, tmp_path):
+        """MetaIndex.build's return dict is what `metabokg build` echoes."""
+        from metabokg.index import MetaIndex
+
+        idx = MetaIndex(tmp_path / "v.sqlite", embedder=MagicMock(dim=4))
+        idx._backend = MagicMock()
+        idx._backend.upsert.return_value = 0
+        result = idx.build(MagicMock(all_nodes=lambda **_kw: []))
+        assert result["vectors_path"] == str(tmp_path / "v.sqlite")
+        assert "lancedb_dir" not in result
+        assert "table" not in result
