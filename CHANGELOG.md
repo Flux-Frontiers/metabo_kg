@@ -178,6 +178,26 @@ metabokg-init --force        # or: metabokg-build --data <DIR> per corpus
   wiki, write MetaboKG-derived pages branded "CodeKG Wiki", and push. Now
   defaults to `Flux-Frontiers/metabo_kg` and is branded MetaboKG throughout.
 
+- **Five of eight wiki pages published as empty stubs.** The same generator
+  still looked for `README ## Installation`, `README ## CLI Usage`,
+  `docs/Architecture.md` and `docs/deployment.md` — none of which exist in this
+  repo — and each generator falls back to a two-line "see the repo" placeholder
+  rather than failing, so the script exited 0 while publishing ~90 characters
+  per page. Repointed at the documents MetaboKG actually ships:
+
+  | Page | Source | Before | After |
+  |---|---|---|---|
+  | Installation | `docs/INSTALL.md` | 127 | 25,706 |
+  | CLI-Reference | `docs/CHEATSHEET.md` | 120 | 9,883 |
+  | Architecture | `docs/CAPABILITIES.md` §§ overview, data model, schema, deps | 86 | 7,556 |
+  | Python-API | `docs/CAPABILITIES.md` § Python API Reference | 88 | 3,751 |
+
+  The **Deployment** page is removed rather than filled: MetaboKG is
+  local-first with no external services, and the old nav text ("PyPI, Streamlit
+  Cloud, Fly.io") described `code_kg`'s deployment story, not this project's.
+  Composed pages drop their source document's section numbering, and a page
+  built from a single section no longer repeats its own title.
+
 - **`scripts/install-skill.sh` installed the wrong package.** Its fallback ran
   `pip install "code-kg[mcp] @ git+…/metabo_kg.git"` — a name that does not
   match what the repo builds, and an extra that does not exist here (`mcp` is a

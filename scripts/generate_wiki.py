@@ -128,12 +128,11 @@ def generate_home_page(readme_path: Path, logo_path: Path | None = None) -> str:
     wiki_header = f"""{logo_section}# MetaboKG Wiki
 
 **Quick Navigation:**
-- [Installation](Installation) — pip, Poetry, and quick-start installer
+- [Installation](Installation) — requirements, pip/Poetry, extras, first build
 - [CLI Reference](CLI-Reference) — all subcommands and flags
-- [Architecture](Architecture) — design principles and class API
+- [Architecture](Architecture) — layers, data model, schema, dependencies
 - [MCP Integration](MCP-Integration) — configure AI agents
 - [Python API](Python-API) — programmatic usage
-- [Deployment](Deployment) — PyPI, Streamlit Cloud, Fly.io, GitHub Releases
 
 ---
 
@@ -141,83 +140,129 @@ def generate_home_page(readme_path: Path, logo_path: Path | None = None) -> str:
     return wiki_header + content
 
 
-def generate_installation_page(readme_path: Path) -> str:
+def _promote_title(content: str, title: str) -> str:
     """
-    Extract and return the Installation section from README.md.
+    Replace a document's leading ``#`` title with *title*.
 
-    :param readme_path: Path to README.md.
-    :return: Installation guide wiki page content.
+    Wiki pages take their name from the filename, so the in-page H1 should say
+    what the page is rather than repeat the source document's own title.
+
+    :param content: Full markdown document.
+    :param title: Replacement H1 text (without the ``#``).
+    :return: Content with its first H1 replaced, or *title* prepended when the
+        document has no H1.
     """
-    with open(readme_path, encoding="utf-8") as f:
+    if re.search(r"^#\s+.+$", content, re.MULTILINE):
+        return re.sub(r"^#\s+.+$", f"# {title}", content, count=1, flags=re.MULTILINE)
+    return f"# {title}\n\n{content}"
+
+
+def _compose(docs_dir: Path, source: str, title: str, headings: tuple[str, ...]) -> str | None:
+    """
+    Build a page from named ``##`` sections of a source document.
+
+    :param docs_dir: Path to the docs/ directory.
+    :param source: Filename within *docs_dir* to read.
+    :param title: H1 for the composed page.
+    :param headings: Section headings to extract, in output order. Headings
+        that are absent are skipped rather than failing the build.
+    :return: Composed page, or ``None`` when the source is missing or none of
+        the headings matched.
+    """
+    path = docs_dir / source
+    if not path.exists():
+        return None
+
+    with open(path, encoding="utf-8") as f:
         content = f.read()
 
-    section = extract_section(content, "Installation")
-    if section is None:
+    sections = [sec for h in headings if (sec := extract_section(content, h))]
+    if not sections:
+        return None
+
+    # Source headings carry the numbering of their own document ("## 13. Database
+    # Schema"), which reads as a gap once only a few sections are pulled out.
+    sections = [re.sub(r"^##\s+\d+\.\s+", "## ", sec, count=1) for sec in sections]
+
+    # A lone section whose heading restates the page title would render twice.
+    if len(sections) == 1 and sections[0].startswith(f"## {title}"):
+        body = sections[0].split("\n", 1)[1].lstrip("\n")
+        return f"# {title}\n\n{body}"
+
+    return f"# {title}\n\n" + "\n".join(sections)
+
+
+def generate_installation_page(docs_dir: Path) -> str:
+    """
+    Return docs/INSTALL.md as the Installation wiki page.
+
+    MetaboKG keeps its installation guide in ``docs/INSTALL.md`` rather than a
+    README section, so the page is the whole document with its title promoted.
+
+    :param docs_dir: Path to the docs/ directory.
+    :return: Installation wiki page content.
+    """
+    install_path = docs_dir / "INSTALL.md"
+    if not install_path.exists():
         return (
             "# Installation\n\n"
-            "See [README.md](https://github.com/Flux-Frontiers/metabo_kg/blob/main/README.md) "
+            "See [docs/INSTALL.md](https://github.com/Flux-Frontiers/metabo_kg/blob/main/docs/INSTALL.md) "
             "for installation instructions."
         )
 
-    # Promote the ## heading to a top-level # heading for the wiki page.
-    page = re.sub(
-        r"^##\s+.*?Installation.*?$",
-        "# Installation Guide",
-        section,
-        count=1,
-        flags=re.MULTILINE | re.IGNORECASE,
-    )
-
-    return page
-
-
-def generate_cli_reference_page(readme_path: Path) -> str:
-    """
-    Extract and return the CLI Usage section from README.md as a standalone
-    CLI Reference wiki page.
-
-    :param readme_path: Path to README.md.
-    :return: CLI Reference wiki page content.
-    """
-    with open(readme_path, encoding="utf-8") as f:
+    with open(install_path, encoding="utf-8") as f:
         content = f.read()
 
-    section = extract_section(content, "CLI Usage")
-    if section is None:
+    return strip_image_refs(_promote_title(content, "Installation Guide"))
+
+
+def generate_cli_reference_page(docs_dir: Path) -> str:
+    """
+    Return docs/CHEATSHEET.md as the CLI Reference wiki page.
+
+    The cheatsheet is the canonical per-command flag reference; the narrower
+    ``## 11. CLI Reference`` section of CAPABILITIES.md is a summary of it.
+
+    :param docs_dir: Path to the docs/ directory.
+    :return: CLI Reference wiki page content.
+    """
+    cheatsheet_path = docs_dir / "CHEATSHEET.md"
+    if not cheatsheet_path.exists():
         return (
             "# CLI Reference\n\n"
-            "See [README.md](https://github.com/Flux-Frontiers/metabo_kg/blob/main/README.md) "
+            "See [docs/CHEATSHEET.md](https://github.com/Flux-Frontiers/metabo_kg/blob/main/docs/CHEATSHEET.md) "
             "for CLI documentation."
         )
 
-    page = re.sub(
-        r"^##\s+.*?CLI Usage.*?$",
-        "# CLI Reference",
-        section,
-        count=1,
-        flags=re.MULTILINE | re.IGNORECASE,
-    )
-    return page
+    with open(cheatsheet_path, encoding="utf-8") as f:
+        content = f.read()
+
+    return strip_image_refs(_promote_title(content, "CLI Reference"))
 
 
 def generate_architecture_page(docs_dir: Path) -> str:
     """
-    Return the full Architecture.md document as the Architecture wiki page.
+    Compose the Architecture wiki page from CAPABILITIES.md.
+
+    MetaboKG has no standalone ``docs/Architecture.md``; the architectural
+    material lives in numbered sections of the capabilities reference.
 
     :param docs_dir: Path to the docs/ directory.
     :return: Architecture wiki page content.
     """
-    arch_path = docs_dir / "Architecture.md"
-    if not arch_path.exists():
+    page = _compose(
+        docs_dir,
+        "CAPABILITIES.md",
+        "Architecture",
+        ("Architecture Overview", "Data Model", "Database Schema", "Dependencies & Extras"),
+    )
+    if page is None:
         return (
             "# Architecture\n\n"
-            "See `docs/Architecture.md` in the repository for architecture details."
+            "See [docs/CAPABILITIES.md](https://github.com/Flux-Frontiers/metabo_kg/blob/main/docs/CAPABILITIES.md) "
+            "for architecture details."
         )
-
-    with open(arch_path, encoding="utf-8") as f:
-        content = f.read()
-
-    return content
+    return strip_image_refs(page)
 
 
 def generate_mcp_integration_page(docs_dir: Path) -> str:
@@ -241,67 +286,24 @@ def generate_mcp_integration_page(docs_dir: Path) -> str:
 
 def generate_python_api_page(docs_dir: Path) -> str:
     """
-    Compose the Python API wiki page from the Architecture.md class-API
-    sections (layers, orchestrator, result types).
+    Compose the Python API wiki page from CAPABILITIES.md.
 
     :param docs_dir: Path to the docs/ directory.
     :return: Python API wiki page content.
     """
-    arch_path = docs_dir / "Architecture.md"
-    if not arch_path.exists():
-        return (
-            "# Python API\n\n"
-            "See `docs/Architecture.md` in the repository for the Python API reference."
-        )
-
-    with open(arch_path, encoding="utf-8") as f:
-        content = f.read()
-
-    header = """# Python API Reference
-
-This page documents the public Python API for the `metabokg` package.
-For architectural context see the [Architecture](Architecture) page.
-
-"""
-
-    sections = []
-    for heading in (
-        "Layered Class Architecture",
-        "Orchestrator",
-        "Result Types",
-        "Dependencies",
-    ):
-        section = extract_section(content, heading)
-        if section:
-            sections.append(section)
-
-    if not sections:
+    page = _compose(
+        docs_dir,
+        "CAPABILITIES.md",
+        "Python API Reference",
+        ("Python API Reference",),
+    )
+    if page is None:
         return (
             "# Python API Reference\n\n"
-            "See `docs/Architecture.md` for the full Python API reference."
+            "See [docs/CAPABILITIES.md](https://github.com/Flux-Frontiers/metabo_kg/blob/main/docs/CAPABILITIES.md) "
+            "for the Python API reference."
         )
-
-    return header + "\n\n---\n\n".join(sections)
-
-
-def generate_deployment_page(docs_dir: Path) -> str:
-    """
-    Return the full deployment.md document as the Deployment wiki page.
-
-    :param docs_dir: Path to the docs/ directory.
-    :return: Deployment wiki page content.
-    """
-    deploy_path = docs_dir / "deployment.md"
-    if not deploy_path.exists():
-        return (
-            "# Deployment\n\n"
-            "See `docs/deployment.md` in the repository for deployment instructions."
-        )
-
-    with open(deploy_path, encoding="utf-8") as f:
-        content = f.read()
-
-    return content
+    return strip_image_refs(page)
 
 
 def generate_sidebar_page() -> str:
@@ -318,7 +320,6 @@ def generate_sidebar_page() -> str:
 - [Architecture](Architecture)
 - [MCP Integration](MCP-Integration)
 - [Python API](Python-API)
-- [Deployment](Deployment)
 
 ## Resources
 
@@ -460,12 +461,11 @@ def main() -> None:
 
     pages: dict[str, str] = {
         "Home": generate_home_page(readme_path, logo_path),
-        "Installation": generate_installation_page(readme_path),
-        "CLI-Reference": generate_cli_reference_page(readme_path),
+        "Installation": generate_installation_page(docs_dir),
+        "CLI-Reference": generate_cli_reference_page(docs_dir),
         "Architecture": generate_architecture_page(docs_dir),
         "MCP-Integration": generate_mcp_integration_page(docs_dir),
         "Python-API": generate_python_api_page(docs_dir),
-        "Deployment": generate_deployment_page(docs_dir),
         "_Sidebar": generate_sidebar_page(),
     }
 
