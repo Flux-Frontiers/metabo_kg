@@ -17,6 +17,7 @@ Last Revision: 2026-08-01
 
 import argparse
 import os
+import posixpath
 import re
 import shutil
 import subprocess
@@ -70,6 +71,77 @@ def extract_section(
     return content[start:end]
 
 
+# Repo documents that become wiki pages. A link to one of these should point at
+# the wiki page, not back out to GitHub.
+_DOC_TO_WIKI_PAGE = {
+    "docs/INSTALL.md": "Installation",
+    "docs/CHEATSHEET.md": "CLI-Reference",
+    "docs/CAPABILITIES.md": "Architecture",
+    "docs/MCP.md": "MCP-Integration",
+    "README.md": "Home",
+}
+
+DEFAULT_REPO = "Flux-Frontiers/metabo_kg"
+
+
+def rewrite_repo_links(
+    content: str,
+    *,
+    base: str = "",
+    repo: str = DEFAULT_REPO,
+    branch: str = "main",
+) -> str:
+    """
+    Make a source document's relative links work on the wiki.
+
+    Wiki pages are flat and served from a different host, so a repo-relative
+    link like ``docs/INSTALL.md`` resolves to nothing. Each such link is
+    rewritten to the corresponding wiki page where one exists, and otherwise to
+    an absolute ``blob`` URL on GitHub.
+
+    Absolute URLs, ``mailto:``, and pure in-page anchors are left alone, as is
+    anything inside a fenced code block — those are samples, not navigation.
+
+    :param content: Markdown source.
+    :param base: Directory of the source document relative to the repo root
+        (``""`` for README.md, ``"docs"`` for files under docs/).
+    :param repo: ``owner/name`` slug used to build absolute URLs.
+    :param branch: Branch the absolute URLs should point at.
+    :return: Content with its relative links rewritten.
+    """
+    link_re = re.compile(r"(?<!!)\[([^\]]*)\]\(([^)]+)\)")
+
+    def rewrite(match: re.Match) -> str:
+        text, target = match.group(1), match.group(2)
+        if target.startswith(("http://", "https://", "mailto:", "#")):
+            return match.group(0)
+
+        path, _, anchor = target.partition("#")
+        if not path:
+            return match.group(0)
+
+        # normpath already drops a leading "./"; lstrip("./") would also eat the
+        # leading dot of a dotfile path such as ".claude/skills/...".
+        resolved = posixpath.normpath(posixpath.join(base, path))
+        page = _DOC_TO_WIKI_PAGE.get(resolved)
+        if page:
+            # Anchors are dropped: the wiki page's headings are not guaranteed
+            # to match the source document's once sections are composed.
+            return f"[{text}]({page})"
+
+        url = f"https://github.com/{repo}/blob/{branch}/{resolved}"
+        return f"[{text}]({url}{'#' + anchor if anchor else ''})"
+
+    out, fence = [], False
+    for line in content.splitlines(keepends=True):
+        if line.lstrip().startswith("```"):
+            fence = not fence
+            out.append(line)
+            continue
+        out.append(line if fence else link_re.sub(rewrite, line))
+    return "".join(out)
+
+
 def strip_image_refs(content: str) -> str:
     """
     Remove image references from markdown content.
@@ -119,7 +191,7 @@ def generate_home_page(readme_path: Path, logo_path: Path | None = None) -> str:
     with open(readme_path, encoding="utf-8") as f:
         content = f.read()
 
-    content = strip_image_refs(content)
+    content = rewrite_repo_links(strip_image_refs(content), base="")
 
     logo_section = ""
     if logo_path and logo_path.exists():
@@ -213,7 +285,8 @@ def generate_installation_page(docs_dir: Path) -> str:
     with open(install_path, encoding="utf-8") as f:
         content = f.read()
 
-    return strip_image_refs(_promote_title(content, "Installation Guide"))
+    page = strip_image_refs(_promote_title(content, "Installation Guide"))
+    return rewrite_repo_links(page, base="docs")
 
 
 def generate_cli_reference_page(docs_dir: Path) -> str:
@@ -237,7 +310,8 @@ def generate_cli_reference_page(docs_dir: Path) -> str:
     with open(cheatsheet_path, encoding="utf-8") as f:
         content = f.read()
 
-    return strip_image_refs(_promote_title(content, "CLI Reference"))
+    page = strip_image_refs(_promote_title(content, "CLI Reference"))
+    return rewrite_repo_links(page, base="docs")
 
 
 def generate_architecture_page(docs_dir: Path) -> str:
@@ -262,7 +336,7 @@ def generate_architecture_page(docs_dir: Path) -> str:
             "See [docs/CAPABILITIES.md](https://github.com/Flux-Frontiers/metabo_kg/blob/main/docs/CAPABILITIES.md) "
             "for architecture details."
         )
-    return strip_image_refs(page)
+    return rewrite_repo_links(strip_image_refs(page), base="docs")
 
 
 def generate_mcp_integration_page(docs_dir: Path) -> str:
@@ -281,7 +355,7 @@ def generate_mcp_integration_page(docs_dir: Path) -> str:
     with open(mcp_path, encoding="utf-8") as f:
         content = f.read()
 
-    return content
+    return rewrite_repo_links(content, base="docs")
 
 
 def generate_python_api_page(docs_dir: Path) -> str:
@@ -303,7 +377,7 @@ def generate_python_api_page(docs_dir: Path) -> str:
             "See [docs/CAPABILITIES.md](https://github.com/Flux-Frontiers/metabo_kg/blob/main/docs/CAPABILITIES.md) "
             "for the Python API reference."
         )
-    return strip_image_refs(page)
+    return rewrite_repo_links(strip_image_refs(page), base="docs")
 
 
 def generate_sidebar_page() -> str:

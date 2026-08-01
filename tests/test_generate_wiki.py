@@ -221,3 +221,110 @@ class TestStripImageRefs:
     def test_leaves_ordinary_links_alone(self):
         text = "see [the docs](INSTALL.md)"
         assert gw.strip_image_refs(text) == text
+
+
+class TestRewriteRepoLinks:
+    """Wiki pages are flat and served from another host, so a repo-relative
+    link like ``docs/INSTALL.md`` resolves to nothing."""
+
+    def test_maps_a_doc_to_its_wiki_page(self):
+        out = gw.rewrite_repo_links("[guide](docs/INSTALL.md)")
+        assert out == "[guide](Installation)"
+
+    def test_resolves_relative_to_the_source_directory(self):
+        """From docs/, ``CHEATSHEET.md`` is the same file as docs/CHEATSHEET.md."""
+        out = gw.rewrite_repo_links("[flags](CHEATSHEET.md)", base="docs")
+        assert out == "[flags](CLI-Reference)"
+
+    def test_falls_back_to_an_absolute_blob_url(self):
+        out = gw.rewrite_repo_links("[log](CHANGELOG.md)")
+        assert out == ("[log](https://github.com/Flux-Frontiers/metabo_kg/blob/main/CHANGELOG.md)")
+
+    def test_preserves_a_dotfile_path(self):
+        """`lstrip("./")` takes a character set, so it ate the leading dot of
+        `.claude/...` and produced a URL for a directory that does not exist."""
+        out = gw.rewrite_repo_links("[skill](../.claude/skills/metabokg/SKILL.md)", base="docs")
+        assert "/blob/main/.claude/skills/metabokg/SKILL.md" in out
+        assert "/blob/main/claude/" not in out
+
+    def test_keeps_an_anchor_on_a_blob_url(self):
+        out = gw.rewrite_repo_links("[conv](../CLAUDE.md#multi-corpus)", base="docs")
+        assert out.endswith("/CLAUDE.md#multi-corpus)")
+
+    def test_drops_the_anchor_when_mapping_to_a_wiki_page(self):
+        """Composed pages renumber headings, so source anchors need not survive."""
+        out = gw.rewrite_repo_links("[tools](docs/MCP.md#7-tool-reference)")
+        assert out == "[tools](MCP-Integration)"
+
+    @pytest.mark.parametrize(
+        "link",
+        [
+            "[ext](https://example.com/x)",
+            "[mail](mailto:a@b.c)",
+            "[anchor](#section)",
+        ],
+    )
+    def test_leaves_non_repo_links_alone(self, link):
+        assert gw.rewrite_repo_links(link) == link
+
+    def test_leaves_image_embeds_alone(self):
+        """`![...](...)` is stripped elsewhere; rewriting it here would fight that."""
+        text = "![diagram](docs/metaKG_arch.png)"
+        assert gw.rewrite_repo_links(text) == text
+
+    def test_does_not_touch_links_inside_code_fences(self):
+        text = "```\n[sample](docs/INSTALL.md)\n```\n"
+        assert gw.rewrite_repo_links(text) == text
+
+    def test_honours_a_custom_repo_and_branch(self):
+        out = gw.rewrite_repo_links("[x](CHANGELOG.md)", repo="o/r", branch="dev")
+        assert "https://github.com/o/r/blob/dev/CHANGELOG.md" in out
+
+
+class TestGeneratedPagesHaveNoDeadRelativeLinks:
+    """The regression: 40 repo-relative links passed straight through to Home."""
+
+    def _relative_targets(self, body: str) -> list[str]:
+        import re
+
+        out, fence = [], False
+        for line in body.splitlines():
+            if line.lstrip().startswith("```"):
+                fence = not fence
+                continue
+            if fence:
+                continue
+            for _text, target in re.findall(r"(?<!!)\[([^\]]*)\]\(([^)]+)\)", line):
+                if not target.startswith(("http://", "https://", "mailto:", "#")):
+                    out.append(target.split("#")[0])
+        return out
+
+    @pytest.mark.parametrize("name", sorted(CONTENT_PAGES))
+    def test_content_page_links_resolve(self, name):
+        wiki_pages = set(CONTENT_PAGES) | {"Home"}
+        unresolved = [
+            t for t in self._relative_targets(CONTENT_PAGES[name]()) if t not in wiki_pages
+        ]
+        assert not unresolved, f"{name} keeps repo-relative links: {unresolved}"
+
+    def test_home_page_links_resolve(self):
+        wiki_pages = set(CONTENT_PAGES) | {"Home"}
+        body = gw.generate_home_page(_README)
+        unresolved = [t for t in self._relative_targets(body) if t not in wiki_pages]
+        assert not unresolved, f"Home keeps repo-relative links: {unresolved}"
+
+    def test_blob_urls_point_at_files_that_exist(self):
+        import re
+
+        repo_root = _README.parent
+        # Dated analysis snapshots reference paths that were real when written
+        # (src/metabokg/cli.py predates the cli/ package); they stay as-is.
+        historical = ("cli.py", "wire_enzymes.py")
+        missing = set()
+        for build in [*CONTENT_PAGES.values(), lambda: gw.generate_home_page(_README)]:
+            for url in re.findall(
+                r"https://github\.com/Flux-Frontiers/metabo_kg/blob/main/([^)#]+)", build()
+            ):
+                if not (repo_root / url).exists() and not url.endswith(historical):
+                    missing.add(url)
+        assert not missing, f"blob URLs for non-existent paths: {sorted(missing)}"

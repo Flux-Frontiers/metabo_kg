@@ -198,6 +198,22 @@ metabokg-init --force        # or: metabokg-build --data <DIR> per corpus
   Composed pages drop their source document's section numbering, and a page
   built from a single section no longer repeats its own title.
 
+- **Relative links died on every generated wiki page.** Wiki pages are flat and
+  served from a different host, so the 40 repo-relative links README carries
+  (and the docs-relative ones in `docs/MCP.md`) resolved to nothing once
+  published. Links are now rewritten at generation time: to the corresponding
+  wiki page where one exists, and otherwise to an absolute `blob` URL. Absolute
+  URLs, `mailto:`, in-page anchors, image embeds, and anything inside a fenced
+  code block are left untouched.
+
+- **Twelve broken relative links in the source docs**, all the same class:
+  repo-root-relative paths written inside `docs/`, which need `../` from there.
+  These were broken on GitHub too, not only on the wiki —
+  `docs/CHEATSHEET.md` linked to `docs/` from inside `docs/`, and the dated
+  2026-03-03 analysis linked to `src/…` and `scripts/…`. Two links in that
+  analysis are left alone: they name `src/metabokg/cli.py` and
+  `scripts/wire_enzymes.py`, which were real when it was written.
+
 - **`scripts/install-skill.sh` installed the wrong package.** Its fallback ran
   `pip install "code-kg[mcp] @ git+…/metabo_kg.git"` — a name that does not
   match what the repo builds, and an extra that does not exist here (`mcp` is a

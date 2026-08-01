@@ -248,31 +248,31 @@ MCP client → create_server() → register_tools() → 8 async tool closures �
 ## Risks
 
 ### 1. MetaStore God Class
-**File:** [src/metabokg/store.py](src/metabokg/store.py) L117–803 (686 lines)
+**File:** [src/metabokg/store.py](../src/metabokg/store.py) L117–803 (686 lines)
 **Risk:** HIGH — Single class responsible for DDL, CRUD, indexing, BFS shortest-path, stoichiometry assembly, kinetic queries
 **Impact:** Difficult to test specific behaviors in isolation; any schema change risks cascading effects
 **Suggestion:** Consider splitting into `StoreSchema`, `NodeStore`, `PathFinder` sub-components (or just well-documented sections)
 
 ### 2. `register_tools` Mega-Function
-**File:** [src/metabokg/mcp_tools.py](src/metabokg/mcp_tools.py) L49–432
+**File:** [src/metabokg/mcp_tools.py](../src/metabokg/mcp_tools.py) L49–432
 **Risk:** MEDIUM — 383-line function with 8 closure-based tool implementations
 **Impact:** All 8 MCP tools are untestable without a live MCP server + MetaKG instance
 **Suggestion:** Extract each tool handler to a module-level function taking `metabokg` as explicit parameter, then register the wrapper closure
 
 ### 3. `simulate_main` Layer Violation
-**File:** [src/metabokg/cli.py](src/metabokg/cli.py) L491–597
+**File:** [src/metabokg/cli.py](../src/metabokg/cli.py) L491–597
 **Risk:** MEDIUM — Bypasses MetaKG orchestrator, directly instantiates MetaStore
 **Impact:** Different initialization path than all other CLI commands; MetaKG's lazy prop logic is skipped
 **Suggestion:** Route through `MetaKG(db_path=args.db)` like `build_main` and `mcp_main` do
 
 ### 4. `GraphStore.query_semantic` Stub
-**File:** [src/metabokg/store.py](src/metabokg/store.py) L861–888
+**File:** [src/metabokg/store.py](../src/metabokg/store.py) L861–888
 **Risk:** LOW — Misleading name ("semantic") for a text-filter function
 **Impact:** The Streamlit app uses this for its "Semantic Search" tab; results are name/description substring matches, not actual vector search
 **Suggestion:** Either wire to `MetaIndex.search()` or rename to `query_text` / add deprecation note
 
 ### 5. Duplicate Script: `wire_enzymes.py`
-**File:** [scripts/wire_enzymes.py](scripts/wire_enzymes.py)
+**File:** [scripts/wire_enzymes.py](../scripts/wire_enzymes.py)
 **Risk:** LOW — Appears to be an earlier version of `wire_kegg_enzymes.py`
 **Impact:** Contributor confusion about which script to use
 **Suggestion:** Archive or delete if `wire_kegg_enzymes.py` is the canonical tool
@@ -324,19 +324,19 @@ This uses the same path as `mcp_tools.py` and `api/` consumers.
 
 ### Well-Designed Patterns
 
-1. **`PathwayParser` ABC** ([src/metabokg/parsers/base.py](src/metabokg/parsers/base.py)) — Clean contract: stateless, pure, deterministic. Adding new format support requires just one new file + class.
+1. **`PathwayParser` ABC** ([src/metabokg/parsers/base.py](../src/metabokg/parsers/base.py)) — Clean contract: stateless, pure, deterministic. Adding new format support requires just one new file + class.
 
-2. **Lazy initialization in `MetaKG`** ([src/metabokg/orchestrator.py](src/metabokg/orchestrator.py) L220–238) — Store, index, and simulator are only created on first use. Cheap to construct, efficient in practice.
+2. **Lazy initialization in `MetaKG`** ([src/metabokg/orchestrator.py](../src/metabokg/orchestrator.py) L220–238) — Store, index, and simulator are only created on first use. Cheap to construct, efficient in practice.
 
 3. **`MetaKG` as context manager** — `with MetaKG() as kg:` ensures SQLite connections are always closed. Prevents resource leaks.
 
-4. **Deterministic node IDs in primitives** ([src/metabokg/primitives.py](src/metabokg/primitives.py)) — IDs like `cpd:kegg:C00022` are stable across builds. Foundation of reproducibility.
+4. **Deterministic node IDs in primitives** ([src/metabokg/primitives.py](../src/metabokg/primitives.py)) — IDs like `cpd:kegg:C00022` are stable across builds. Foundation of reproducibility.
 
-5. **BDF solver default for ODE** ([src/metabokg/simulate.py](src/metabokg/simulate.py)) — Correct choice for stiff metabolic systems; previous RK45 default caused hangs. Well-documented in CLAUDE.md.
+5. **BDF solver default for ODE** ([src/metabokg/simulate.py](../src/metabokg/simulate.py)) — Correct choice for stiff metabolic systems; previous RK45 default caused hangs. Well-documented in CLAUDE.md.
 
 6. **`SimulationConfig` dataclass** — Rich configuration with clear defaults for ODE tolerance, solver method, flux bounds, Vmax overrides. Cleanly separates "what to simulate" from "how to simulate it."
 
-7. **`KineticParam` dataclass** ([src/metabokg/primitives.py](src/metabokg/primitives.py) L214–273) — Rich provenance tracking (source_database, literature_reference, organism, tissue, confidence_score). Above average for a research tool.
+7. **`KineticParam` dataclass** ([src/metabokg/primitives.py](../src/metabokg/primitives.py) L214–273) — Rich provenance tracking (source_database, literature_reference, organism, tissue, confidence_score). Above average for a research tool.
 
 8. **Test suite completeness** — Tests cover parsers, store, orchestrator, simulation (FBA/ODE/whatif), and include regression guards (BDF hang prevention, max_step regression).
 

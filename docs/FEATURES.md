@@ -142,7 +142,7 @@ python scripts/download_kegg_names.py --genes cge   # for gene symbol resolution
 metabokg-build --data data/icho_model
 ```
 
-See [docs/icho_workflow.md](docs/icho_workflow.md) for full details.
+See [icho_workflow.md](icho_workflow.md) for full details.
 
 ---
 

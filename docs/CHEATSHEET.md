@@ -1,7 +1,7 @@
 # MetaboKG Cheatsheet
 
 Quick reference for all CLI commands, MCP tools, and Python API.
-Full documentation: [docs/](docs/) | [EXAMPLES.md](EXAMPLES.md)
+Full documentation: [CAPABILITIES.md](CAPABILITIES.md) | [EXAMPLES.md](EXAMPLES.md)
 
 ---
 
