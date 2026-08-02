@@ -47,7 +47,7 @@ class MetabolicBuildStats:
     :param node_counts: Node counts by kind.
     :param edge_counts: Edge counts by relation.
     :param xref_rows: Number of xref index entries built.
-    :param indexed_rows: Number of nodes embedded into LanceDB.
+    :param indexed_rows: Number of nodes embedded into the vector store.
     :param index_dim: Embedding dimension.
     :param parse_errors: List of files that failed to parse.
     """
@@ -152,7 +152,7 @@ class MetabolicQueryResult:
     Result of a :meth:`MetaKG.query_pathway` search.
 
     :param query: Original query string.
-    :param hits: Matching node dicts from LanceDB + SQLite.
+    :param hits: Matching node dicts from the vector store + SQLite.
     """
 
     query: str
@@ -276,7 +276,7 @@ class MetaKG:
 
     * :class:`~metabokg.graph.MetabolicGraph` — file parsing
     * :class:`~metabokg.store.MetaStore` — SQLite persistence
-    * :class:`~metabokg.index.MetaIndex` — LanceDB vector index
+    * :class:`~metabokg.index.MetaIndex` — sqlite-vec vector index
 
     Typical usage::
 
@@ -290,35 +290,35 @@ class MetaKG:
         rxn = kg.get_reaction("rxn:kegg:R00200")
         print(rxn)
 
+    Changed in 0.10.0: ``lancedb_dir`` (a directory) became ``vectors_path``
+    (a ``vectors.sqlite`` file), and the LanceDB-only ``table`` parameter was
+    removed.  Both are breaking; there is no fallback.
+
     :param db_path: Path to the SQLite database.
-    :param lancedb_dir: Path to the LanceDB directory.
+    :param vectors_path: Path to the sqlite-vec vector store.
     :param model: Sentence-transformer model name for embeddings.
-    :param table: LanceDB table name.
     """
 
     def __init__(
         self,
         db_path: str | Path | None = None,
-        lancedb_dir: str | Path | None = None,
+        vectors_path: str | Path | None = None,
         *,
         model: str | None = None,
-        table: str = "metabokg_nodes",
     ) -> None:
         """
         Initialise MetaKG and resolve paths.
 
         :param db_path: SQLite database path.  Defaults to ``.metabokg/hsa.sqlite``.
-        :param lancedb_dir: LanceDB directory.  Defaults to ``.metabokg/lancedb``.
+        :param vectors_path: sqlite-vec store.  Defaults to ``.metabokg/vectors.sqlite``.
         :param model: Sentence-transformer model name.
-        :param table: LanceDB table name.
         """
         from metabokg.embed import DEFAULT_MODEL
 
         base = Path.cwd() / ".metabokg"
         self.db_path = Path(db_path) if db_path else base / "hsa.sqlite"
-        self.lancedb_dir = Path(lancedb_dir) if lancedb_dir else base / "lancedb"
+        self.vectors_path = Path(vectors_path) if vectors_path else base / "vectors.sqlite"
         self.model_name = model or DEFAULT_MODEL
-        self.table_name = table
 
         self._store: MetaStore | None = None
         self._index: MetaIndex | None = None
@@ -337,16 +337,12 @@ class MetaKG:
 
     @property
     def index(self) -> MetaIndex:
-        """LanceDB semantic index (lazy)."""
+        """sqlite-vec semantic index (lazy)."""
         if self._index is None:
             from metabokg.embed import SentenceTransformerEmbedder
 
             embedder = SentenceTransformerEmbedder(self.model_name)
-            self._index = MetaIndex(
-                self.lancedb_dir,
-                embedder=embedder,
-                table=self.table_name,
-            )
+            self._index = MetaIndex(self.vectors_path, embedder=embedder)
         return self._index
 
     @property
@@ -371,12 +367,12 @@ class MetaKG:
         seed_kinetics: bool = True,
     ) -> MetabolicBuildStats:
         """
-        Full pipeline: parse → SQLite → enrich → LanceDB → seed kinetics.
+        Full pipeline: parse → SQLite → enrich → vectors → seed kinetics.
 
         :param data_dir: Directory of pathway files.  If omitted, only the
-            SQLite → LanceDB step is run (useful for re-indexing existing data).
+            SQLite → vector-store step is run (useful for re-indexing existing data).
         :param wipe: Clear existing data before writing.
-        :param build_index: Whether to build the LanceDB vector index.
+        :param build_index: Whether to build the sqlite-vec vector index.
         :param enrich: Run name enrichment after parsing (Phase 1 always; Phase
             2 if KEGG name TSV files are present in *enrich_data_dir*).
         :param enrich_data_dir: Directory containing ``kegg_compound_names.tsv``
@@ -866,7 +862,7 @@ class MetaKG:
         index_dim: int | None = None
 
         # Get index stats if available
-        if self._index is not None or (self.lancedb_dir / "data" / "index" / ".lance").exists():
+        if self._index is not None or self.vectors_path.exists():
             try:
                 idx_stats = self.index.stats()
                 indexed_rows = idx_stats.get("indexed_rows")
@@ -921,6 +917,6 @@ class MetaKG:
     def __repr__(self) -> str:
         return (
             f"MetaKG(db_path={self.db_path!r}, "
-            f"lancedb_dir={self.lancedb_dir!r}, "
+            f"vectors_path={self.vectors_path!r}, "
             f"model={self.model_name!r})"
         )

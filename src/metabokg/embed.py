@@ -3,10 +3,10 @@ embed.py — Embedding infrastructure for MetaKG.
 
 Re-exports the shared ``Embedder`` and ``SentenceTransformerEmbedder`` from
 ``kgmodule-utils`` and adds MetaboKG-specific helpers (``SeedHit``,
-``extract_distance``, ``escape_id``) used by the LanceDB index layer.
+``extract_distance``) used by :mod:`metabokg.index`.
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-05-02
+Last Revision: 2026-08-01
 
 """
 
@@ -43,15 +43,19 @@ class SeedHit:
 
 
 # ---------------------------------------------------------------------------
-# Internal LanceDB helpers
+# Internal vector-store helpers
 # ---------------------------------------------------------------------------
 
 
 def extract_distance(row: dict, fallback_rank: int) -> float:
     """
-    Extract a distance value from a LanceDB result row.
+    Extract a distance value from a vector-search result row.
 
-    :param row: Raw result dict from LanceDB.
+    ``SqliteVecBackend`` returns ``_distance`` (cosine), which is the first key
+    tried; the remaining fallbacks are tolerated so a row from any other
+    backend still yields a usable ordering.
+
+    :param row: Raw result dict from the vector backend.
     :param fallback_rank: Zero-based rank to use when no distance field is present.
     :return: Float distance value (lower = more similar).
     """
@@ -61,13 +65,3 @@ def extract_distance(row: dict, fallback_rank: int) -> float:
     if "score" in row and row["score"] is not None:
         return 1.0 / (1.0 + float(row["score"]))
     return float(fallback_rank)
-
-
-def escape_id(s: str) -> str:
-    """
-    Escape single quotes in a string for use in LanceDB delete predicates.
-
-    :param s: String to escape.
-    :return: String with single quotes doubled.
-    """
-    return s.replace("'", "''")

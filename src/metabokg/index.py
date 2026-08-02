@@ -1,5 +1,5 @@
 """
-index.py — MetaIndex: LanceDB semantic index for the metabolic knowledge graph.
+index.py — MetaIndex: sqlite-vec semantic index for the metabolic knowledge graph.
 
 Indexes compound, reaction, and pathway nodes for semantic (vector) search.
 Enzyme nodes are excluded — they contain only gene-name lists with no functional
@@ -24,14 +24,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import numpy as np
+from kg_utils.vector_backend import SqliteVecBackend
 
 from metabokg.embed import (
     DEFAULT_MODEL,
     Embedder,
     SeedHit,
     SentenceTransformerEmbedder,
-    escape_id,
     extract_distance,
 )
 from metabokg.primitives import KIND_COMPOUND, KIND_PATHWAY, KIND_REACTION
@@ -41,8 +40,10 @@ from metabokg.store import MetaStore
 # near-identical embeddings that swamp compound/pathway/reaction results.
 _INDEXED_KINDS = {KIND_COMPOUND, KIND_REACTION, KIND_PATHWAY}
 
-# Default LanceDB table name for metabolic nodes
-DEFAULT_TABLE = "metabokg_nodes"
+# Metadata persisted alongside each vector. ``id`` is implicit. ``text`` is the
+# canonical embedding text — not read back by :meth:`MetaIndex.search`, but kept
+# so the store remains self-describing and debuggable without the graph.
+_META_COLUMNS = ("kind", "name", "text")
 
 
 def _build_meta_index_text(node: dict) -> str:
@@ -74,36 +75,36 @@ def _build_meta_index_text(node: dict) -> str:
 
 class MetaIndex:
     """
-    LanceDB semantic index for metabolic entities.
+    sqlite-vec semantic index for metabolic entities.
 
-    Embeds compound, enzyme, and pathway nodes from a :class:`MetaStore`
-    into LanceDB for semantic (vector) search.
+    Embeds compound, reaction, and pathway nodes from a :class:`MetaStore`
+    into a single ``vectors.sqlite`` store for semantic (vector) search.
 
-    :param lancedb_dir: Directory for LanceDB storage.
+    Changed in 0.10.0: the store was a LanceDB directory. The embedding text
+    built by :func:`_build_meta_index_text` is unchanged — only where the
+    vectors live changed.
+
+    :param vectors_path: Path to the ``vectors.sqlite`` store.
     :param embedder: Embedding backend (defaults to SentenceTransformerEmbedder).
-    :param table: LanceDB table name (default ``"metabokg_nodes"``).
     """
 
     def __init__(
         self,
-        lancedb_dir: str | Path,
+        vectors_path: str | Path,
         *,
         embedder: Embedder | None = None,
-        table: str = DEFAULT_TABLE,
     ) -> None:
         """
         Initialise the MetaIndex.
 
-        :param lancedb_dir: Path to the LanceDB storage directory.
+        :param vectors_path: Path to the sqlite-vec store file.
         :param embedder: Embedding backend; defaults to
             :class:`~metabokg.embed.SentenceTransformerEmbedder` with
             :data:`~metabokg.embed.DEFAULT_MODEL`.
-        :param table: LanceDB table name.
         """
-        self.lancedb_dir = Path(lancedb_dir)
+        self.vectors_path = Path(vectors_path)
         self._embedder: Embedder = embedder or SentenceTransformerEmbedder(DEFAULT_MODEL)
-        self._table_name = table
-        self._tbl = None  # lazy LanceDB table handle
+        self._backend: SqliteVecBackend | None = None
 
     # ------------------------------------------------------------------
     # Build
@@ -111,28 +112,23 @@ class MetaIndex:
 
     def build(self, store: MetaStore, *, wipe: bool = False, batch_size: int = 256) -> dict:
         """
-        Build (or rebuild) the LanceDB vector index from *store*.
+        Build (or rebuild) the sqlite-vec vector index from *store*.
 
         Only ``compound``, ``enzyme``, and ``pathway`` nodes are indexed.
 
         :param store: Populated :class:`~metabokg.store.MetaStore` instance.
         :param wipe: Delete existing vectors before indexing.
         :param batch_size: Nodes embedded per batch.
-        :return: Dict with ``indexed_rows``, ``dim``, ``table``, ``lancedb_dir``.
+        :return: Dict with ``indexed_rows``, ``dim``, ``vectors_path``.
         """
         nodes = [n for n in store.all_nodes() if n["kind"] in _INDEXED_KINDS]
-        tbl = self._open_table(wipe=wipe)
+        backend = self._open_for_build(wipe=wipe)
 
         indexed = 0
         for i in range(0, len(nodes), batch_size):
             chunk = nodes[i : i + batch_size]
             texts = [_build_meta_index_text(n) for n in chunk]
             vecs = self._embedder.embed_texts(texts)
-
-            ids = [n["id"] for n in chunk]
-            if ids:
-                pred = " OR ".join([f"id = '{escape_id(nid)}'" for nid in ids])
-                tbl.delete(pred)
 
             rows = [
                 {
@@ -144,15 +140,17 @@ class MetaIndex:
                 }
                 for n, text, vec in zip(chunk, texts, vecs)
             ]
-            tbl.add(rows)
-            indexed += len(rows)
+            # upsert deletes any prior rows for these ids and re-inserts, so the
+            # explicit delete-by-predicate this used to issue is gone. That
+            # predicate was an OR-joined `id = '...'` string, one term per node
+            # in the batch — the shape that overflowed LanceDB's Rust evaluator
+            # at depth on large batches.
+            indexed += backend.upsert(rows, batch_size=batch_size)
 
-        self._tbl = tbl
         return {
             "indexed_rows": indexed,
             "dim": self._embedder.dim,
-            "table": self._table_name,
-            "lancedb_dir": str(self.lancedb_dir),
+            "vectors_path": str(self.vectors_path),
         }
 
     # ------------------------------------------------------------------
@@ -167,9 +165,14 @@ class MetaIndex:
         :param k: Number of top results to return.
         :return: List of :class:`~metabokg.embed.SeedHit` ordered by ascending distance.
         """
-        tbl = self._get_table()
+        if self._backend is None and not self.vectors_path.exists():
+            raise FileNotFoundError(
+                f"vector index not found at '{self.vectors_path}'.\n"
+                "Run 'metabokg build' (without --no-index) to create it."
+            )
+        backend = self._get_backend()
         qvec = self._embedder.embed_query(query)
-        raw = tbl.search(qvec).limit(k).to_list()
+        raw = backend.search(qvec, k)
 
         hits: list[SeedHit] = []
         for rank, row in enumerate(raw):
@@ -191,10 +194,14 @@ class MetaIndex:
 
         :return: Dict with ``indexed_rows`` and ``dim`` keys, or empty dict if index doesn't exist.
         """
+        # Opening the backend would CREATE the store, and a zero-row
+        # vectors.sqlite reads as "built" to every `.exists()` check in the CLI.
+        # Reporting on a store must not bring it into being.
+        if self._backend is None and not self.vectors_path.exists():
+            return {}
         try:
-            tbl = self._get_table()
             return {
-                "indexed_rows": tbl.count_rows(),
+                "indexed_rows": self._get_backend().count(),
                 "dim": self._embedder.dim,
             }
         except Exception:
@@ -204,48 +211,51 @@ class MetaIndex:
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _open_table(self, *, wipe: bool = False):
-        """Open or create the LanceDB table.
+    def _new_backend(self) -> SqliteVecBackend:
+        """Construct (but do not open) the sqlite-vec backend."""
+        self.vectors_path.parent.mkdir(parents=True, exist_ok=True)
+        return SqliteVecBackend(
+            self.vectors_path,
+            dim=self._embedder.dim,
+            meta_columns=_META_COLUMNS,
+        )
 
-        :param wipe: If ``True``, drop the table before re-creating it.
-        :return: LanceDB table handle.
+    def _get_backend(self) -> SqliteVecBackend:
+        """Return the sqlite-vec backend for reading, opening it on first use.
+
+        Constructing the backend touches :attr:`_embedder.dim`, which loads the
+        model, so it stays lazy — :meth:`stats` on an absent store must not pay
+        for a model download.
+
+        :return: The open :class:`~kg_utils.vector_backend.SqliteVecBackend`.
         """
-        import lancedb
+        if self._backend is None:
+            self._backend = self._new_backend()
+            self._backend.open()
+        return self._backend
 
-        self.lancedb_dir.mkdir(parents=True, exist_ok=True)
-        db = lancedb.connect(str(self.lancedb_dir))
+    def _open_for_build(self, *, wipe: bool) -> SqliteVecBackend:
+        """Open the backend for a write pass, re-opening a cached one.
 
-        table_list = db.list_tables()
-        existing = table_list.tables if hasattr(table_list, "tables") else list(table_list)
+        ``SqliteVecBackend`` decides in :meth:`~kg_utils.vector_backend.
+        SqliteVecBackend.open` whether ``upsert`` needs its delete-before-insert
+        dedup — a freshly created or wiped store has nothing to replace, so the
+        delete is skipped — and never revisits that verdict. Re-opening is what
+        makes a second build on the same :class:`MetaIndex` correct: without it
+        the first build's "fresh" verdict survives, the dedup stays off, and
+        re-indexing the same nodes raises ``UNIQUE constraint failed:
+        vec_meta.id``.
 
-        if self._table_name in existing:
-            if wipe:
-                db.drop_table(self._table_name)
-            else:
-                return db.open_table(self._table_name)
-
-        dummy = {
-            "id": "__dummy__",
-            "kind": "dummy",
-            "name": "__dummy__",
-            "text": "__dummy__",
-            "vector": np.zeros((self._embedder.dim,), dtype="float32").tolist(),
-        }
-        tbl = db.create_table(self._table_name, data=[dummy])
-        tbl.delete("id = '__dummy__'")
-        return tbl
-
-    def _get_table(self):
-        """Return the cached LanceDB table handle, opening it if needed."""
-        if self._tbl is None:
-            import lancedb
-
-            db = lancedb.connect(str(self.lancedb_dir))
-            self._tbl = db.open_table(self._table_name)
-        return self._tbl
+        :param wipe: Drop existing vectors before indexing.
+        :return: The open :class:`~kg_utils.vector_backend.SqliteVecBackend`.
+        """
+        if self._backend is None:
+            self._backend = self._new_backend()
+        else:
+            # open() rebinds the connection without closing the old one.
+            self._backend.close()
+        self._backend.open(wipe=wipe)
+        return self._backend
 
     def __repr__(self) -> str:
-        return (
-            f"MetaIndex(lancedb_dir={self.lancedb_dir!r}, "
-            f"table={self._table_name!r}, embedder={self._embedder!r})"
-        )
+        return f"MetaIndex(vectors_path={self.vectors_path!r}, embedder={self._embedder!r})"

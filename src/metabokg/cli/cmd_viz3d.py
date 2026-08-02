@@ -14,7 +14,7 @@ from metabokg.cli.main import cli
 
 @cli.command("viz3d")
 @click.option("--db", default=None, help="Path to SQLite database.")
-@click.option("--lancedb", default=None, help="Path to LanceDB directory.")
+@click.option("--vectors", default=None, help="Path to the sqlite-vec vector store.")
 @click.option(
     "--layout",
     default="cake",
@@ -28,7 +28,7 @@ from metabokg.cli.main import cli
 @click.option("--export-png", default=None, help="Export to PNG file.")
 def viz3d(
     db: str | None,
-    lancedb: str | None,
+    vectors: str | None,
     layout: str,
     width: int,
     height: int,
@@ -40,7 +40,7 @@ def viz3d(
 
     viz3d_main_func(
         db=db,
-        lancedb=lancedb,
+        vectors=vectors,
         layout=layout,
         width=width,
         height=height,

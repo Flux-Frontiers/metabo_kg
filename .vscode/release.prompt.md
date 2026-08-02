@@ -72,20 +72,16 @@ In `README.md`, find the version badge line and replace `<current_version>` with
 
 ---
 
-## Step 4c: Generate Versioned CodeKG Analysis
+## Step 4c: Generate Versioned PyCodeKG Analysis
 
-1. Rebuild the CodeKG index against the current source:
+1. Rebuild the PyCodeKG index against the current source:
    ```bash
-   codekg-build-sqlite --repo . --wipe
-   codekg-build-lancedb --repo . --wipe
+   poetry run pycodekg-build --repo .
    ```
-2. Run the thorough analysis:
+   (The full build always wipes; it has no `--wipe` flag.)
+2. Run the architectural analysis (the repo path is positional, not a flag):
    ```bash
-   codekg-analyze --repo . --output docs/analysis_v<new_version>.md
-   ```
-   If the `--output` flag is not available, redirect stdout:
-   ```bash
-   codekg-analyze --repo . > docs/analysis_v<new_version>.md
+   poetry run pycodekg-analyze . --output docs/analysis_v<new_version>.md --quiet
    ```
 3. Open `docs/analysis_v<new_version>.md` and ensure the header contains:
    ```
@@ -96,7 +92,6 @@ In `README.md`, find the version badge line and replace `<current_version>` with
 5. Stage the generated artifacts:
    ```bash
    git add docs/analysis_v<new_version>.md
-   git add .codekg/
    ```
 
 ---

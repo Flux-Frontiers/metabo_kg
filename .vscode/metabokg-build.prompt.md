@@ -1,11 +1,11 @@
 ---
 mode: 'agent'
-description: 'Build or rebuild the MetaboKG SQLite + LanceDB database from KGML pathway files.'
+description: 'Build or rebuild the MetaboKG SQLite + sqlite-vec database from KGML pathway files.'
 ---
 
 # MetaboKG Build
 
-Parse KEGG KGML pathway files into the MetaboKG SQLite knowledge graph and LanceDB semantic index. Execute the following steps in sequence.
+Parse KEGG KGML pathway files into the MetaboKG SQLite knowledge graph and sqlite-vec semantic index. Execute the following steps in sequence.
 
 ## Command Argument Handling
 
@@ -51,9 +51,9 @@ metabokg-build --data "$DATA_DIR"
 **Common options:**
 - `--no-wipe` — Keep existing data, add only new files
 - `--no-enrich` — Skip compound/reaction name enrichment (faster)
-- `--no-index` — Skip LanceDB (SQLite only)
+- `--no-index` — Skip the vector index (graph SQLite only)
 - `--db PATH` — Custom SQLite path (default: `.metabokg/hsa.sqlite`)
-- `--lancedb PATH` — Custom LanceDB path (default: `.metabokg/lancedb`)
+- `--vectors PATH` — Custom vector-store path (default: `.metabokg/vectors.sqlite`)
 
 Monitor output for:
 - Number of pathways parsed
@@ -110,7 +110,7 @@ Present a summary:
 ✓ Total edges:      <N>
 ✓ Categories:       metabolic=X  signaling=X  disease=X  ...
 ✓ Database:         .metabokg/hsa.sqlite
-✓ Vector index:     .metabokg/lancedb
+✓ Vector index:     .metabokg/vectors.sqlite
 ```
 
 ---

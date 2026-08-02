@@ -2,7 +2,7 @@
 analyze.py — MetaKG Thorough Pathway Analysis
 
 Performs comprehensive graph analysis of a MetaKG SQLite database,
-analogous to the code_kg thorough repository analysis but applied to
+analogous to the PyCodeKG thorough repository analysis but applied to
 metabolic pathway networks.
 
 Metabolic ↔ Code analogy

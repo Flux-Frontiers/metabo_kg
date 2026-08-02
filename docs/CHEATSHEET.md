@@ -1,7 +1,7 @@
 # MetaboKG Cheatsheet
 
 Quick reference for all CLI commands, MCP tools, and Python API.
-Full documentation: [docs/](docs/) | [EXAMPLES.md](EXAMPLES.md)
+Full documentation: [CAPABILITIES.md](CAPABILITIES.md) | [EXAMPLES.md](EXAMPLES.md)
 
 ---
 
@@ -20,7 +20,7 @@ metabokg-build --data data/cge_pathways   # cge.sqlite
 metabokg-build --data data/icho_model     # icho.sqlite
 ```
 
-> Default commands use the hsa corpus. Pass `--db` / `--lancedb` to target another corpus.
+> Default commands use the hsa corpus. Pass `--db` / `--vectors` to target another corpus.
 
 ---
 
@@ -60,9 +60,9 @@ metabokg install-hooks
 |--------|---------|-------------|
 | `--data PATH` | (required) | Directory containing pathway files |
 | `--db PATH` | `<data>/.metabokg/<org>.sqlite` | SQLite output path |
-| `--lancedb PATH` | `<data>/.metabokg/lancedb` | LanceDB output directory |
+| `--vectors PATH` | `<data>/.metabokg/vectors.sqlite` | sqlite-vec output file |
 | `--model NAME` | `bge-small-en-v1.5` | Sentence-transformer model |
-| `--no-index` | — | Skip LanceDB vector index |
+| `--no-index` | — | Skip the sqlite-vec vector index |
 | `--no-wipe` | — | Keep existing data instead of wiping |
 | `--no-enrich` | — | Skip name enrichment |
 
@@ -91,7 +91,7 @@ metabokg-pack "glycolysis" --fmt json -o glycolysis.json
 | `--hop INT` | `0` | Graph hops to expand from seeds |
 | `--text-only` | — | Substring search instead of vector |
 | `--db PATH` | env / hsa default | SQLite database |
-| `--lancedb PATH` | env / hsa default | LanceDB directory |
+| `--vectors PATH` | env / hsa default | sqlite-vec store |
 
 **`metabokg-pack` options:**
 | Option | Default | Description |
@@ -102,7 +102,7 @@ metabokg-pack "glycolysis" --fmt json -o glycolysis.json
 | `--fmt {md,json}` | `md` | Output format |
 | `--max-rxn INT` | `30` | Max reactions per pathway section |
 | `--db PATH` | env / hsa default | SQLite database |
-| `--lancedb PATH` | env / hsa default | LanceDB directory |
+| `--vectors PATH` | env / hsa default | sqlite-vec store |
 
 ---
 
@@ -158,7 +158,7 @@ metabokg-analyze-basic
 ```bash
 metabokg-mcp
 metabokg-mcp --db data/hsa_pathways/.metabokg/hsa.sqlite \
-             --lancedb data/hsa_pathways/.metabokg/lancedb \
+             --vectors data/hsa_pathways/.metabokg/vectors.sqlite \
              --transport stdio
 ```
 
@@ -211,7 +211,7 @@ kg = MetaKG()
 # Explicit paths
 kg = MetaKG(
     db_path="data/hsa_pathways/.metabokg/hsa.sqlite",
-    lancedb_dir="data/hsa_pathways/.metabokg/lancedb",
+    vectors_path="data/hsa_pathways/.metabokg/vectors.sqlite",
 )
 kg.close()  # always close when done
 ```
@@ -340,5 +340,5 @@ result = kg.simulate_whatif(
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `METABOKG_DB` | `data/hsa_pathways/.metabokg/hsa.sqlite` | Default SQLite path |
-| `METABOKG_LANCEDB` | `data/hsa_pathways/.metabokg/lancedb` | Default LanceDB path |
+| `METABOKG_VECTORS` | `data/hsa_pathways/.metabokg/vectors.sqlite` | Default vector-store path |
 | `METABOKG_MODEL` | `bge-small-en-v1.5` | Sentence-transformer model |

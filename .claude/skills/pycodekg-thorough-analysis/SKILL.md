@@ -1,8 +1,8 @@
-# CodeKG Thorough Repository Analysis Skill
+# PyCodeKG Thorough Repository Analysis Skill
 
 ## Overview
 
-Performs comprehensive architectural analysis of any Python repository using CodeKG's graph traversal capabilities. Extracts metrics like:
+Performs comprehensive architectural analysis of any Python repository using PyCodeKG's graph traversal capabilities. Extracts metrics like:
 - **Complexity hotspots** (highest fan-in/fan-out functions)
 - **Architectural patterns** (core modules, integration points, bottlenecks)
 - **Dependency analysis** (cyclic deps, tight coupling, layering violations)
@@ -11,8 +11,8 @@ Performs comprehensive architectural analysis of any Python repository using Cod
 ## Trigger Phrases
 
 - "analyze this repository thoroughly"
-- "give me a complete codekg analysis"
-- "codekg deep dive"
+- "give me a complete pycodekg analysis"
+- "pycodekg deep dive"
 - "repository architecture report"
 - "find hotspots in this codebase"
 
@@ -89,56 +89,49 @@ Compile findings into:
 
 ## Implementation Steps
 
-### 1. Create analysis CLI command or Python script
+### 1. Run the analyzer — it does the heavy lifting
 ```bash
-# As a CLI command:
-persagent analyze-repo [path] --output report.md
-
-# As a Python script:
-python codekg_thorough_analysis.py /path/to/repo
+# Runs all 8 analysis phases and writes both outputs automatically:
+#   Markdown report → <repo>_analysis_<YYYYMMDD>.md  (cwd)
+#   JSON snapshot   → ~/.claude/pycodekg_analysis_latest.json
+pycodekg analyze /path/to/repo
 ```
 
-### 2. CodeKG Query Sequence
-```python
-# Step 1: Baseline
-stats = graph_stats()
+### 2. Read the JSON snapshot
+The JSON at `~/.claude/pycodekg_analysis_latest.json` contains all pre-computed metrics — no need to manually chain MCP calls. Schema:
 
-# Step 2: Find all functions
-all_functions = query_codebase("function definition", k=50, hop=0)
-
-# Step 3: Get callers for each
-for func in all_functions:
-    callers_result = callers(func.id, rel="CALLS")
-    # Store: caller_count[func.id] = len(callers_result['callers'])
-
-# Step 4: Sort and extract top 15
-top_callers = sorted(caller_count.items(),
-                     key=lambda x: x[1],
-                     reverse=True)[:15]
-
-# Step 5: Analyze call patterns
-for func_id, count in top_callers:
-    detailed_callers = callers(func_id)
-    # Analyze caller distribution, coupling, etc.
-
-# Step 6: Find orphaned functions
-for func in all_functions:
-    callers_result = callers(func.id)
-    if len(callers_result['callers']) == 0:
-        orphaned.append(func)
-
-# Step 7: Query for call fan-out
-fanout_analysis = pack_snippets(
-    "functions calling many other functions",
-    k=10, hop=2
-)
+```json
+{
+  "timestamp": "2026-03-01T12:00:00Z",
+  "statistics": {
+    "total_nodes": 1234,
+    "total_edges": 5678,
+    "node_counts": {"function": 400, "class": 80, "method": 300, "module": 45},
+    "edge_counts": {"CALLS": 2000, "CONTAINS": 1500, "IMPORTS": 800, "INHERITS": 50}
+  },
+  "function_metrics": {
+    "<node_id>": {"name": "...", "module": "...", "kind": "function",
+                  "fan_in": 42, "fan_out": 7, "lines": 30, "risk_level": "medium"}
+  },
+  "module_metrics": {
+    "<path>": {"path": "...", "functions": 12, "classes": 3, "methods": 20,
+               "incoming_deps": [...], "outgoing_deps": [...],
+               "total_fan_in": 150, "cohesion_score": 0.72}
+  },
+  "orphaned_functions": [{"name": "...", "module": "...", "fan_in": 0, ...}],
+  "high_fanout_functions": [{"name": "...", "fan_out": 89, "risk_level": "high", ...}],
+  "critical_paths": [{"chain": ["fn_a", "fn_b", "fn_c"], "depth": 3, "total_callers": 47}],
+  "public_apis": [{"name": "...", "fan_in": 15, "kind": "function", ...}],
+  "issues": ["⚠️  3 orphaned functions found", "⚠️  2 functions with high fan-out"],
+  "strengths": ["✓ Well-structured with 15 core functions identified"]
+}
 ```
 
 ### 3. Generate Markdown Report
 
 Structure:
 ```markdown
-# CodeKG Repository Analysis Report
+# PyCodeKG Repository Analysis Report
 
 ## Quick Stats
 - Total functions/classes
@@ -203,31 +196,33 @@ Structure:
 - Color-coded risk levels (green/yellow/red)
 - Progress indicators for long queries
 
-**File Output:**
-- Markdown report (`Analysis_{repo}_{date}.md`)
-- JSON metrics (`metrics_{repo}_{date}.json`)
-- Optional: GraphML export for visualization tools
+**File Output (always written):**
+- Markdown report — `<repo>_analysis_<YYYYMMDD>.md` in cwd (override with `--output`)
+- JSON snapshot — `~/.claude/pycodekg_analysis_latest.json` (override with `--json`)
 
 ## Example Invocations
 
 ```bash
-# Analyze current repo
-codekg-analyze
+# Analyze current directory (writes .md + .json automatically)
+pycodekg analyze .
 
 # Analyze specific path
-codekg-analyze /path/to/repo
+pycodekg analyze /path/to/repo
 
-# Generate JSON metrics only
-codekg-analyze /path/to/repo --format json
+# Custom Markdown report path
+pycodekg analyze /path/to/repo --output /tmp/analysis.md
 
-# Output to specific file
-codekg-analyze /path/to/repo --output /tmp/analysis.md
+# Custom JSON snapshot path
+pycodekg analyze /path/to/repo --json /tmp/analysis.json
 
-# Include dead code analysis
-codekg-analyze --include-orphaned
+# Both custom paths
+pycodekg analyze /path/to/repo -o /tmp/report.md -j /tmp/metrics.json
 
-# Focus on specific modules
-codekg-analyze --modules core,tools,commands
+# Non-default SQLite / vector store paths
+pycodekg analyze /path/to/repo --db /path/to/graph.sqlite --vectors /path/to/vectors.sqlite
+
+# Suppress Rich console table (CI / pipe use)
+pycodekg analyze /path/to/repo --quiet
 ```
 
 ## Skill Output Example
@@ -235,7 +230,7 @@ codekg-analyze --modules core,tools,commands
 For a repository like **personal_agent**:
 
 ```
-📊 CodeKG Repository Analysis
+📊 PyCodeKG Repository Analysis
 ═══════════════════════════════
 
 Baseline Metrics:
@@ -318,7 +313,7 @@ Reusable Patterns:
 ✅ **Actionable** — Identifies specific functions/modules to review
 ✅ **Visual** — Color-coded risk levels, ASCII diagrams
 ✅ **Fast** — Caches results, progresses through queries
-✅ **Reusable** — Works on any Python codebase with CodeKG
+✅ **Reusable** — Works on any Python codebase with PyCodeKG
 ✅ **Extensible** — Easy to add custom analysis dimensions
 
 ## Edge Cases

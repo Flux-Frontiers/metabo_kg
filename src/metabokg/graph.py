@@ -2,10 +2,10 @@
 graph.py — MetabolicGraph: parser registry and file dispatch.
 
 Discovers pathway files in a data directory, dispatches each to the
-appropriate :class:`~code_kg.metabokg.parsers.base.PathwayParser`, and
+appropriate :class:`~metabokg.parsers.base.PathwayParser`, and
 aggregates the resulting nodes and edges.
 
-Analogous to ``code_kg.graph.CodeGraph``.
+Analogous to ``pycode_kg.graph.CodeGraph``.
 
 Author: Eric G. Suchanek, PhD
 Last Revision: 2026-07-07 14:17:33
@@ -145,7 +145,7 @@ class MetabolicGraph:
         Find the first parser in the registry that can handle *path*.
 
         :param path: File to match.
-        :return: A :class:`~code_kg.metabokg.parsers.base.PathwayParser` instance,
+        :return: A :class:`~metabokg.parsers.base.PathwayParser` instance,
                  or ``None`` if no parser matched.
         """
         for parser in _PARSER_REGISTRY:

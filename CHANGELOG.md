@@ -15,6 +15,234 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [0.10.0] - 2026-08-01
+
+LanceDB → sqlite-vec migration (fleet Phase 2). The vector store moves from a
+`lancedb/` directory to a single `vectors.sqlite` file. **Breaking**: the
+`MetaKG` constructor parameter and the CLI flag both change, with no fallback.
+
+Vector stores are derived from SQLite and rebuildable — there is no conversion
+step. Delete `.metabokg/lancedb/` and rebuild:
+
+```bash
+find . -maxdepth 3 -type d -name lancedb -not -path './.venv/*' -exec rm -rf {} +
+metabokg-init --force        # or: metabokg-build --data <DIR> per corpus
+```
+
+### Added
+
+- **Test coverage for the migrated surface** — 105 new cases across four files,
+  all model-free (a deterministic stub embedder and a stub `MetaKG`), so the
+  suite still runs without downloading anything. Coverage on the touched
+  modules went from **0% to 79–100%**; `index.py` is at 100%.
+
+  - `tests/test_index.py` (31) — `MetaIndex` had no test file at all. Two
+    classes pin regressions this migration introduced (see *Fixed*); the rest
+    cover what the port could have silently dropped: that `kind`/`name` survive
+    a round-trip, that the embedding text is stored verbatim, that enzymes stay
+    excluded, that batch size does not change results, and that the cold-read
+    path used by `query`/`pack` agrees with the builder.
+  - `tests/test_cli_vectors.py` (63) — every command touched by the rename was
+    at 0%, which is the exact condition under which a bulk rename leaves a
+    latent `NameError`. `--help` does not catch that (Click renders help
+    without calling the body), so these invoke each command and assert the flag
+    value reaches `MetaKG(vectors_path=...)`.
+  - `tests/test_init_status.py` (11) — the `init --check` readiness table, where
+    `lancedb_ok` → `vectors_ok` is produced in one function and consumed in
+    another with nothing between them. Includes a guard that a leftover
+    `lancedb/` directory does *not* count as built, so `--force` still fires on
+    an un-migrated corpus.
+  - `tests/test_orchestrator.py` (+12) — the `MetaKG` vector-store seam: the
+    lazy `index` property (the only `MetaIndex` construction site), the
+    `get_stats()` probe, and that `lancedb_dir`/`table` now raise `TypeError`.
+
+  Each guard was mutation-tested: reverting any individual rename or fix in
+  `src/` fails between 1 and 8 of these, never zero.
+
+### Changed
+
+- **`MetaIndex` now writes to `SqliteVecBackend`** instead of a LanceDB table.
+  The embedding text built by `_build_meta_index_text` is untouched — only
+  where the vectors live changed. `build()` reports `vectors_path` in place of
+  `lancedb_dir`/`table`.
+
+- **Distances are now cosine, and the scale changed.** The old table was created
+  with `db.create_table(...)` and no explicit metric, so LanceDB defaulted to
+  **squared L2**; sqlite-vec uses cosine. For normalised embeddings these differ
+  by a factor of ~2 (squared-L2 = 2·(1 − cos)), so raw `_distance` values roughly
+  halve. Ranking is unaffected. Nothing in `src/` derives a score from the
+  distance — `SeedHit.distance` reaches consumers as a raw `_distance`
+  passthrough — but `docs/EXAMPLES.md` did, and its
+  `score = 1.0 - _distance / 2.0` is now `score = 1.0 - _distance`. Both
+  expressions recover the same cosine similarity, so the documented example
+  output is unchanged.
+
+- **`MetaKG(lancedb_dir=...)` → `MetaKG(vectors_path=...)`**, taking a file
+  rather than a directory. The LanceDB-only `table` parameter is removed, along
+  with the `MetaKG.table_name` attribute.
+
+- **CLI: `--lancedb PATH` → `--vectors PATH`** on `build`, `update`, `query`,
+  `pack`, `mcp`, `info`, `viz`, and `viz3d`; **`METABOKG_LANCEDB` →
+  `METABOKG_VECTORS`**. Colocated defaults derive `<data>/.metabokg/vectors.sqlite`
+  instead of `<data>/.metabokg/lancedb/`.
+
+- **`kgmodule-utils[semantic,sqlite-vec]>=0.9.0`** replaces the bare
+  `kgmodule-utils>=0.8.0`; lock regenerated.
+
+- **ruff now excludes `*.md` and `.claude/`.** ruff 0.16 formats Python blocks
+  embedded in Markdown as stable behaviour (0.15 gated it behind preview);
+  measured here, 12 Markdown files would be reformatted, so `ruff format
+  --check .` in CI would start failing on prose. `ftree_kg` and `doc_kg` carry
+  the same exclusion.
+
+- **Docs, skills, and MCP config swept** for the flag, path, and env-var
+  renames — `README`, `CLAUDE.md`, `ANNOUNCEMENT.md`, `docs/{INSTALL,
+  CAPABILITIES,CHEATSHEET,EXAMPLES,WORKFLOW,HSA_SUMMARY,cho_workflow}.md`,
+  `.claude/skills/metabokg/**`, `.claude/commands/metabokg-build.md`,
+  `.vscode/metabokg-build.prompt.md`, and `.vscode/mcp.json` (which passed
+  `--lancedb` and would now fail outright; its `--db` also pointed at a
+  `.metabokg/meta.sqlite` that no command produces).
+
+- **`docs/MCP.md` rewritten for MetaboKG.** It was an 823-line "CodeKG MCP
+  Installation Guide" — the wrong product entirely — and
+  `scripts/generate_wiki.py` published it verbatim as the MCP-Integration wiki
+  page. Replaced with a MetaboKG guide covering the 13 real tools, the actual
+  `metabokg-mcp` flags, and per-agent config. Every command, flag, JSON snippet
+  and tool name in it was verified against the live CLI and server.
+
+- **Agent tooling synced from `pycode_kg` upstream.** The vendored
+  `.claude/skills/pycodekg/` had drifted to 84 references to the retired
+  `codekg` binary where upstream has none. Replaced wholesale, along with
+  `.claude/commands/pycodekg.md`; `setup-mcp.md` → upstream's
+  `setup-pycodekg-mcp.md`; `codekg-thorough-analysis` →
+  `pycodekg-thorough-analysis`. Retired `.claude/commands/pycodekg-rebuild.md`
+  and the `.vscode/codekg*.prompt.md` mirrors, adding matching mirrors for the
+  commands that replaced them. The release docs' `pycodekg-build-lancedb` and
+  `codekg-analyze --repo` invocations were corrected against the real CLI
+  (`pycodekg-build`, and `pycodekg-analyze` taking a positional repo path).
+
+### Removed
+
+- **`lancedb>=0.29.0`** as a direct dependency. It still arrives transitively
+  via `kgmodule-utils[semantic]` until KG_utils splits its extras, so the venv
+  will not shrink yet.
+
+- **`escape_id()`** from `metabokg.embed` — it existed only to quote ids for
+  LanceDB delete predicates, and `SqliteVecBackend.upsert` uses bound
+  parameters. Its last caller was an OR-joined `id = '...'` string, one term
+  per node in the batch: the shape that overflowed LanceDB's Rust expression
+  evaluator on large batches.
+
+### Fixed
+
+- **Rebuilding into an existing store raised `UNIQUE constraint failed:
+  vec_meta.id`.** `SqliteVecBackend` decides at `open()` whether `upsert` needs
+  its delete-before-insert dedup — a freshly created or wiped store has nothing
+  to replace — and never revisits that verdict. `MetaIndex` caches its backend,
+  so the first build's "fresh" verdict survived into the second, and any
+  `kg.build()` following a `kg.build(wipe=True)` on the same instance failed.
+  The backend is now re-opened for each write pass.
+
+- **`stats()` on an unbuilt index created the store as a side effect.** Opening
+  the backend creates the tables, so merely reporting on a missing index left a
+  zero-row `vectors.sqlite` behind — which reads as "built" to every `.exists()`
+  check in the CLI, sending `query` and `pack` down the vector path against an
+  empty index. `stats()` now returns `{}` without touching disk, and `search()`
+  raises `FileNotFoundError` naming the build command instead of silently
+  returning nothing.
+
+- **Stale PyCodeKG command table in `CLAUDE.md`** — `pycodekg-build-lancedb` was
+  renamed `pycodekg-build-index` in pycode_kg 0.20.0, and `pycodekg-build` no
+  longer accepts `--wipe` (a full build always wipes).
+
+- **`metabokg install-hooks` generated a hook that blocked every commit.** The
+  embedded script invoked `codekg` — the retired predecessor of PyCodeKG, which
+  is not a console script in any repo in the fleet — under `set -euo pipefail`
+  with `|| exit 1` beside it. Any repo that installed the hook could not commit
+  at all. It now invokes `pycodekg`, skips cleanly when PyCodeKG is absent
+  (MetaboKG does not depend on it), drops the `--wipe` that a full build
+  rejects with exit 2, and stages `.pycodekg/snapshots/`. The skip switch is
+  renamed `CODEKG_SKIP_SNAPSHOT` → `METABOKG_SKIP_SNAPSHOT`.
+
+- **The same hook blocked every commit in a repo with no pre-commit config.**
+  `pre-commit run` exits non-zero with `InvalidConfigError:
+  .pre-commit-config.yaml is not a file`, and the hook ran it whenever the
+  binary was on PATH, gated only on the binary rather than on the config. Now
+  gated on the config file. Caught by CI, not locally: the dev venv used to
+  verify the earlier fix had no `pre-commit` installed, so the branch never
+  ran — `tests/test_hooks.py` now asserts on the binary's presence instead of
+  silently skipping.
+
+- **The same hook aborted the first commit of a fresh repository.**
+  `git rev-parse --abbrev-ref HEAD` is fatal on an unborn HEAD, which under
+  `set -e` killed the hook with exit 128. Replaced with
+  `git branch --show-current`, which reports the branch before any commit
+  exists. Independent of the bug above and separately covered by
+  `tests/test_hooks.py`, which installs the hook into a real repository and
+  commits through it.
+
+- **`scripts/generate_wiki.py` published to the wrong repository.** Its
+  `--repo` default was `Flux-Frontiers/kgrag` while its `--help` claimed
+  `Flux-Frontiers/code_kg`, so running it from this repo would clone KGRAG's
+  wiki, write MetaboKG-derived pages branded "CodeKG Wiki", and push. Now
+  defaults to `Flux-Frontiers/metabo_kg` and is branded MetaboKG throughout.
+
+- **Five of eight wiki pages published as empty stubs.** The same generator
+  still looked for `README ## Installation`, `README ## CLI Usage`,
+  `docs/Architecture.md` and `docs/deployment.md` — none of which exist in this
+  repo — and each generator falls back to a two-line "see the repo" placeholder
+  rather than failing, so the script exited 0 while publishing ~90 characters
+  per page. Repointed at the documents MetaboKG actually ships:
+
+  | Page | Source | Before | After |
+  |---|---|---|---|
+  | Installation | `docs/INSTALL.md` | 127 | 25,706 |
+  | CLI-Reference | `docs/CHEATSHEET.md` | 120 | 9,883 |
+  | Architecture | `docs/CAPABILITIES.md` §§ overview, data model, schema, deps | 86 | 7,556 |
+  | Python-API | `docs/CAPABILITIES.md` § Python API Reference | 88 | 3,751 |
+
+  The **Deployment** page is removed rather than filled: MetaboKG is
+  local-first with no external services, and the old nav text ("PyPI, Streamlit
+  Cloud, Fly.io") described `code_kg`'s deployment story, not this project's.
+  Composed pages drop their source document's section numbering, and a page
+  built from a single section no longer repeats its own title.
+
+- **Relative links died on every generated wiki page.** Wiki pages are flat and
+  served from a different host, so the 40 repo-relative links README carries
+  (and the docs-relative ones in `docs/MCP.md`) resolved to nothing once
+  published. Links are now rewritten at generation time: to the corresponding
+  wiki page where one exists, and otherwise to an absolute `blob` URL. Absolute
+  URLs, `mailto:`, in-page anchors, image embeds, and anything inside a fenced
+  code block are left untouched.
+
+- **Twelve broken relative links in the source docs**, all the same class:
+  repo-root-relative paths written inside `docs/`, which need `../` from there.
+  These were broken on GitHub too, not only on the wiki —
+  `docs/CHEATSHEET.md` linked to `docs/` from inside `docs/`, and the dated
+  2026-03-03 analysis linked to `src/…` and `scripts/…`. Two links in that
+  analysis are left alone: they name `src/metabokg/cli.py` and
+  `scripts/wire_enzymes.py`, which were real when it was written.
+
+- **`scripts/install-skill.sh` installed the wrong package.** Its fallback ran
+  `pip install "code-kg[mcp] @ git+…/metabo_kg.git"` — a name that does not
+  match what the repo builds, and an extra that does not exist here (`mcp` is a
+  core dependency). Now installs `metabo-kg`.
+
+- **`.vscode/mcp.json` declared a server for a module that cannot be imported**
+  (`python -m code_kg`, via a hardcoded absolute path from another machine).
+  Replaced with a `pycodekg` server invoked through Poetry.
+
+- **Documented MCP tool count was wrong everywhere** — `CLAUDE.md`,
+  `docs/INSTALL.md`, `docs/CAPABILITIES.md`, `docs/WORKFLOW.md`, and the
+  MetaboKG skill all claimed 9 tools. The server registers **13**;
+  `get_kinetic_params`, `snapshot_list`, `snapshot_show`, and `snapshot_diff`
+  were undocumented.
+
+- **Broken Sphinx cross-references in `src/`** — `:class:`~code_kg.metabokg.…``
+  named a module path that has never existed (the package is `metabokg`), and
+  `store.py` credited its WAL/NORMAL pragma pattern to `code_kg.store.GraphStore`
+  rather than `kg_utils.store.GraphStore`, where that code actually lives.
+
 ## [0.9.1] - 2026-07-29
 
 ### Added

@@ -1,7 +1,7 @@
 # pyproject.toml — MetaboKG package configuration (PEP 621)
 #
 # Author: Eric G. Suchanek, PhD
-# Last Revision: 2026-07-29 00:00:00
+# Last Revision: 2026-08-01 00:00:00
 #
 # Build system : Poetry 2.x with PEP 621 [project] table
 #
@@ -54,7 +54,7 @@ packages = [{ include = "metabokg", from = "src" }]
 # ---------------------------------------------------------------------------
 [project]
 name = "metabo-kg"
-version = "0.9.1"
+version = "0.10.0"
 description = "Metabolic pathway parser and semantic knowledge graph with MCP support"
 readme = "README.md"
 license = "Elastic-2.0"
@@ -74,7 +74,6 @@ classifiers = [
 requires-python = ">=3.12,<3.14"
 dependencies = [
     "click>=8.1.0,<9",
-    "lancedb>=0.29.0",
     # Upper-bounded: mcp 2.0 removed the bundled `mcp.server.fastmcp` module
     # (FastMCP was split out into the standalone `fastmcp` package) and rebuilt
     # mcp.server around new submodules. metabokg.mcp_tools.create_server imports
@@ -85,7 +84,7 @@ dependencies = [
     "numpy>=1.24.0",
     "sentence-transformers>=5.4.1",
     "watchdoc>=0.0.1",
-    "kgmodule-utils>=0.8.0",
+    "kgmodule-utils[semantic,sqlite-vec]>=0.9.0",
 ]
 
 [project.optional-dependencies]
@@ -169,6 +168,12 @@ metabokg-snapshot       = "metabokg.cli:snapshot_main"
 [tool.ruff]
 line-length    = 100
 target-version = "py312"
+# ruff 0.16 formats Python code blocks embedded in Markdown as stable behaviour
+# (0.15 gated it behind preview), so `ruff format --check .` starts rewriting
+# prose docs. Measured here: 12 Markdown files would be reformatted. The
+# snippets in docs/ and .claude/ are illustrative and deliberately aligned, so
+# keep docs out of its reach; ftree_kg and doc_kg carry the same exclusion.
+exclude = [".claude", "*.md"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP"]
@@ -188,7 +193,7 @@ addopts    = "-v --tb=short"
 pythonpath = ["src"]
 markers = [
     "slow: marks tests as slow (deselect with '-m not slow')",
-    "integration: marks tests that exercise real external dependencies (model, LanceDB)",
+    "integration: marks tests that exercise real external dependencies (model, sqlite-vec)",
 ]
 
 [tool.pylint.messages_control]

@@ -1,5 +1,5 @@
 """
-Tests for code_kg.metabokg parsers — KGML, SBML, CSV.
+Tests for metabokg parsers — KGML, SBML, CSV.
 
 BioPAX tests are omitted here since rdflib is an optional dependency.
 """

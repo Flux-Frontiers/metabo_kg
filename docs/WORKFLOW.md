@@ -33,9 +33,9 @@ End-to-end data flow from raw pathway sources to analysis, simulation, and AI-ag
 │                         STAGE 2 — Graph Construction                        │
 │  KGMLParser → MetaNode / MetaEdge objects                                   │
 │  MetaStore   → SQLite WAL (nodes, edges, xref index)                        │
-│  MetaIndex   → LanceDB vector index (compound · enzyme · pathway nodes)     │
+│  MetaIndex   → sqlite-vec vector index (compound · enzyme · pathway nodes) │
 └──────┬────────────────────────┬────────────────────────────────────────────┘
-       │ {org}.sqlite           │ lancedb/
+       │ {org}.sqlite           │ vectors.sqlite
        ▼                        ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         STAGE 3 — Name Enrichment                           │
@@ -69,7 +69,7 @@ End-to-end data flow from raw pathway sources to analysis, simulation, and AI-ag
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         STAGE 6 — Access Interfaces                         │
 │  metabokg-viz / viz3d  — interactive graph explorer (Streamlit / PyVista)   │
-│  metabokg-mcp          — MCP server (9 tools for Claude and AI agents)      │
+│  metabokg-mcp          — MCP server (13 tools for Claude and AI agents)     │
 │  Python API            — MetaKG class (build · query · simulate)            │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -122,8 +122,8 @@ python scripts/wire_kegg_enzymes.py    # re-inject CATALYZES edges after refresh
 ## Stage 2 — Graph Construction
 
 **Input:** KGML pathway files
-**Process:** `KGMLParser` extracts pathway, compound, enzyme, and reaction nodes with typed edges; `MetaStore` writes to SQLite WAL; `MetaIndex` embeds compound/enzyme/pathway nodes into LanceDB
-**Output:** `{org}.sqlite` + `lancedb/` per corpus
+**Process:** `KGMLParser` extracts pathway, compound, enzyme, and reaction nodes with typed edges; `MetaStore` writes to SQLite WAL; `MetaIndex` embeds compound/enzyme/pathway nodes into sqlite-vec
+**Output:** `{org}.sqlite` + `vectors.sqlite` per corpus
 
 `metabokg-init` builds all three corpora in one shot. Use `metabokg-build` to (re)build a single corpus:
 
@@ -244,7 +244,7 @@ metabokg-simulate whatif --pathway hsa00010 --mode ode --factor ENZ_ID:0.5
 ### 2D Graph Explorer
 
 ```bash
-metabokg-viz [--db PATH] [--lancedb PATH] [--port PORT]
+metabokg-viz [--db PATH] [--vectors PATH] [--port PORT]
 ```
 
 Interactive Streamlit browser with pathway filter, node kind and edge relation toggles, and semantic search.

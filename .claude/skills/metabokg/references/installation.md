@@ -20,11 +20,11 @@
 | `--check` | false | Status-only — show TSV integrity and corpus build state without modifying anything |
 | `--corpus NAME` | all | Initialize a single corpus; repeatable (`--corpus hsa --corpus cge`) |
 | `--no-enrich` | false | Skip enrichment phases |
-| `--no-index` | false | Skip LanceDB build |
+| `--no-index` | false | Skip the vector index build |
 
 ### `metabokg-info`
 
-No required flags. Prints the active corpus, resolved db/lancedb paths, and node/edge counts.
+No required flags. Prints the active corpus, resolved db/vectors paths, and node/edge counts.
 
 ### `metabokg-build`
 
@@ -32,9 +32,9 @@ No required flags. Prints the active corpus, resolved db/lancedb paths, and node
 |---|---|---|
 | `--data DIR` | required | Directory containing KGML pathway files or SBML model |
 | `--db PATH` | `<data-dir>/.metabokg/<name>.sqlite` | Override SQLite output path |
-| `--lancedb PATH` | `<data-dir>/.metabokg/lancedb/` | Override LanceDB output path |
+| `--vectors PATH` | `<data-dir>/.metabokg/vectors.sqlite` | Override vector-store output path |
 | `--no-wipe` | wipe by default | Keep existing data — merge new files on top |
-| `--no-index` | false | Skip LanceDB — SQLite only |
+| `--no-index` | false | Skip the vector index — graph SQLite only |
 | `--no-enrich` | false | Skip all enrichment phases |
 
 ### `metabokg-update`
@@ -57,7 +57,7 @@ No required flags. Prints the active corpus, resolved db/lancedb paths, and node
 |---|---|---|
 | `--repo PATH` | `.` | Repository root |
 | `--db PATH` | `.metabokg/hsa.sqlite` | SQLite path |
-| `--lancedb PATH` | `.metabokg/lancedb` | LanceDB directory |
+| `--vectors PATH` | `.metabokg/vectors.sqlite` | sqlite-vec store |
 | `--transport` | `stdio` | `stdio` or `sse` |
 
 ### `metabokg-query`
@@ -69,7 +69,7 @@ No required flags. Prints the active corpus, resolved db/lancedb paths, and node
 | `--hop INT` | `1` | Graph expansion hops |
 | `--text-only` | false | Skip vector search, substring only |
 | `--db PATH` | auto-resolved | SQLite path |
-| `--lancedb PATH` | auto-resolved | LanceDB path |
+| `--vectors PATH` | auto-resolved | Vector-store path |
 
 ### `metabokg-pack`
 
@@ -84,7 +84,7 @@ No required flags. Prints the active corpus, resolved db/lancedb paths, and node
 
 | Subcommand | Required | Key flags |
 |---|---|---|
-| `fba --pathway ID` | pathway ID | `--maximize`, `--db`, `--lancedb` |
+| `fba --pathway ID` | pathway ID | `--objective RXN_ID`, `--minimize`, `--db` |
 | `ode --pathway ID` | pathway ID | `--t-end`, `--t-points`, `--method BDF\|Radau`, `--rtol`, `--atol`, `--db` |
 | `whatif --pathway ID --scenario JSON` | pathway + scenario | `--mode fba\|ode`, `--db` |
 | `seed` | — | `--db`, `--force` |
@@ -234,7 +234,9 @@ Scripts below are for **refreshing pathway files** only (e.g. after a KEGG updat
 ```gitignore
 # MetaboKG build artifacts (reproducible)
 **/.metabokg/*.sqlite
-**/.metabokg/lancedb/
+**/.metabokg/*.sqlite-shm
+**/.metabokg/*.sqlite-wal
+**/.metabokg/models
 
 # Snapshots are tracked — do NOT ignore:
 # **/.metabokg/snapshots/
@@ -248,7 +250,7 @@ Scripts below are for **refreshing pathway files** only (e.g. after a KEGG updat
 # Verify env
 metabokg-info
 
-# Verify build (fast, no LanceDB or enrichment)
+# Verify build (fast, no vector index or enrichment)
 metabokg-build --data data/hsa_pathways --no-index --no-enrich
 # → should complete in < 60s
 
@@ -279,7 +281,7 @@ metabokg-simulate ode --pathway pwy:kegg:hsa00010 --t-end 5 --t-points 10 --meth
 | `--knockout Ldha` raises KeyError | Phase 3 enrichment not run | `metabokg-init` (fetches gene name TSVs and rebuilds) |
 | Enzyme names show as bare integers | `data/{org}_gene_names.tsv` missing | `metabokg-init`, or manually `python scripts/download_kegg_names.py --genes hsa cge` |
 | Glycan nodes unresolved (`gl:G#####`) | `data/kegg_glycan_names.tsv` missing | `metabokg-init`, or `python scripts/download_kegg_names.py` |
-| Empty vector query results | LanceDB index missing or empty | `metabokg-build --data DIR` (do NOT use `--no-index`) |
+| Empty vector query results | Vector index missing or empty | `metabokg-build --data DIR` (do NOT use `--no-index`) |
 | Wrong DB loaded | Multiple corpora in repo | Use explicit `--db` pointing to the correct `.sqlite` |
 | MCP server not appearing in agent | Relative path in config | Switch to absolute paths; reload VS Code |
 | `mcp package not found` | `[mcp]` extra not installed | `poetry install --all-extras` |

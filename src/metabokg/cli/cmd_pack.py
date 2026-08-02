@@ -5,7 +5,7 @@ Registers:
   metabokg pack  — semantic search + graph expansion → rich context pack
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-04-20
+Last Revision: 2026-08-01
 License: Elastic 2.0
 """
 
@@ -18,17 +18,17 @@ import click
 from metabokg.cli.main import cli
 from metabokg.cli.options import (
     db_option,
-    lancedb_option,
     model_option,
     resolve_db,
-    resolve_lancedb,
+    resolve_vectors,
+    vectors_option,
 )
 
 
 @cli.command("pack")
 @click.argument("query_text")
 @db_option
-@lancedb_option
+@vectors_option
 @model_option
 @click.option(
     "--k", default=8, show_default=True, type=int, help="Seed results from vector search."
@@ -64,7 +64,7 @@ from metabokg.cli.options import (
 def pack(
     query_text: str,
     db: str | None,
-    lancedb: str | None,
+    vectors: str | None,
     model: str,
     k: int,
     hop: int,
@@ -91,14 +91,14 @@ def pack(
     from pathlib import Path
 
     db_path = resolve_db(db)
-    lancedb_dir = resolve_lancedb(lancedb)
+    vectors_path = resolve_vectors(vectors)
 
     if not Path(db_path).exists():
         raise click.ClickException(f"database not found: {db_path}\nRun 'metabokg build' first.")
 
-    if not Path(lancedb_dir).exists():
+    if not Path(vectors_path).exists():
         raise click.ClickException(
-            f"LanceDB index not found at '{lancedb_dir}'.\n"
+            f"Vector index not found at '{vectors_path}'.\n"
             "Run 'metabokg build' (without --no-index) to create it."
         )
 
@@ -109,7 +109,7 @@ def pack(
         err=True,
     )
 
-    kg = MetaKG(db_path=db_path, lancedb_dir=lancedb_dir, model=model)
+    kg = MetaKG(db_path=db_path, vectors_path=vectors_path, model=model)
     result = kg.pack(query_text, k=k, hop=hop, max_rxn_per_pathway=max_rxn)
     kg.close()
 

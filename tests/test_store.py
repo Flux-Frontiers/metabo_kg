@@ -1,5 +1,5 @@
 """
-Tests for code_kg.metabokg.store — MetaStore SQLite persistence layer.
+Tests for metabokg.store — MetaStore SQLite persistence layer.
 """
 
 import json

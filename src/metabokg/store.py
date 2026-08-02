@@ -6,7 +6,7 @@ Schema:
   meta_edges   — all directed edges
   xref_index   — flattened cross-reference lookup (db_name, ext_id → node_id)
 
-Follows the same WAL/NORMAL pragma pattern as code_kg.store.GraphStore.
+Follows the same WAL/NORMAL pragma pattern as kg_utils.store.GraphStore.
 """
 
 from __future__ import annotations
@@ -161,8 +161,8 @@ class MetaStore:
         """
         Write nodes and edges to SQLite.
 
-        :param nodes: Iterable of :class:`~code_kg.metabokg.primitives.MetaNode`.
-        :param edges: Iterable of :class:`~code_kg.metabokg.primitives.MetaEdge`.
+        :param nodes: Iterable of :class:`~metabokg.primitives.MetaNode`.
+        :param edges: Iterable of :class:`~metabokg.primitives.MetaEdge`.
         :param wipe: If ``True``, truncate all tables before writing.
         """
         cur = self._conn.cursor()

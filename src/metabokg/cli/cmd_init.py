@@ -6,7 +6,7 @@ Registers:
                    TSV fetch, graph build, kinetics seed
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-05-02
+Last Revision: 2026-08-01
 License: Elastic 2.0
 """
 
@@ -38,13 +38,13 @@ _SYM = {"ok": "✓", "thin": "~", "empty": "!", "missing": "✗"}
 
 
 def _colocate_db(data_dir: Path) -> tuple[str, str]:
-    """Derive colocated db and lancedb paths from *data_dir*."""
+    """Derive colocated db and vectors paths from *data_dir*."""
     dot_dir = data_dir / ".metabokg"
     dot_dir.mkdir(parents=True, exist_ok=True)
     org = data_dir.name.split("_")[0]
     db = str(dot_dir / f"{org}.sqlite")
-    lancedb = str(dot_dir / "lancedb")
-    return db, lancedb
+    vectors = str(dot_dir / "vectors.sqlite")
+    return db, vectors
 
 
 def _print_integrity_table(results: list[TsvIntegrityResult]) -> None:
@@ -71,12 +71,12 @@ def _print_integrity_table(results: list[TsvIntegrityResult]) -> None:
 def _print_corpus_table(corpus_rows: list[dict]) -> None:
     """Render the per-corpus status table to stdout."""
     click.echo("\nCorpus status:")
-    header = f"  {'corpus':<6}  {'files':>6}  {'db':<4}  {'lancedb':<8}  {'kinetics':<12}  status"
+    header = f"  {'corpus':<6}  {'files':>6}  {'db':<4}  {'vectors':<8}  {'kinetics':<12}  status"
     click.echo(header)
     click.echo("  " + "-" * 62)
     for row in corpus_rows:
         db_sym = click.style("✓", fg="green") if row["db_ok"] else click.style("✗", fg="red")
-        ldb_sym = click.style("✓", fg="green") if row["lancedb_ok"] else click.style("✗", fg="red")
+        vec_sym = click.style("✓", fg="green") if row["vectors_ok"] else click.style("✗", fg="red")
         kp_str = row["kinetics"] or "—"
         overall = (
             click.style("READY", fg="green")
@@ -84,7 +84,7 @@ def _print_corpus_table(corpus_rows: list[dict]) -> None:
             else click.style("NEEDS BUILD", fg="yellow")
         )
         click.echo(
-            f"  {row['name']:<6}  {row['files']:>6}  {db_sym}     {ldb_sym}        {kp_str:<12}  {overall}"
+            f"  {row['name']:<6}  {row['files']:>6}  {db_sym}     {vec_sym}        {kp_str:<12}  {overall}"
         )
 
 
@@ -96,7 +96,7 @@ def _corpus_status(spec) -> dict:
     files = list(data_subdir.glob("*.kgml")) + list(data_subdir.glob("*.xml"))
 
     db_path = data_subdir / ".metabokg" / f"{spec.name}.sqlite"
-    lancedb_path = data_subdir / ".metabokg" / "lancedb"
+    vectors_path = data_subdir / ".metabokg" / "vectors.sqlite"
 
     kinetics_str = ""
     if db_path.exists():
@@ -112,9 +112,9 @@ def _corpus_status(spec) -> dict:
         "name": spec.name,
         "files": len(files),
         "db_ok": db_path.exists(),
-        "lancedb_ok": lancedb_path.exists(),
+        "vectors_ok": vectors_path.exists(),
         "kinetics": kinetics_str,
-        "ready": db_path.exists() and lancedb_path.exists(),
+        "ready": db_path.exists() and vectors_path.exists(),
     }
 
 
@@ -130,7 +130,7 @@ def _build_one_corpus(spec, *, data_dir: Path, force: bool, no_kinetics: bool, M
         click.echo(click.style(f"SKIP {spec.name}: no pathway files in {data_subdir}", fg="yellow"))
         return
 
-    db_path_str, lancedb_path_str = _colocate_db(data_subdir)
+    db_path_str, vectors_path_str = _colocate_db(data_subdir)
     db_path = Path(db_path_str)
 
     if db_path.exists() and not force:
@@ -140,7 +140,7 @@ def _build_one_corpus(spec, *, data_dir: Path, force: bool, no_kinetics: bool, M
         return
 
     click.echo(f"Building {spec.name} ({len(pathway_files)} pathway files)...")
-    kg = MetaKG(db_path=db_path_str, lancedb_dir=lancedb_path_str)
+    kg = MetaKG(db_path=db_path_str, vectors_path=vectors_path_str)
     stats = kg.build(
         data_dir=data_subdir,
         wipe=True,
@@ -235,14 +235,14 @@ def init(
     """Initialize MetaboKG: check TSVs, fetch missing files, build corpora.
 
     On a fresh clone the pathway files and TSV annotation files are bundled
-    in the repository.  This command builds the SQLite + LanceDB databases
+    in the repository.  This command builds the SQLite + sqlite-vec databases
     and seeds kinetic parameters so the system is query-ready.
 
     \b
     Steps:
       1. Integrity check — verify all required TSV files are present
       2. Fetch missing  — download absent TSVs from KEGG REST (unless --no-fetch)
-      3. Build          — parse pathways → SQLite + LanceDB + enrichment
+      3. Build          — parse pathways → SQLite + vectors + enrichment
       4. Seed kinetics  — load curated kinetic parameters (unless --no-kinetics)
     """
     selected = list(corpora) if corpora else _ALL_CORPUS_NAMES

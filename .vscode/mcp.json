@@ -7,24 +7,26 @@
         "run",
         "metabokg-mcp",
         "--db",
-        ".metabokg/meta.sqlite",
-        "--lancedb",
-        ".metabokg/lancedb"
+        "data/hsa_pathways/.metabokg/hsa.sqlite",
+        "--vectors",
+        "data/hsa_pathways/.metabokg/vectors.sqlite"
       ],
       "env": {
         "POETRY_VIRTUALENVS_IN_PROJECT": "false"
       }
     },
-    "codekg": {
+    "pycodekg": {
       "type": "stdio",
-      "command": "/Users/egs/repos/metabo_kg/.venv/bin/python",
+      "command": "poetry",
       "args": [
-        "-m",
-        "code_kg",
-        "mcp",
+        "run",
+        "pycodekg-mcp",
         "--repo",
-        "/Users/egs/repos/metabo_kg"
-      ]
+        "."
+      ],
+      "env": {
+        "POETRY_VIRTUALENVS_IN_PROJECT": "false"
+      }
     }
   }
 }

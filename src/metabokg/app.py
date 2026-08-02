@@ -70,7 +70,7 @@ _REL_COLOR: dict[str, str] = {
 }
 
 _DEFAULT_DB = os.environ.get("METABOKG_DB", "data/hsa_pathways/.metabokg/hsa.sqlite")
-_DEFAULT_LANCEDB = os.environ.get("METABOKG_LANCEDB", "data/hsa_pathways/.metabokg/lancedb")
+_DEFAULT_VECTORS = os.environ.get("METABOKG_VECTORS", "data/hsa_pathways/.metabokg/vectors.sqlite")
 
 # ---------------------------------------------------------------------------
 # Page config (must be first Streamlit call)
@@ -99,7 +99,7 @@ def _init_state() -> None:
     """
     defaults = {
         "db_path": _DEFAULT_DB,
-        "lancedb_dir": _DEFAULT_LANCEDB,
+        "vectors_path": _DEFAULT_VECTORS,
         "store": None,
         "store_loaded_path": None,
         "query_result": None,
@@ -138,11 +138,11 @@ def _resolve_db_path(db_path: str) -> Path:
 
 
 @st.cache_resource(show_spinner="Loading MetaKG (embedding model)…")
-def _load_kg(db_path: str, lancedb_dir: str) -> Any:
+def _load_kg(db_path: str, vectors_path: str) -> Any:
     """Load and cache a MetaKG instance (holds the embedding model in memory)."""
     from metabokg import MetaKG
 
-    return MetaKG(db_path=db_path, lancedb_dir=lancedb_dir)
+    return MetaKG(db_path=db_path, vectors_path=vectors_path)
 
 
 @st.cache_resource(show_spinner="Loading full graph…")
@@ -374,7 +374,7 @@ def _render_sidebar() -> dict[str, Any]:
     """
     Render sidebar controls and return a configuration dict.
 
-    :return: Dict with keys: ``db_path``, ``lancedb_dir``, ``max_nodes``,
+    :return: Dict with keys: ``db_path``, ``vectors_path``, ``max_nodes``,
              ``physics_on``, ``node_kinds_filter``, ``edge_rels_filter``.
     """
     st.sidebar.markdown("## Configuration")
@@ -386,12 +386,12 @@ def _render_sidebar() -> dict[str, Any]:
     )
     st.session_state["db_path"] = db_path
 
-    lancedb_dir = st.sidebar.text_input(
-        "LanceDB Directory",
-        value=st.session_state.get("lancedb_dir", _DEFAULT_LANCEDB),
-        help="Path to the LanceDB vector database directory",
+    vectors_path = st.sidebar.text_input(
+        "Vector Store Path",
+        value=st.session_state.get("vectors_path", _DEFAULT_VECTORS),
+        help="Path to the sqlite-vec vector store (vectors.sqlite)",
     )
-    st.session_state["lancedb_dir"] = lancedb_dir
+    st.session_state["vectors_path"] = vectors_path
 
     max_nodes = st.sidebar.number_input(
         "Max nodes to display",
@@ -424,7 +424,7 @@ def _render_sidebar() -> dict[str, Any]:
 
     return {
         "db_path": db_path,
-        "lancedb_dir": lancedb_dir,
+        "vectors_path": vectors_path,
         "max_nodes": max_nodes,
         "physics_on": physics_on,
         "node_kinds_filter": node_kinds_filter,
@@ -588,29 +588,28 @@ def _tab_search(cfg: dict[str, Any]) -> None:
             debug: dict[str, Any] = {
                 "cwd": str(Path.cwd()),
                 "db_path_cfg": cfg["db_path"],
-                "lancedb_dir_cfg": cfg.get("lancedb_dir"),
+                "vectors_path_cfg": cfg.get("vectors_path"),
             }
             with st.spinner("Searching…"):
                 try:
-                    lancedb_dir = cfg.get("lancedb_dir", _DEFAULT_LANCEDB)
+                    vectors_path = cfg.get("vectors_path", _DEFAULT_VECTORS)
                     # Normalise to absolute paths so cache_resource key is stable
                     # across reruns where _get_store() may resolve the relative path
                     abs_db = str(Path(cfg["db_path"]).resolve())
-                    abs_ld = str(Path(lancedb_dir).resolve())
-                    debug["lancedb_exists"] = Path(abs_ld).exists()
-                    use_vector = Path(abs_ld).exists()
+                    abs_vec = str(Path(vectors_path).resolve())
+                    debug["vectors_exists"] = Path(abs_vec).exists()
+                    use_vector = Path(abs_vec).exists()
                     raw_hits: list[dict[str, Any]] = []
                     if use_vector:
-                        kg = _load_kg(abs_db, abs_ld)
+                        kg = _load_kg(abs_db, abs_vec)
                         if kg is None:
                             raise RuntimeError(
                                 f"Could not load MetaKG (db={abs_db}, "
-                                f"lancedb={abs_ld}). Check that the index exists."
+                                f"vectors={abs_vec}). Check that the index exists."
                             )
                         debug["kg_db"] = str(kg.db_path)
-                        debug["kg_lancedb"] = str(kg.lancedb_dir)
+                        debug["kg_vectors"] = str(kg.vectors_path)
                         debug["kg_model"] = kg.model_name
-                        debug["kg_table"] = kg.table_name
                         query_results = kg.query(query_text, k=int(k))
                         raw_hits = query_results.hits
                         debug["raw_hits"] = len(raw_hits)

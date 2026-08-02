@@ -4,7 +4,7 @@ Generate a comprehensive metabolic pathway analysis report from the MetaboKG dat
 
 ## What This Does
 
-Analyzes the MetaboKG database and produces a polished, CodeKG-style report including:
+Analyzes the MetaboKG database and produces a polished, PyCodeKG-style report including:
 - **Executive Summary** with key metrics
 - **7-Phase Analysis**: hub metabolites, complex reactions, cross-pathway junctions, pathway coupling, topology, and enzyme coverage
 - **Network Health Assessment**: identifies dead-ends, isolated nodes, sparse areas

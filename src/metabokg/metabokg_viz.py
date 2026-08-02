@@ -3,13 +3,13 @@
 metabokg_viz.py — CLI launcher for the MetaKG Streamlit visualizer.
 
 Usage:
-    metabokg-viz [--db PATH] [--lancedb PATH] [--port PORT] [--no-browser]
+    metabokg-viz [--db PATH] [--vectors PATH] [--port PORT] [--no-browser]
 
 Launches ``streamlit run`` against the bundled app.py in the package directory.
 Works both from the source tree and when installed from a wheel.
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-04-19
+Last Revision: 2026-08-01
 License: Elastic 2.0
 """
 
@@ -22,7 +22,7 @@ from pathlib import Path
 
 def main(
     db: str | None = None,
-    lancedb: str | None = None,
+    vectors: str | None = None,
     port: str = "8500",
     no_browser: bool = False,
 ) -> None:
@@ -34,16 +34,16 @@ def main(
     hands off execution to the subprocess.
 
     :param db: Path to the SQLite database (overrides env/default).
-    :param lancedb: Path to the LanceDB directory (overrides env/default).
+    :param vectors: Path to the sqlite-vec vector store (overrides env/default).
     :param port: Streamlit server port.
     :param no_browser: If True, suppress automatic browser launch.
     """
     import os
 
-    from metabokg.cli.options import resolve_db, resolve_lancedb
+    from metabokg.cli.options import resolve_db, resolve_vectors
 
     db = resolve_db(db)
-    lancedb = resolve_lancedb(lancedb)
+    vectors = resolve_vectors(vectors)
 
     # app.py is bundled alongside this module in the package directory
     app_path = Path(__file__).parent / "app.py"
@@ -69,12 +69,12 @@ def main(
 
     env = os.environ.copy()
     env["METABOKG_DB"] = db
-    env["METABOKG_LANCEDB"] = lancedb
+    env["METABOKG_VECTORS"] = vectors
 
     print(f"Launching MetaKG Explorer on http://localhost:{port}")
     print(f"  app    : {app_path}")
     print(f"  db     : {db}")
-    print(f"  lancedb: {lancedb}")
+    print(f"  vectors: {vectors}")
     print("  Press Ctrl+C to stop.\n")
 
     try:

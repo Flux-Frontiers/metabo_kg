@@ -1,6 +1,6 @@
-# CodeKG MCP Installation Guide
+# MetaboKG MCP Integration Guide
 
-**Integrating CodeKG with Claude Code and Claude Desktop**
+**Exposing the metabolic knowledge graph to Claude Code, Claude Desktop, and other MCP agents**
 
 *Author: Eric G. Suchanek, PhD*
 
@@ -8,816 +8,338 @@
 
 ## Overview
 
-CodeKG ships a built-in MCP server (`codekg mcp`) that exposes the full hybrid query and snippet-pack pipeline as structured tools consumable by any MCP-compatible AI agent — Claude Code, Claude Desktop, Cursor, Continue, or any custom agent that speaks the Model Context Protocol.
+MetaboKG ships a built-in MCP server (`metabokg-mcp`) that exposes the graph,
+the semantic index, and the simulation engine as structured tools consumable by
+any MCP-compatible agent — Claude Code, Claude Desktop, GitHub Copilot, Cline,
+or a custom client that speaks the Model Context Protocol.
 
-Once configured, the agent gains five tools:
-
-| Tool | Purpose |
-|---|---|
-| `graph_stats()` | Codebase size and shape — good first call |
-| `query_codebase(q)` | Semantic + structural graph exploration |
-| `pack_snippets(q)` | Source-grounded code snippets for implementation detail |
-| `get_node(node_id)` | Single node metadata lookup by stable ID |
-| `callers(node_id, rel)` | Precise fan-in lookup — find all callers of a node, resolving through sym: stubs |
+The server is a thin wrapper over the same `MetaKG` orchestrator that the CLI
+and the Python API use, so there is exactly one code path per capability. `mcp`
+is a **core dependency** — there is no optional extra to install and no
+separate server package.
 
 ---
 
-## Quick Start (TL;DR)
+## Quick start
 
 ```bash
-# 1. Install code-kg with the MCP extra into your project
-poetry add "code-kg[mcp] @ git+https://github.com/Flux-Frontiers/code_kg.git"
+# 1. Install (mcp is core — no extra needed)
+poetry install
 
-# 2. Build the knowledge graph
-codekg build-sqlite  --repo . --db .codekg/graph.sqlite
-codekg build-lancedb --sqlite .codekg/graph.sqlite
+# 2. Build a corpus; this writes both the graph and the vector store
+metabokg-init                            # all bundled corpora
+# ...or a single corpus:
+metabokg-build --data data/hsa_pathways
 
-# 3. Add per-repo config for your agent (see Section 4–6)
-#    • Claude Code + Kilo Code  → .mcp.json
-#    • GitHub Copilot           → .vscode/mcp.json
-#    • Claude Desktop           → claude_desktop_config.json (global)
+# 3. Point your agent at the server (see the per-agent sections below)
 
-# 4. Restart your agent — the codekg tools are now active
+# 4. Restart the agent — the metabokg tools become available
 ```
 
-Or use the automated setup command inside Claude Code / Kilo Code:
+Verify the server is installed before wiring any agent to it:
 
-```
-/setup-mcp
+```bash
+metabokg-mcp --help
 ```
 
 ---
 
-## Bootstrap: New Machine Setup
+## Table of contents
 
-On a **brand-new machine** the Claude skill doesn't exist yet, so Claude won't know how to help you set up CodeKG. Install the skill first with a single command — no clone required:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/Flux-Frontiers/code_kg/main/scripts/install-skill.sh | bash
-```
-
-Or, if you already have the repo cloned:
-
-```bash
-bash scripts/install-skill.sh
-```
-
-This installs `~/.claude/skills/codekg/` so that any Claude Code session (with `skills-copilot` running) will automatically have expert CodeKG knowledge available. Then proceed with the normal installation steps below.
+1. [Prerequisites](#1-prerequisites)
+2. [Server options](#2-server-options)
+3. [Claude Code / Kilo Code](#3-claude-code--kilo-code)
+4. [GitHub Copilot](#4-github-copilot)
+5. [Claude Desktop](#5-claude-desktop)
+6. [Multi-corpus setup](#6-multi-corpus-setup)
+7. [Tool reference](#7-tool-reference)
+8. [Query strategy](#8-query-strategy)
+9. [Rebuilding after data changes](#9-rebuilding-after-data-changes)
+10. [Troubleshooting](#10-troubleshooting)
 
 ---
 
-## Table of Contents
+## 1. Prerequisites
 
-1. [Installation](#1-installation)
-2. [Building the Knowledge Graph](#2-building-the-knowledge-graph)
-3. [Smoke-Testing the Pipeline](#3-smoke-testing-the-pipeline)
-4. [Configuring Claude Code / Kilo Code](#4-configuring-claude-code--kilo-code)
-5. [Configuring GitHub Copilot](#5-configuring-github-copilot)
-6. [Configuring Claude Desktop](#6-configuring-claude-desktop)
-7. [Configuring Cline](#7-configuring-cline)
-8. [Installing the CodeKG Skill](#8-installing-the-codekg-skill)
-9. [Automated Setup with `/setup-mcp`](#9-automated-setup-with-setup-mcp)
-10. [Claude Copilot Integration](#10-claude-copilot-integration)
-11. [Available Tools Reference](#11-available-tools-reference)
-12. [Query Strategy Guide](#12-query-strategy-guide)
-13. [Rebuilding After Code Changes](#13-rebuilding-after-code-changes)
-14. [Troubleshooting](#14-troubleshooting)
+The server reads two artifacts, both produced by a build:
 
----
-
-## 1. Installation
-
-### 1a. Install from GitHub (recommended until PyPI release)
-
-In the target project's directory:
-
-```bash
-# Basic install (no MCP server)
-poetry add git+https://github.com/Flux-Frontiers/code_kg.git
-
-# With MCP server support (required for codekg mcp)
-poetry add "code-kg[mcp] @ git+https://github.com/Flux-Frontiers/code_kg.git"
-```
-
-This adds the following to your `pyproject.toml`:
-
-```toml
-[tool.poetry.dependencies]
-code-kg = { git = "https://github.com/Flux-Frontiers/code_kg.git", extras = ["mcp"] }
-```
-
-Then run:
-
-```bash
-poetry lock && poetry install
-```
-
-### 1b. Pin to a specific commit
-
-```toml
-code-kg = { git = "https://github.com/Flux-Frontiers/code_kg.git", rev = "66d565f", extras = ["mcp"] }
-```
-
-### 1c. Verify the install
-
-```bash
-# Confirm the entry point is available
-poetry run which codekg
-
-# Confirm the mcp package is importable
-poetry run python -c "import mcp; print('mcp OK')"
-```
-
-If `codekg mcp` is missing but the package is installed, the `mcp` extra is absent — add it:
-
-```bash
-poetry add mcp
-```
-
----
-
-## 2. Building the Knowledge Graph
-
-The MCP server is **read-only**. Two artifacts must be built before starting the server:
-
-| Artifact | Built by | Contains |
+| Artifact | Default path | Produced by |
 |---|---|---|
-| `.codekg/graph.sqlite` | `codekg build-sqlite` | AST-extracted nodes and edges |
-| `.codekg/lancedb/` | `codekg build-lancedb` | Sentence-transformer vector embeddings |
+| Graph database | `data/hsa_pathways/.metabokg/hsa.sqlite` | `metabokg-build` / `metabokg-init` |
+| Vector store | `data/hsa_pathways/.metabokg/vectors.sqlite` | the same build, unless `--no-index` |
 
-### Step 1 — Static analysis: repo → SQLite
-
-```bash
-codekg build-sqlite \
-  --repo /absolute/path/to/repo \
-  --db   /absolute/path/to/repo/.codekg/graph.sqlite
-```
-
-Add `--wipe` to rebuild from scratch (safe to re-run):
+Check what exists without modifying anything:
 
 ```bash
-codekg build-sqlite --repo . --db .codekg/graph.sqlite --wipe
+metabokg info
+metabokg-init --check
 ```
 
-**Output:** `OK: nodes=<N> edges=<M> db=.codekg/graph.sqlite`
-
-### Step 2 — Semantic indexing: SQLite → LanceDB
-
-> **Note:** The flag is `--sqlite`, not `--db`.
-
-```bash
-codekg build-lancedb \
-  --sqlite /absolute/path/to/repo/.codekg/graph.sqlite
-```
-
-Add `--wipe` to rebuild the vector index:
-
-```bash
-codekg build-lancedb --sqlite .codekg/graph.sqlite --wipe
-```
-
-**Output:** `OK: indexed_rows=<V> dim=384 table=codekg_nodes lancedb_dir=.codekg/lancedb kinds=module,class,function,method`
-
-Both steps are idempotent. Re-run them whenever the codebase changes significantly.
-
-### CLI flags reference
-
-**`codekg build-sqlite`**
-
-| Flag | Required | Default | Description |
-|---|---|---|---|
-| `--repo` | ✓ | — | Repository root path |
-| `--db` | ✓ | — | SQLite output path |
-| `--wipe` | | false | Delete existing graph first |
-
-**`codekg build-lancedb`**
-
-| Flag | Required | Default | Description |
-|---|---|---|---|
-| `--sqlite` | ✓ | — | Path to the SQLite graph |
-| `--lancedb` | | `.codekg/lancedb` | LanceDB output directory |
-| `--table` | | `codekg_nodes` | LanceDB table name |
-| `--model` | | `bge-small-en-v1.5` | Sentence-transformer model |
-| `--wipe` | | false | Delete existing vectors first |
-| `--kinds` | | `module,class,function,method` | Node kinds to embed |
-| `--batch` | | `256` | Embedding batch size |
+`metabokg info` prints the resolved paths and marks each store `[exists]` or
+`[not built]`. The server still starts without them, but semantic tools return
+nothing until a build has run.
 
 ---
 
-## 3. Smoke-Testing the Pipeline
-
-Before configuring any agent, verify the full pipeline works end-to-end:
+## 2. Server options
 
 ```bash
-# Check graph stats
-poetry run python -c "
-from code_kg import CodeKG
-import json
-kg = CodeKG(repo_root='.', db_path='.codekg/graph.sqlite', lancedb_dir='.codekg/lancedb')
-print(json.dumps(kg.stats(), indent=2))
-"
-
-# Run a sample query
-codekg query "module structure"
+metabokg-mcp [--db PATH] [--vectors PATH] [--model NAME] [--transport stdio|sse]
 ```
 
-Expected output from `kg.stats()`:
+| Flag | Default | Description |
+|---|---|---|
+| `--db PATH` | `data/hsa_pathways/.metabokg/hsa.sqlite`, or `METABOKG_DB` | Graph database |
+| `--vectors PATH` | `data/hsa_pathways/.metabokg/vectors.sqlite`, or `METABOKG_VECTORS` | sqlite-vec vector store |
+| `--model NAME` | `BAAI/bge-small-en-v1.5` | Sentence-transformer model |
+| `--transport` | `stdio` | `stdio` for Claude Desktop/Code, `sse` for HTTP |
 
-```json
-{
-  "total_nodes": 412,
-  "total_edges": 1087,
-  "node_counts": { "module": 18, "class": 34, "function": 201, "method": 143 },
-  "edge_counts": { "CONTAINS": 378, "CALLS": 512, "IMPORTS": 147, "INHERITS": 50 },
-  "db_path": ".codekg/graph.sqlite"
-}
+Both paths also resolve from the environment:
+
+```bash
+export METABOKG_DB="/data/hsa.sqlite"
+export METABOKG_VECTORS="/data/vectors.sqlite"
+metabokg-mcp --transport sse
 ```
 
-If this succeeds, the MCP server will work correctly.
+> As of 0.10.0 the vector store is a single `vectors.sqlite` **file**, not a
+> directory. Configs that predate the migration pass `--lancedb` and now fail
+> with `no such option`. See the [CHANGELOG](../CHANGELOG.md) `[0.10.0]` entry.
 
 ---
 
-## 4. Configuring Claude Code / Kilo Code
+## 3. Claude Code / Kilo Code
 
-Both **Claude Code** and **Kilo Code** read MCP servers from **`.mcp.json`** in the project root — this is the canonical per-project MCP config for `codekg`.
-
-> ⚠️ **Per-repo only.** Do NOT add `codekg` to any global settings file (Kilo Code's `mcp_settings.json` or Claude Code's `~/.claude/settings.json`). Global files are shared across all windows — hardcoded paths will point every window to the same repo.
-
-> **Note:** If your project uses Claude Copilot, the copilot servers (`copilot-memory`, `skills-copilot`, `task-copilot`) live in `.claude/claude_code_config.json` — separate from `codekg`. See [Section 10](#10-claude-copilot-integration) for the full layout.
-
-### 4a. Create or update `.mcp.json`
+Both read MCP servers from **`.mcp.json`** in the project root.
 
 ```json
 {
   "mcpServers": {
-    "codekg": {
-      "command": "codekg-mcp",
-      "args": ["--repo", "/absolute/path/to/repo"]
+    "metabokg": {
+      "command": "poetry",
+      "args": [
+        "run", "metabokg-mcp",
+        "--db", "data/hsa_pathways/.metabokg/hsa.sqlite",
+        "--vectors", "data/hsa_pathways/.metabokg/vectors.sqlite"
+      ]
     }
   }
 }
 ```
 
-> **Always use absolute paths.** MCP clients do not inherit your shell's working directory.
->
-> `--db` and `--lancedb` are optional — they default to `.codekg/graph.sqlite` and `.codekg/lancedb` relative to `--repo`.
+If `.mcp.json` already lists servers, add `metabokg` to the existing
+`mcpServers` object rather than replacing the file.
 
-### 4b. Merging with an existing `.mcp.json`
+> **Per-repo only.** Do not add `metabokg` to a global settings file. Global
+> config is shared across every window, so hardcoded corpus paths would point
+> all of them at one repo.
 
-If you already have other MCP servers in `.mcp.json`, add `codekg` to the existing `mcpServers` object — do not overwrite other entries:
-
-```json
-{
-  "mcpServers": {
-    "other-server": { "...": "existing entry" },
-    "codekg": {
-      "command": "codekg-mcp",
-      "args": ["--repo", "/absolute/path/to/repo"]
-    }
-  }
-}
-```
-
-### 4c. Activate
-
-Restart Claude Code / reload the Kilo Code MCP panel. The `codekg` server will appear in the MCP tools list.
+Restart Claude Code (or reload the Kilo Code MCP panel) to pick up the change.
 
 ---
 
-## 5. Configuring GitHub Copilot
+## 4. GitHub Copilot
 
-GitHub Copilot in VS Code reads MCP servers from `.vscode/mcp.json` in the **workspace root**. Note the key differences from `.mcp.json`:
-
-- Uses `"servers"` (not `"mcpServers"`)
-- Requires `"type": "stdio"` for local process servers
-- Can be committed to source control to share the config with your team
-
-### 5a. Create or update `.vscode/mcp.json`
+Copilot reads **`.vscode/mcp.json`**, which uses a `servers` key rather than
+`mcpServers`. This repo ships a working example:
 
 ```json
 {
   "servers": {
-    "codekg": {
+    "metabokg": {
       "type": "stdio",
-      "command": "codekg",
+      "command": "poetry",
       "args": [
-        "mcp",
-        "--repo", "/absolute/path/to/repo",
-        "--db",   "/absolute/path/to/repo/.codekg/graph.sqlite"
+        "run", "metabokg-mcp",
+        "--db", "data/hsa_pathways/.metabokg/hsa.sqlite",
+        "--vectors", "data/hsa_pathways/.metabokg/vectors.sqlite"
       ],
-      "env": {
-        "POETRY_VIRTUALENVS_IN_PROJECT": "false"
-      }
+      "env": { "POETRY_VIRTUALENVS_IN_PROJECT": "false" }
     }
   }
 }
 ```
 
-### 5b. Activate
-
-After saving, VS Code will display a prompt to **Trust** the MCP server — click Trust to activate it. The `codekg` tools will then be available in GitHub Copilot Chat.
+VS Code prompts to **Trust** the server on first load; the tools appear in
+Copilot Chat afterwards.
 
 ---
 
-## 6. Configuring Claude Desktop
+## 5. Claude Desktop
 
-Claude Desktop does not have Poetry on its PATH, so you must use the **absolute path to the venv binary**.
+Claude Desktop's config is global and does not inherit your shell, so it needs
+absolute paths — including an absolute path to the executable.
 
-### 6a. Find the venv binary path
+Find the binary:
 
 ```bash
-# In the project directory
-poetry env info --path
-# → /Users/you/Library/Caches/pypoetry/virtualenvs/my-project-abc123-py3.11
+poetry run which metabokg-mcp
 ```
 
-The `codekg` binary is at `<venv_path>/bin/codekg`.
-
-### 6b. Edit `claude_desktop_config.json`
-
-| OS | Config path |
-|---|---|
-| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
-| Linux | `~/.config/Claude/claude_desktop_config.json` |
-| Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
-
-Add the `codekg` entry:
+Then add it to `claude_desktop_config.json` (macOS:
+`~/Library/Application Support/Claude/`):
 
 ```json
 {
   "mcpServers": {
-    "codekg": {
-      "command": "/Users/you/Library/Caches/pypoetry/virtualenvs/my-project-abc123-py3.11/bin/codekg",
+    "metabokg": {
+      "command": "/absolute/path/to/venv/bin/metabokg-mcp",
       "args": [
-        "mcp",
-        "--repo", "/absolute/path/to/repo",
-        "--db",   "/absolute/path/to/repo/.codekg/graph.sqlite"
+        "--db", "/absolute/path/to/metabo_kg/data/hsa_pathways/.metabokg/hsa.sqlite",
+        "--vectors", "/absolute/path/to/metabo_kg/data/hsa_pathways/.metabokg/vectors.sqlite"
       ]
     }
   }
 }
 ```
 
-### 6c. Activate
-
-Restart Claude Desktop. The `codekg` server will appear in the tool panel.
+Restart Claude Desktop to activate it.
 
 ---
 
-## 7. Configuring Cline
+## 6. Multi-corpus setup
 
-> ⚠️ **Cline does NOT support per-repo MCP config.** Its settings file is global and shared across all VS Code windows.
-
-### Options
-
-**Option A — Use Kilo Code instead** (recommended): Kilo Code is a drop-in replacement for Cline that supports per-repo `.mcp.json`. Switch to Kilo Code and follow Section 4.
-
-**Option B — Named entry per repo**: Add a uniquely-named entry to Cline's global settings file and toggle it via the Cline MCP panel when switching repos.
-
-Config path (macOS):
-```
-~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json
-```
-
-Add a repo-specific named entry:
+Each organism or model builds into its own graph and vector store, so run one
+server per corpus and give each a distinct key:
 
 ```json
 {
   "mcpServers": {
-    "codekg-myproject": {
-      "command": "/path/to/venv/bin/codekg",
+    "metabokg-hsa": {
+      "command": "/abs/path/to/venv/bin/metabokg-mcp",
       "args": [
-        "mcp",
-        "--repo", "/absolute/path/to/myproject",
-        "--db",   "/absolute/path/to/myproject/.codekg/graph.sqlite"
+        "--db", "/abs/path/data/hsa_pathways/.metabokg/hsa.sqlite",
+        "--vectors", "/abs/path/data/hsa_pathways/.metabokg/vectors.sqlite"
+      ]
+    },
+    "metabokg-cge": {
+      "command": "/abs/path/to/venv/bin/metabokg-mcp",
+      "args": [
+        "--db", "/abs/path/data/cge_pathways/.metabokg/cge.sqlite",
+        "--vectors", "/abs/path/data/cge_pathways/.metabokg/vectors.sqlite"
       ]
     }
   }
 }
 ```
 
-Use the absolute venv binary path (from `poetry env info --path`) — Cline does not have Poetry on its PATH.
+For federated queries spanning corpora — and across sibling knowledge graphs —
+register each corpus with KGRAG instead of wiring N servers by hand. See the
+[multi-corpus convention](../CLAUDE.md#multi-corpus-convention-kgrag).
 
 ---
 
-## 8. Installing the CodeKG Skill
+## 7. Tool reference
 
-The CodeKG skill gives AI agents expert knowledge about CodeKG installation and usage. It must be installed to the correct directory for each agent type.
+The server registers **13** tools. Required parameters are shown in **bold**.
 
-| Agent | Skill directory |
-|---|---|
-| **Claude Code** | `~/.claude/skills/codekg/` (served by `skills-copilot` MCP server) |
-| **Kilo Code** | `~/.kilocode/skills/codekg/` |
-| **Other agents** | `~/.agents/skills/codekg/` |
+### Retrieval and search
 
-### Install to all locations at once (recommended)
-
-```bash
-# From the code_kg repo root
-bash scripts/install-skill.sh
-
-# Or without cloning (one-liner)
-curl -fsSL https://raw.githubusercontent.com/Flux-Frontiers/code_kg/main/scripts/install-skill.sh | bash
-```
-
-The script installs `SKILL.md` and `references/installation.md` to all three skill directories and generates the appropriate MCP config files in the current project directory:
-- `.mcp.json` (Claude Code + Kilo Code — contains the `codekg` entry)
-- `.vscode/mcp.json` (GitHub Copilot)
-
-### Manual install
-
-```bash
-# Claude Code
-mkdir -p ~/.claude/skills/codekg/references
-cp .claude/skills/codekg/SKILL.md ~/.claude/skills/codekg/SKILL.md
-cp .claude/skills/codekg/references/installation.md ~/.claude/skills/codekg/references/installation.md
-
-# Kilo Code
-mkdir -p ~/.kilocode/skills/codekg/references
-cp .claude/skills/codekg/SKILL.md ~/.kilocode/skills/codekg/SKILL.md
-cp .claude/skills/codekg/references/installation.md ~/.kilocode/skills/codekg/references/installation.md
-```
-
-After installing for Kilo Code, reload VS Code (`Cmd+Shift+P` → **Developer: Reload Window**) to pick up the new skill.
-
----
-
-## 9. Automated Setup with `/setup-mcp`
-
-
-If your project uses **Claude Copilot**, the `/setup-mcp` command automates the entire installation and configuration process.
-
-### Usage
-
-```
-/setup-mcp                        # Interactive — prompts for repo path
-/setup-mcp /path/to/repo          # Non-interactive — uses provided path
-```
-
-### What it does
-
-The command runs six steps automatically:
-
-| Step | Action |
-|---|---|
-| 0 | Resolves the target repository path and verifies Python files exist |
-| 1 | Verifies `codekg mcp` is installed; installs `code-kg[mcp]` if missing |
-| 2 | Builds the SQLite knowledge graph (asks before wiping existing data) |
-| 3 | Builds the LanceDB vector index (asks before wiping existing data) |
-| 4 | Smoke-tests the full query pipeline |
-| 5 | Writes/updates MCP configs: `.mcp.json` (Claude Code + Kilo Code), `.vscode/mcp.json` (GitHub Copilot), `claude_desktop_config.json` (Claude Desktop) |
-| 6 | Prints a final summary with node/edge/vector counts and next steps |
-
-### Example output
-
-```
-✓ Repository indexed:    /path/to/repo
-✓ SQLite graph:          /path/to/repo/.codekg/graph.sqlite  (412 nodes, 1087 edges)
-✓ LanceDB index:         /path/to/repo/.codekg/lancedb  (378 vectors)
-✓ Smoke test:            passed
-✓ Claude Code config:    /path/to/repo/.mcp.json
-✓ Claude Desktop config: ~/Library/Application Support/Claude/claude_desktop_config.json
-
-Restart Claude Code / Claude Desktop to activate the codekg MCP server.
-
-Available tools once active:
-  • graph_stats()          — codebase size and shape
-  • query_codebase(q)      — semantic + structural exploration
-  • pack_snippets(q)       — source-grounded code snippets
-  • get_node(node_id)      — single node metadata lookup
-
-Suggested first query after restart:
-  graph_stats()
-```
-
----
-
-## 10. Claude Copilot Integration
-
-If your project uses [Claude Copilot](https://github.com/Everyone-Needs-A-Copilot/claude-copilot), CodeKG integrates naturally with the agent framework.
-
-### Setting up Claude Copilot in a new project
-
-Claude Copilot provides the agent infrastructure (Memory Copilot, Task Copilot, Skills, Agents). To set it up alongside CodeKG:
-
-```
-/setup-project          # Initialize Claude Copilot
-/setup-mcp              # Then set up CodeKG MCP
-```
-
-### Project structure with both installed
-
-```
-your-project/
-├── .mcp.json                    ← MCP server config (codekg — read by Claude Code + Kilo Code)
-├── .claude/
-│   ├── claude_code_config.json  ← Claude Code MCP config (copilot servers only)
-│   ├── settings.local.json      ← Claude Code settings
-│   ├── agents/                  ← Agent definitions (ta, me, qa, doc, etc.)
-│   ├── commands/
-│   │   ├── protocol.md          ← /protocol command
-│   │   ├── continue.md          ← /continue command
-│   │   └── setup-mcp.md         ← /setup-mcp command
-│   └── skills/                  ← Local skills (empty until populated)
-├── .codekg/                     ← Knowledge graph + index (gitignored)
-│   ├── graph.sqlite
-│   └── lancedb/
-```
-
-### Recommended `.mcp.json`
-
-Contains `codekg` — read by both Claude Code and Kilo Code:
-
-```json
-{
-  "mcpServers": {
-    "codekg": {
-      "command": "codekg-mcp",
-      "args": ["--repo", "/absolute/path/to/your-project"]
-    }
-  }
-}
-```
-
-### Recommended `.claude/claude_code_config.json` with Copilot stack
-
-Contains the Claude Copilot servers (Claude Code-specific — Kilo Code does not read this file):
-
-```json
-{
-  "mcpServers": {
-    "copilot-memory": {
-      "command": "node",
-      "args": ["/Users/you/.claude/copilot/mcp-servers/copilot-memory/dist/index.js"],
-      "env": {
-        "MEMORY_PATH": "/Users/you/.claude/memory",
-        "WORKSPACE_ID": "your-project"
-      }
-    },
-    "skills-copilot": {
-      "command": "node",
-      "args": ["/Users/you/.claude/copilot/mcp-servers/skills-copilot/dist/index.js"],
-      "env": {
-        "LOCAL_SKILLS_PATH": "./.claude/skills"
-      }
-    },
-    "task-copilot": {
-      "command": "node",
-      "args": ["/Users/you/.claude/copilot/mcp-servers/task-copilot/dist/index.js"],
-      "env": {
-        "TASK_DB_PATH": "/Users/you/.claude/tasks",
-        "WORKSPACE_ID": "your-project"
-      }
-    }
-  }
-}
-```
-
-### Using CodeKG tools within the Agent-First Protocol
-
-When working under `/protocol`, agents can call CodeKG tools directly. The recommended workflow:
-
-```
-1. Start session:
-   /protocol
-
-2. Agent orientation (agent calls automatically):
-   graph_stats()                          → understand codebase shape
-
-3. Investigation (agent calls):
-   query_codebase("authentication flow")  → find relevant nodes
-   pack_snippets("JWT validation logic")  → read implementation
-
-4. Implementation:
-   @agent-me implements changes with full source context from pack_snippets
-```
-
-The `@agent-doc` agent is particularly well-suited to use `pack_snippets` when generating documentation — it gets accurate source-grounded snippets rather than hallucinating implementations.
-
----
-
-## 11. Available Tools Reference
-
-### `graph_stats()`
-
-Return node and edge counts broken down by kind and relation.
-
-**When to use:** First call in any session — understand the codebase size and shape before querying.
-
-**Parameters:** None.
-
-**Returns:**
-
-```json
-{
-  "total_nodes": 412,
-  "total_edges": 1087,
-  "node_counts": {
-    "module": 18, "class": 34, "function": 201, "method": 143, "symbol": 16
-  },
-  "edge_counts": {
-    "CONTAINS": 378, "CALLS": 512, "IMPORTS": 147, "INHERITS": 50
-  },
-  "db_path": ".codekg/graph.sqlite"
-}
-```
-
----
-
-### `query_codebase(q, k, hop, rels, include_symbols)`
-
-Hybrid semantic + structural query. Returns ranked nodes and edges as JSON.
-
-**When to use:** Exploring the graph — finding what classes, functions, and modules are relevant to a topic, understanding call relationships, tracing imports.
-
-**Parameters:**
-
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `q` | `str` | — | Natural-language query |
-| `k` | `int` | `8` | Semantic seed count (top-K from vector search) |
-| `hop` | `int` | `1` | Graph expansion hops from each seed |
-| `rels` | `str` | `"CONTAINS,CALLS,IMPORTS,INHERITS"` | Comma-separated edge types to follow |
-| `include_symbols` | `bool` | `false` | Include low-level `sym:` nodes |
-
-**Returns:** JSON with keys: `query`, `seeds`, `expanded_nodes`, `returned_nodes`, `hop`, `rels`, `nodes`, `edges`.
-
----
-
-### `pack_snippets(q, k, hop, rels, include_symbols, context, max_lines, max_nodes)`
-
-Hybrid query + source-grounded snippet extraction. Returns a Markdown context pack.
-
-**When to use:** Any time you need to read actual source code — understanding an implementation, debugging, writing tests, reviewing logic. **Prefer this over `query_codebase` when implementation details matter.**
-
-**Parameters:**
-
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `q` | `str` | — | Natural-language query |
-| `k` | `int` | `8` | Semantic seed count |
-| `hop` | `int` | `1` | Graph expansion hops |
-| `rels` | `str` | `"CONTAINS,CALLS,IMPORTS,INHERITS"` | Edge types to follow |
-| `include_symbols` | `bool` | `false` | Include symbol nodes |
-| `context` | `int` | `5` | Extra context lines around each definition |
-| `max_lines` | `int` | `160` | Maximum lines per snippet block |
-| `max_nodes` | `int` | `50` | Maximum nodes in the pack |
-
-**Returns:** Markdown string with ranked, deduplicated code snippets and line numbers.
-
----
-
-### `get_node(node_id)`
-
-Fetch a single node by its stable ID.
-
-**When to use:** You have a node ID from a previous query result and want its full metadata.
-
-**Parameters:**
-
-| Parameter | Type | Description |
+| Tool | Parameters | Purpose |
 |---|---|---|
-| `node_id` | `str` | Stable node ID, e.g. `fn:src/auth/jwt.py:JWTValidator.validate` |
+| `pack` | **`text`**, `k`, `hop` | Build a context-rich metabolic pack from a semantic query |
+| `query_pathway` | **`name`**, `k` | Find pathways by name or description using semantic search |
+| `get_compound` | **`compound_id`** | Retrieve a compound by internal or external database ID |
+| `get_reaction` | **`reaction_id`** | Retrieve a reaction with full substrate/product/enzyme context |
+| `find_path` | **`compound_a`**, **`compound_b`**, `max_hops` | Shortest metabolic path between two compounds |
 
-**Node ID format:** `<kind>:<module_path>:<qualname>`
+### Simulation
 
-| Prefix | Kind |
-|---|---|
-| `mod:` | module |
-| `cls:` | class |
-| `fn:` | function / method |
-| `sym:` | unresolved external symbol |
-
-**Returns:** JSON object with all node fields, or `{"error": "Node not found: '...'"}`.
-
----
-
-### `callers(node_id, rel)`
-
-Find all callers of a specific node by inverting a relation — fan-in analysis.
-
-**When to use:** Finding all callers of a specific function/method/class — fan-in analysis. More precise than `query_codebase` for this use case because it resolves cross-module callers through `sym:` import stubs.
-
-**Parameters:**
-
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `node_id` | `str` | — | Stable node ID, e.g. `fn:src/auth/jwt.py:JWTValidator.validate` |
-| `rel` | `str` | `"CALLS"` | Relation type to invert |
-
-**Returns:** JSON with `node_id`, `rel`, `caller_count`, `callers` (list of node dicts).
-
-**Example return shape:**
-
-```json
-{
-  "node_id": "fn:src/code_kg/store.py:GraphStore.expand",
-  "rel": "CALLS",
-  "caller_count": 7,
-  "callers": [
-    { "id": "m:src/code_kg/kg.py:CodeKG.query", "kind": "method", ... },
-    ...
-  ]
-}
-```
-
-> **Note:** `sym:` nodes are resolved automatically — callers from other modules that import the target function are included even when they reference it via an alias.
-
----
-
-## 12. Query Strategy Guide
-
-### Choosing `k` and `hop`
-
-| Goal | Recommended settings |
-|---|---|
-| Narrow, precise lookup | `k=4, hop=0` — seeds only, no expansion |
-| Standard exploration | `k=8, hop=1` — default; good for most queries |
-| Broad context sweep | `k=12, hop=2` — pulls in more of the call graph |
-| Deep dependency trace | `k=8, hop=2, rels="CALLS,IMPORTS"` — follow execution paths |
-
-Higher `hop` values expand the result set geometrically. Use `max_nodes` in `pack_snippets` to keep output manageable.
-
-### Choosing `rels`
-
-| Relation | Meaning | When to include |
+| Tool | Parameters | Purpose |
 |---|---|---|
-| `CONTAINS` | Module/class contains a definition | Almost always — provides structural context |
-| `CALLS` | Function A calls function B | Tracing execution flow, finding callers/callees |
-| `IMPORTS` | Module A imports from module B | Dependency analysis |
-| `INHERITS` | Class A inherits from class B | OOP hierarchy exploration |
+| `simulate_fba` | **`pathway_id`**, `objective_reaction`, `maximize` | Flux Balance Analysis (steady state) |
+| `simulate_ode` | **`pathway_id`**, `t_end`, `t_points`, `initial_concentrations_json`, `default_concentration` | Kinetic ODE simulation with Michaelis-Menten rates |
+| `simulate_whatif` | **`pathway_id`**, **`scenario_json`**, `mode` | Perturbation analysis: baseline vs. modified scenario |
 
-### Typical agent workflow
+### Kinetics
 
-```
-1. graph_stats()
-   → understand codebase size and shape
+| Tool | Parameters | Purpose |
+|---|---|---|
+| `get_kinetic_params` | **`reaction_id`** | Retrieve stored kinetic parameters for a reaction |
+| `seed_kinetics` | `force` | Seed the database with curated literature kinetic parameters |
 
-2. query_codebase("authentication flow", k=8, hop=1)
-   → identify relevant classes and functions, note their IDs
+### Snapshots
 
-3. pack_snippets("JWT token validation", k=6, hop=1)
-   → read the actual implementation
+| Tool | Parameters | Purpose |
+|---|---|---|
+| `snapshot_list` | `limit` | List metric snapshots, newest first |
+| `snapshot_show` | **`key`** | Full details for a single snapshot |
+| `snapshot_diff` | **`key_a`**, **`key_b`** | Compare two snapshots (B − A) |
 
-4. get_node("fn:src/auth/jwt.py:JWTValidator.validate")
-   → fetch metadata for a specific node
+> ODE simulations are stiff. The default solver is `BDF`; **RK45 will hang** on
+> metabolic pathways.
 
-5. callers("fn:src/auth/jwt.py:JWTValidator.validate")
-   → find every caller, including cross-module callers via import aliases
-
-6. pack_snippets("JWT token validation error handling", k=4, hop=2, rels="CALLS")
-   → follow the call graph deeper into error paths
-```
+Node IDs follow `<kind>:<source>:<accession>` — for example `cpd:kegg:C00031`
+(D-glucose), `rxn:kegg:R00200`, `pwy:kegg:hsa00010` (glycolysis),
+`enz:kegg:hsa:2539`.
 
 ---
 
-## 13. Rebuilding After Code Changes
+## 8. Query strategy
 
-When the codebase changes, rebuild both artifacts (safe to re-run, idempotent):
+`pack` is the workhorse: one call returns matched nodes plus their biological
+context, replacing many KEGG API round-trips.
+
+| Goal | Call |
+|---|---|
+| Broad orientation | `pack(text="glucose metabolism", k=8, hop=1)` |
+| Deep context on a pathway | `pack(text="fatty acid oxidation", k=5, hop=2)` |
+| Just the ranked pathway hits | `query_pathway(name="glycolysis", k=10)` |
+| A specific entity you already know | `get_compound` / `get_reaction` |
+| Connectivity between metabolites | `find_path(compound_a=..., compound_b=...)` |
+
+`hop` expands BFS steps along typed edges (`SUBSTRATE_OF`, `PRODUCT_OF`,
+`CATALYZES`, `CONTAINS`, `INHIBITS`, `ACTIVATES`, `XREF`), so reaction context
+arrives alongside whatever matched semantically. `hop=0` returns seeds only.
+
+---
+
+## 9. Rebuilding after data changes
+
+A full build wipes and rebuilds both stores:
 
 ```bash
-codekg build-sqlite  --repo . --db .codekg/graph.sqlite --wipe
-codekg build-lancedb --sqlite .codekg/graph.sqlite --wipe
+metabokg-build --data data/hsa_pathways
 ```
 
-The `.mcp.json` entry does not need to change after rebuilds — it points to the same file paths.
+To merge new pathway files without wiping:
 
-### Gitignore recommendations
-
-Add these to `.gitignore` to avoid committing large binary artifacts:
-
-```gitignore
-.codekg/
+```bash
+metabokg-update --data data/hsa_pathways
 ```
+
+Restart the MCP server afterwards — it holds an open handle to the graph.
 
 ---
 
-## 14. Troubleshooting
+## 10. Troubleshooting
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `ERROR: 'mcp' package not found` | Optional dep not installed | `poetry add mcp` or `poetry add "code-kg[mcp]"` |
-| `WARNING: SQLite database not found` | Graph not built yet | Run `codekg build-sqlite` then `codekg build-lancedb` |
-| `codekg build-lancedb: error: the following arguments are required: --sqlite` | Wrong flag name | Use `--sqlite`, not `--db`, for the lancedb builder |
-| Empty results from `query_codebase` | LanceDB index missing or stale | Run `codekg build-lancedb --wipe` |
-| Node IDs in results don't resolve with `get_node` | Graph rebuilt since last query | Rebuild both SQLite and LanceDB |
-| `RuntimeError: CodeKG not initialised` | Server called without `main()` | Always start via `codekg mcp` CLI |
-| Snippets show wrong line numbers | Source files changed since build | Rebuild with `codekg build-sqlite --wipe` |
-| MCP server not appearing in Claude Code | `.mcp.json` not in project root, or relative paths used | Use absolute paths; restart Claude Code |
-| MCP server not appearing in Claude Desktop | Wrong binary path or relative paths | Use `poetry env info --path` to get absolute venv path |
-| `codekg` command not found | Package not installed or venv not active | `poetry install` or use absolute venv path |
+| `database not found` | No build has run | `metabokg-init`, or `metabokg-build --data DIR` |
+| `Vector index not found` | Built with `--no-index` | Rebuild without `--no-index` |
+| `no such option: --lancedb` | Config predates 0.10.0 | Use `--vectors PATH` (a file, not a directory) |
+| Semantic tools return nothing | Vector store empty or stale | `metabokg info` to check, then rebuild |
+| Server missing from the agent | Config not reloaded | Restart the agent fully |
+| Claude Desktop cannot start it | Relative paths in a global config | Use absolute paths for the binary and both stores |
+| ODE simulation hangs | Non-stiff solver selected | Use `BDF` or `Radau`, never `RK45` |
+| Results look stale | Data changed since the build | Rebuild, then restart the server |
 
 ---
 
 ## Summary
 
-| Concern | Answer |
+| Question | Answer |
 |---|---|
-| What does the MCP server expose? | 5 tools: `graph_stats`, `query_codebase`, `pack_snippets`, `get_node`, `callers` |
-| What must exist before starting? | `.codekg/graph.sqlite` + `.codekg/lancedb/` directory |
-| How do I build those? | `codekg build-sqlite` then `codekg build-lancedb --sqlite ...` |
-| Is the server stateful? | Yes — one `CodeKG` instance per server process |
-| Can it modify the graph? | No — strictly read-only |
-| What transport should I use? | `stdio` for Claude Code / Claude Desktop; `sse` for HTTP clients |
-| Which tool should I call first? | `graph_stats()` for orientation |
-| How do I automate setup? | `/setup-mcp` command (requires Claude Copilot) |
+| What must exist first? | `<corpus>.sqlite` and `vectors.sqlite` under `.metabokg/` |
+| How do I build them? | `metabokg-init`, or `metabokg-build --data DIR` |
+| How do I start the server? | `metabokg-mcp [--db PATH] [--vectors PATH]` |
+| How many tools? | 13 — retrieval, simulation, kinetics, snapshots |
+| Where does per-repo config live? | `.mcp.json` (Claude Code/Kilo), `.vscode/mcp.json` (Copilot) |
+| Is the server stateful? | Yes — one `MetaKG` instance per server process |
+| What transport should I use? | `stdio` for Claude Code / Desktop; `sse` for HTTP clients |
+
+**See also:** [INSTALL.md](INSTALL.md) for full installation,
+[CHEATSHEET.md](CHEATSHEET.md) for CLI flags, and
+[`.claude/skills/metabokg/SKILL.md`](../.claude/skills/metabokg/SKILL.md) for
+the agent-facing skill.

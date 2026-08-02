@@ -29,7 +29,7 @@ def kkg_with_minimal_pathway(tmp_path):
     """
     kg = MetaKG(
         db_path=tmp_path / "test.sqlite",
-        lancedb_dir=tmp_path / "lancedb",
+        vectors_path=tmp_path / "vectors.sqlite",
     )
 
     # Nodes: 3 compounds, 2 reactions, 1 pathway, 2 enzymes

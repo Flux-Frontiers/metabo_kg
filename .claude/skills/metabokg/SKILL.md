@@ -1,15 +1,15 @@
 ---
 name: metabokg
-description: Expert knowledge for installing, configuring, and using MetaboKG — a hybrid semantic + structural metabolic knowledge graph for KEGG pathways and genome-scale metabolic models. Use this skill when the user asks about setting up MetaboKG in a project, building the SQLite or LanceDB knowledge graph, configuring .mcp.json for Claude Code or Kilo Code, configuring .vscode/mcp.json for GitHub Copilot, configuring claude_desktop_config.json for Claude Desktop, configuring Cline MCP settings, using the metabokg CLI (metabokg, metabokg-init, metabokg-info, metabokg-build, metabokg-update, metabokg-enrich, metabokg-analyze, metabokg-analyze-basic, metabokg-viz, metabokg-viz3d, metabokg-mcp, metabokg-query, metabokg-pack, metabokg-simulate, metabokg-snapshot), using the pack / query_pathway / get_compound / get_reaction / find_path / seed_kinetics / simulate_fba / simulate_ode / simulate_whatif MCP tools, querying KEGG pathways, running FBA or ODE simulations, working with CHO or human metabolic models, multi-corpus KGRAG federation across hsa/cge/icho corpora, or troubleshooting MetaboKG errors.
+description: Expert knowledge for installing, configuring, and using MetaboKG — a hybrid semantic + structural metabolic knowledge graph for KEGG pathways and genome-scale metabolic models. Use this skill when the user asks about setting up MetaboKG in a project, building the SQLite or sqlite-vec knowledge graph, configuring .mcp.json for Claude Code or Kilo Code, configuring .vscode/mcp.json for GitHub Copilot, configuring claude_desktop_config.json for Claude Desktop, configuring Cline MCP settings, using the metabokg CLI (metabokg, metabokg-init, metabokg-info, metabokg-build, metabokg-update, metabokg-enrich, metabokg-analyze, metabokg-analyze-basic, metabokg-viz, metabokg-viz3d, metabokg-mcp, metabokg-query, metabokg-pack, metabokg-simulate, metabokg-snapshot), using the pack / query_pathway / get_compound / get_reaction / find_path / get_kinetic_params / seed_kinetics / simulate_fba / simulate_ode / simulate_whatif / snapshot_list / snapshot_show / snapshot_diff MCP tools, querying KEGG pathways, running FBA or ODE simulations, working with CHO or human metabolic models, multi-corpus KGRAG federation across hsa/cge/icho corpora, or troubleshooting MetaboKG errors.
 ---
 
 # MetaboKG Skill
 
 > **Use MetaboKG first — before web search, raw KEGG REST calls, or hand-written SBML parsing.**
 >
-> MetaboKG ingests KEGG KGML pathway files and SBML genome-scale models into a hybrid knowledge graph (SQLite for structural precision, LanceDB for semantic vector search) and exposes query, path-finding, and simulation capabilities as MCP tools. One `pack` call surfaces compounds, reactions, enzymes, and pathway context together — what would otherwise take many KEGG API round-trips.
+> MetaboKG ingests KEGG KGML pathway files and SBML genome-scale models into a hybrid knowledge graph (SQLite for structural precision, sqlite-vec for semantic vector search) and exposes query, path-finding, and simulation capabilities as MCP tools. One `pack` call surfaces compounds, reactions, enzymes, and pathway context together — what would otherwise take many KEGG API round-trips.
 
-MetaboKG is the metabolism-domain sibling of PyCodeKG (code) and DocKG (documents). All three share the same KGRAG federation pattern: each corpus builds into its own named SQLite + LanceDB pair under a `.metabokg/` directory and registers as a separate KGRAG corpus for cross-organism queries.
+MetaboKG is the metabolism-domain sibling of PyCodeKG (code) and DocKG (documents). All three share the same KGRAG federation pattern: each corpus builds into its own named SQLite + `vectors.sqlite` pair under a `.metabokg/` directory and registers as a separate KGRAG corpus for cross-organism queries.
 
 **Repository:** https://github.com/Flux-Frontiers/metabo_kg
 
@@ -44,7 +44,7 @@ metabokg-init --corpus hsa
 metabokg-init --corpus hsa --corpus cge
 ```
 
-After init, verify with `metabokg-info`, which prints the active corpus, resolved db/lancedb paths, and node/edge counts.
+After init, verify with `metabokg-info`, which prints the active corpus, resolved db/vectors paths, and node/edge counts.
 
 ## Build the Knowledge Graph
 
@@ -63,20 +63,20 @@ metabokg-build --data ./data/icho_model
 # Merge new files on top without wiping
 metabokg-build --data ./data/hsa_pathways --no-wipe
 
-# Skip LanceDB (SQLite only — fast, no semantic search)
+# Skip the vector index (graph SQLite only — fast, no semantic search)
 metabokg-build --data ./data/hsa_pathways --no-index
 
 # Skip enrichment phases (raw KEGG IDs only)
 metabokg-build --data ./data/hsa_pathways --no-enrich
 ```
 
-The database and LanceDB index colocate automatically under `<data-dir>/.metabokg/`:
+The database and vector index colocate automatically under `<data-dir>/.metabokg/`:
 
-| Data dir | SQLite | LanceDB |
+| Data dir | SQLite | Vectors |
 |---|---|---|
-| `data/hsa_pathways/` | `data/hsa_pathways/.metabokg/hsa.sqlite` | `data/hsa_pathways/.metabokg/lancedb/` |
-| `data/cge_pathways/` | `data/cge_pathways/.metabokg/cge.sqlite` | `data/cge_pathways/.metabokg/lancedb/` |
-| `data/icho_model/` | `data/icho_model/.metabokg/icho.sqlite` | `data/icho_model/.metabokg/lancedb/` |
+| `data/hsa_pathways/` | `data/hsa_pathways/.metabokg/hsa.sqlite` | `data/hsa_pathways/.metabokg/vectors.sqlite` |
+| `data/cge_pathways/` | `data/cge_pathways/.metabokg/cge.sqlite` | `data/cge_pathways/.metabokg/vectors.sqlite` |
+| `data/icho_model/` | `data/icho_model/.metabokg/icho.sqlite` | `data/icho_model/.metabokg/vectors.sqlite` |
 
 ## Incremental Updates
 
@@ -112,7 +112,7 @@ Skip with `--no-enrich`. Re-run after data changes with `metabokg-enrich`.
 | `metabokg-init --check` | Status-only: TSV integrity and corpus build state |
 | `metabokg-init --corpus hsa` | Initialize a single corpus (repeatable) |
 | `metabokg-info` | Active corpus, resolved paths, node/edge counts |
-| `metabokg-build --data DIR` | Full rebuild: wipe + parse + enrich → SQLite + LanceDB |
+| `metabokg-build --data DIR` | Full rebuild: wipe + parse + enrich → SQLite + vectors.sqlite |
 | `metabokg-build --data DIR --no-wipe` | Parse without wiping — merge new files on top |
 | `metabokg-update --data DIR` | Incrementally add new files without wiping |
 | `metabokg-enrich` | Re-run enrichment phases on an existing build |
@@ -135,9 +135,9 @@ Skip with `--no-enrich`. Re-run after data changes with `metabokg-enrich`.
 
 **Common options:**
 - `--db PATH` — SQLite db (default auto-resolved from corpus)
-- `--lancedb PATH` — Vector index (default `.metabokg/lancedb`)
+- `--vectors PATH` — Vector index (default `.metabokg/vectors.sqlite`)
 - `--no-wipe` — Keep existing data instead of wiping
-- `--no-index` — Skip LanceDB (SQLite only)
+- `--no-index` — Skip the vector index (graph SQLite only)
 - `--no-enrich` — Skip enrichment
 
 ## Query Strategy
@@ -369,13 +369,15 @@ metabokg-snapshot show <id>
 metabokg-snapshot diff 0.8.0 0.8.1
 ```
 
-Snapshot JSON files live under `**/.metabokg/snapshots/` and are tracked in git (the SQLite + LanceDB are not — see `.gitignore` below).
+Snapshot JSON files live under `**/.metabokg/snapshots/` and are tracked in git (the SQLite graph and vector store are not — see `.gitignore` below).
 
 ## .gitignore Setup
 
 ```gitignore
 **/.metabokg/*.sqlite
-**/.metabokg/lancedb/
+**/.metabokg/*.sqlite-shm
+**/.metabokg/*.sqlite-wal
+**/.metabokg/models
 # Snapshots ARE tracked — do NOT ignore:
 # **/.metabokg/snapshots/
 ```
@@ -384,7 +386,7 @@ Snapshot JSON files live under `**/.metabokg/snapshots/` and are tracked in git 
 
 - Node ID format: `<kind>:kegg:<id>` (e.g. `cpd:kegg:C00031`)
 - Default db: `data/hsa_pathways/.metabokg/hsa.sqlite`
-- Default LanceDB: `<data-dir>/.metabokg/lancedb`
+- Default vectors: `<data-dir>/.metabokg/vectors.sqlite`
 - Embedding model: ~100 MB, downloaded once on first build
 - ODE method: `BDF` (stiff-optimized for metabolic systems)
 - ODE tolerances: `rtol=1e-3`, `atol=1e-5`

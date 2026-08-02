@@ -1,5 +1,15 @@
 # Pre-Commit & Snapshot Refactor
 
+> **⚠️ Historical record — superseded as of 0.10.0. Do not follow as guidance.**
+>
+> This is a work-log of a refactor completed when `code_kg` was still the code
+> knowledge graph. `code_kg` has since been retired in favour of `pycode_kg`,
+> and the hook described below was rewritten in 0.10.0: it now invokes
+> `pycodekg` (skipping cleanly when PyCodeKG is absent), passes no `--wipe` to
+> the full build, stages `.pycodekg/snapshots/`, and its skip switch is
+> `METABOKG_SKIP_SNAPSHOT`. See `src/metabokg/cli/cmd_hooks.py` and
+> `tests/test_hooks.py` for the current behaviour.
+
 Covers changes across `Metabo_kg`, `code_kg`, and `doc_kg`.
 
 ---

@@ -32,8 +32,8 @@ poetry install --all-extras  # Full install with viz, viz3d, mcp
 | `metabokg-init` | **First-time setup**: integrity check, fetch missing TSVs, build all corpora, seed kinetics |
 | `metabokg-init --check` | Status-only: show TSV integrity and corpus build state without modifying anything |
 | `metabokg-init --corpus hsa` | Initialize a single corpus (repeatable: `--corpus hsa --corpus cge`) |
-| `metabokg-info` | Show active corpus, resolved db/lancedb paths, node/edge counts |
-| `metabokg-build --data DIR` | Full rebuild: wipe + parse pathways → SQLite + LanceDB (enriches by default) |
+| `metabokg-info` | Show active corpus, resolved db/vectors paths, node/edge counts |
+| `metabokg-build --data DIR` | Full rebuild: wipe + parse pathways → SQLite + vectors.sqlite (enriches by default) |
 | `metabokg-build --data DIR --no-wipe` | Parse without wiping — merge new files on top |
 | `metabokg-update --data DIR` | Incrementally add new files without wiping |
 | `metabokg-analyze [--output FILE]` | 7-phase pathway analysis |
@@ -45,12 +45,12 @@ poetry install --all-extras  # Full install with viz, viz3d, mcp
 
 **Common options:**
 - `--db PATH`: SQLite db (default: `.metabokg/hsa.sqlite`)
-- `--lancedb PATH`: Vector index (default: `.metabokg/lancedb`)
+- `--vectors PATH`: Vector index (default: `.metabokg/vectors.sqlite`)
 - `--no-wipe`: Keep existing data instead of wiping (build wipes by default)
-- `--no-index`: Skip LanceDB (SQLite only)
+- `--no-index`: Skip the vector index (graph SQLite only)
 - `--no-enrich`: Skip enrichment (on by default)
 
-**MCP tools:** `pack`, `query_pathway`, `get_compound`, `get_reaction`, `find_path`, `seed_kinetics`, `simulate_fba`, `simulate_ode`, `simulate_whatif`
+**MCP tools (13):** `pack`, `query_pathway`, `get_compound`, `get_reaction`, `find_path`, `get_kinetic_params`, `seed_kinetics`, `simulate_fba`, `simulate_ode`, `simulate_whatif`, `snapshot_list`, `snapshot_show`, `snapshot_diff` — see [docs/MCP.md](docs/MCP.md)
 
 ### 3D Visualization (`metabokg-viz3d`)
 
@@ -170,9 +170,9 @@ metabokg-build --data data/icho_model    # → data/icho_model/.metabokg/icho.sq
 
 | Command | Purpose |
 |---------|---------|
-| `pycodekg-build [--repo DIR] [--wipe]` | Full pipeline: AST → SQLite → LanceDB |
+| `pycodekg-build [--repo DIR]` | Full pipeline: AST → SQLite → sqlite-vec (always wipes; no `--wipe` flag) |
 | `pycodekg-build-sqlite [--repo DIR] [--wipe]` | Structural analysis → SQLite only |
-| `pycodekg-build-lancedb [--repo DIR] [--wipe]` | Embeddings → LanceDB (requires SQLite already built) |
+| `pycodekg-build-index [--repo DIR] [--wipe]` | Embeddings → sqlite-vec (requires SQLite already built) |
 | `pycodekg-query QUERY [--k 8] [--hop 1]` | Semantic + graph search, ranked summary |
 | `pycodekg-pack QUERY [--k 8] [--hop 1]` | Source-grounded snippet packs |
 | `pycodekg-mcp [--repo DIR]` | MCP server |
@@ -184,7 +184,7 @@ metabokg-build --data data/icho_model    # → data/icho_model/.metabokg/icho.sq
 - `k=12, hop=2`: broad context
 - `k=8, hop=2, rels=CALLS,IMPORTS`: deep dependencies
 
-**When to rebuild:** Function/class rename/delete → `--wipe`. Minor edits → incremental.
+**When to rebuild:** Function/class rename/delete → `pycodekg-build` (a full build always wipes). Minor edits → `pycodekg-update`.
 
 ---
 
@@ -229,7 +229,7 @@ metabokg-mcp                      # MCP server for Claude
 metabokg-build --data ./data/hsa_pathways
 
 # Optional: analyze codebase
-pycodekg-build --repo . --wipe
+pycodekg-build --repo .
 pycodekg-query "orchestrator pipeline"
 pycodekg-pack "pathway category provenance"
 ```
@@ -242,6 +242,6 @@ pycodekg-pack "pathway category provenance"
 - **Embedding model:** ~100MB, downloaded once
 - **ODE solvers:** Metabolic systems are stiff → use BDF (not RK45)
 - **PyCodeKG node ID:** `fn:src/path/file.py:Class.method`
-- **Rebuild:** Use `--wipe` after major refactors to avoid stale data
+- **Rebuild:** Run a full `build` after major refactors to avoid stale data (`metabokg-build` and `pycodekg-build` both wipe by default; `metabokg-build --no-wipe` opts out)
 - **Graph quality:** No isolated nodes (all 17K+ nodes are wired), all pathways categorized
 - **Enrichment:** Now default-on during build; use `--no-enrich` to skip
