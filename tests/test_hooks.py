@@ -28,6 +28,12 @@ pytestmark = pytest.mark.skipif(
     reason="hook execution needs git and bash",
 )
 
+# The hook shells out to pre-commit when a config is present. Whether that
+# binary exists changes which branch runs, and a venv without it silently
+# skips the branch that broke CI — so the config-gate tests below assert on it
+# rather than quietly passing.
+HAS_PRE_COMMIT = shutil.which("pre-commit") is not None
+
 
 def _git(*args: str, cwd: Path) -> subprocess.CompletedProcess:
     return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, check=False)
@@ -142,3 +148,42 @@ class TestHookExecution:
             env={"PATH": "/usr/bin:/bin", "METABOKG_SKIP_SNAPSHOT": "1", "HOME": str(repo)},
         )
         assert result.returncode == 0, result.stderr
+
+
+class TestPreCommitConfigGate:
+    """`pre-commit run` fails when there is no config, and the hook must not
+    turn that into a blocked commit.
+
+    This is what broke CI: the local venv had no `pre-commit` binary, so the
+    branch was never taken and three tests passed against a hook that would
+    have rejected every commit on any machine that did have it installed.
+    """
+
+    def test_commit_succeeds_without_a_pre_commit_config(self, repo):
+        assert not (repo / ".pre-commit-config.yaml").exists()
+        _stage(repo, "a.txt")
+        result = _git("commit", "-m", "init", cwd=repo)
+        assert result.returncode == 0, result.stderr
+
+    def test_hook_gates_on_the_config_file(self):
+        """The guard must test for the file, not just for the binary."""
+        assert '.pre-commit-config.yaml" ]' in _PRE_COMMIT_HOOK
+
+    @pytest.mark.skipif(not HAS_PRE_COMMIT, reason="needs the pre-commit binary")
+    def test_a_failing_pre_commit_blocks_the_commit(self, repo):
+        """With a config present, pre-commit's verdict must still be honoured."""
+        (repo / ".pre-commit-config.yaml").write_text(
+            "repos:\n"
+            "  - repo: local\n"
+            "    hooks:\n"
+            "      - id: always-fail\n"
+            "        name: always-fail\n"
+            "        entry: false\n"
+            "        language: system\n"
+            "        always_run: true\n"
+            "        pass_filenames: false\n"
+        )
+        _git("add", ".pre-commit-config.yaml", cwd=repo)
+        _stage(repo, "a.txt")
+        result = _git("commit", "-m", "should be rejected", cwd=repo)
+        assert result.returncode != 0, "a failing pre-commit hook must block the commit"

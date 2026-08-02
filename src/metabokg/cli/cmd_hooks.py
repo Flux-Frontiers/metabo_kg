@@ -32,11 +32,17 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 
 # Run pre-commit framework checks (ruff, ty, detect-secrets, etc.)
 # Delegates to .pre-commit-config.yaml so quality checks stay in one place.
-PRECOMMIT="$REPO_ROOT/.venv/bin/pre-commit"
-if [ -x "$PRECOMMIT" ]; then
-    "$PRECOMMIT" run || exit 1
-elif command -v pre-commit &>/dev/null; then
-    pre-commit run || exit 1
+# The config gate is load-bearing: `pre-commit run` exits non-zero with
+# "InvalidConfigError: .pre-commit-config.yaml is not a file" when there is no
+# config, so without it this hook blocks every commit in any repo that
+# installed it but does not use pre-commit.
+if [ -f "$REPO_ROOT/.pre-commit-config.yaml" ]; then
+    PRECOMMIT="$REPO_ROOT/.venv/bin/pre-commit"
+    if [ -x "$PRECOMMIT" ]; then
+        "$PRECOMMIT" run || exit 1
+    elif command -v pre-commit &>/dev/null; then
+        pre-commit run || exit 1
+    fi
 fi
 
 cd "$REPO_ROOT"

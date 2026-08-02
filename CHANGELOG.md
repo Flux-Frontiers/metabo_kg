@@ -164,6 +164,15 @@ metabokg-init --force        # or: metabokg-build --data <DIR> per corpus
   rejects with exit 2, and stages `.pycodekg/snapshots/`. The skip switch is
   renamed `CODEKG_SKIP_SNAPSHOT` → `METABOKG_SKIP_SNAPSHOT`.
 
+- **The same hook blocked every commit in a repo with no pre-commit config.**
+  `pre-commit run` exits non-zero with `InvalidConfigError:
+  .pre-commit-config.yaml is not a file`, and the hook ran it whenever the
+  binary was on PATH, gated only on the binary rather than on the config. Now
+  gated on the config file. Caught by CI, not locally: the dev venv used to
+  verify the earlier fix had no `pre-commit` installed, so the branch never
+  ran — `tests/test_hooks.py` now asserts on the binary's presence instead of
+  silently skipping.
+
 - **The same hook aborted the first commit of a fresh repository.**
   `git rev-parse --abbrev-ref HEAD` is fatal on an unborn HEAD, which under
   `set -e` killed the hook with exit 128. Replaced with
