@@ -15,6 +15,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [0.11.0] - 2026-08-03
+
+### Removed
+
+- **The `kgdeps` extra**, and `doc-kg` / `pycode-kg` from the `all` extra.
+
+  Neither is imported anywhere under `src/`. They are tools this repo *runs* —
+  the pre-commit hook rebuilds both indices, `.mcp.json` serves a `dockg` MCP
+  server, `.claude/commands` drive `pycodekg`. Extras are *published* metadata,
+  so `pip install metabo-kg[all]` pulled two sibling KG packages into a
+  consumer's environment for tooling they will never run, and put the whole
+  fleet into one resolution graph.
+
+  They move to `[tool.poetry.group.kg]`, which is locked and installable but
+  never written into the wheel. Verified against a built wheel: no sibling KG
+  package appears in `Requires-Dist`, and `Provides-Extra` loses only `kgdeps`.
+
+  **Migration:** `poetry install --extras kgdeps` → `poetry install --with kg`.
+
+### Fixed
+
+- **`__version__` was stuck at 0.9.1** while `pyproject.toml` said 0.10.0 — the
+  0.10.0 release synced every version string except this one. Anything reading
+  it reported the wrong version; `thorough_analysis.py` stamps it into its
+  report header, so generated reports have been mislabelled since 0.10.0.
+
 ## [0.10.0] - 2026-08-01
 
 LanceDB → sqlite-vec migration (fleet Phase 2). The vector store moves from a

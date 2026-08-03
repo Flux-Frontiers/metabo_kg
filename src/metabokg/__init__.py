@@ -17,11 +17,11 @@ Quick start::
     path = kg.find_path("glucose", "pyruvate")
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-07-29 00:00:00
+Last Revision: 2026-08-03 00:00:00
 
 """
 
-__version__ = "0.9.1"
+__version__ = "0.11.0"
 
 from metabokg.orchestrator import (
     MetabolicBuildStats,
