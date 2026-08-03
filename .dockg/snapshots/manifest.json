@@ -1,6 +1,6 @@
 {
   "format": "1.0",
-  "last_update": "2026-07-29T17:31:41.309941+00:00",
+  "last_update": "2026-08-03T18:24:09.686513+00:00",
   "snapshots": [
     {
       "key": "ae4bee95d9a40dd13f35c47f942c9743301caa39",
@@ -170,6 +170,49 @@
           "nodes": 18,
           "edges": 232,
           "coverage_delta": 0.00033811725044374796,
+          "issues_delta": -1
+        }
+      }
+    },
+    {
+      "key": "071995dd5a1656b1018c6023583d1f9841936921",
+      "branch": "ci/wheel-smoke-test",
+      "timestamp": "2026-08-03T18:24:09.685630+00:00",
+      "version": "0.10.0",
+      "file": "071995dd5a1656b1018c6023583d1f9841936921.json",
+      "metrics": {
+        "db_path": "/Users/egs/repos/Metabo_kg/.dockg/graph.sqlite",
+        "total_nodes": 4618,
+        "total_edges": 40198,
+        "node_counts": {
+          "chunk": 1093,
+          "document": 34,
+          "entity": 1152,
+          "keyword": 1012,
+          "section": 649,
+          "topic": 678
+        },
+        "edge_counts": {
+          "CONTAINS": 1742,
+          "CO_OCCURS_WITH": 24964,
+          "HAS_KEYWORD": 4371,
+          "HAS_TOPIC": 1110,
+          "MENTIONS_ENTITY": 5092,
+          "NEXT": 374,
+          "REFERENCES": 50,
+          "SIMILAR_TO": 2495
+        },
+        "meaningful_nodes": 4584,
+        "coverage_score": 0.9585239402256786,
+        "issues_count": 0,
+        "complexity_median": 23.0
+      },
+      "deltas": {
+        "vs_previous": null,
+        "vs_baseline": {
+          "nodes": -43,
+          "edges": -450,
+          "coverage_delta": -3.791230326721795e-05,
           "issues_delta": -1
         }
       }
