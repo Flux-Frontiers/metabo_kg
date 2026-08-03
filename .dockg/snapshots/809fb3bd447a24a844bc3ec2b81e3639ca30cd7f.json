@@ -1,7 +1,7 @@
 {
-  "key": "f3361c96a06c487196d994c6c7951f2b25d99a6a",
-  "branch": "chore/fleet-dep-floors",
-  "timestamp": "2026-08-03T19:26:58.299010+00:00",
+  "key": "809fb3bd447a24a844bc3ec2b81e3639ca30cd7f",
+  "branch": "chore/kg-tooling-group",
+  "timestamp": "2026-08-03T20:27:35.699411+00:00",
   "version": "0.10.0",
   "metrics": {
     "db_path": "/Users/egs/repos/Metabo_kg/.dockg/graph.sqlite",
@@ -113,7 +113,12 @@
     }
   ],
   "issues": [],
-  "vs_previous": null,
+  "vs_previous": {
+    "nodes": -61,
+    "edges": -682,
+    "coverage_delta": -0.0003760295537109659,
+    "issues_delta": 0
+  },
   "vs_baseline": {
     "nodes": -43,
     "edges": -450,
