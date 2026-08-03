@@ -82,9 +82,21 @@ dependencies = [
     # port to the standalone fastmcp package.
     "mcp>=1.0.0,<2",
     "numpy>=1.24.0",
+    # rich/torch/transformers were arriving only via kgmodule-utils[semantic].
+    # kg_utils imports torch, transformers and numpy lazily from its embedder,
+    # and rich from corpus_embedder's progress display, so they are runtime
+    # requirements here even though nothing in metabokg imports them directly.
+    # Declared explicitly now that `[semantic]` is gone.
+    "rich>=13.0.0",
     "sentence-transformers>=5.4.1",
+    "torch>=2.5.1",
+    "transformers>=5.5.0,<6",
     "watchdoc>=0.0.1",
-    "kgmodule-utils[semantic,sqlite-vec]>=0.9.0",
+    # `[semantic]` dropped: it bundled the five above plus `lancedb`, the last
+    # thing pulling the retired backend into a clean install. kgmodule-utils has
+    # no `lancedb`-only extra yet, so this is the only way to shed it without a
+    # new upstream release.
+    "kgmodule-utils[sqlite-vec]>=0.9.0",
 ]
 
 [project.optional-dependencies]
@@ -114,7 +126,10 @@ viz3d = [
 ]
 # note: agent-kg, memory-kg not yet on PyPI — install from git; pycode-kg and doc-kg now on PyPI
 kgdeps = [
-    "doc-kg>=0.18.1",
+    # >=0.20.0: the release that moved lancedb out of doc-kg's core into an
+    # optional [lancedb] extra. Below that floor, installing this extra drags
+    # the retired backend back in.
+    "doc-kg>=0.20.0",
     "pycode-kg>=0.20.0",
 ]
 
@@ -137,7 +152,10 @@ all = [
     "rdflib>=6.0.0",
     "scipy>=1.11.0",
     "streamlit>=1.56.0",
-    "doc-kg>=0.18.1",
+    # >=0.20.0: the release that moved lancedb out of doc-kg's core into an
+    # optional [lancedb] extra. Below that floor, installing this extra drags
+    # the retired backend back in.
+    "doc-kg>=0.20.0",
     "pycode-kg>=0.20.0",
 ]
 
