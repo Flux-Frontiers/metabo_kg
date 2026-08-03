@@ -84,7 +84,7 @@ dependencies = [
     "numpy>=1.24.0",
     "sentence-transformers>=5.4.1",
     "watchdoc>=0.0.1",
-    "kgmodule-utils[semantic,sqlite-vec]>=0.9.0",
+    "kgmodule-utils[semantic,sqlite-vec]>=0.10.0",
 ]
 
 [project.optional-dependencies]
@@ -114,8 +114,8 @@ viz3d = [
 ]
 # note: agent-kg, memory-kg not yet on PyPI — install from git; pycode-kg and doc-kg now on PyPI
 kgdeps = [
-    "doc-kg>=0.18.1",
-    "pycode-kg>=0.20.0",
+    "doc-kg>=0.21.0",
+    "pycode-kg>=0.21.4",
 ]
 
 all = [
@@ -137,8 +137,8 @@ all = [
     "rdflib>=6.0.0",
     "scipy>=1.11.0",
     "streamlit>=1.56.0",
-    "doc-kg>=0.18.1",
-    "pycode-kg>=0.20.0",
+    "doc-kg>=0.21.0",
+    "pycode-kg>=0.21.4",
 ]
 
 [project.urls]
