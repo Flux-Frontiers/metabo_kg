@@ -12,7 +12,6 @@
 #   pip install -e ".[viz3d]"           core + PyVista 3D visualizer
 #   pip install -e ".[simulate]"        core + scipy ODE/FBA simulation
 #   pip install -e ".[biopax]"          core + RDFLib BioPAX parser
-#   pip install -e ".[kgdeps]"          core + KG integrations (pycode-kg, doc-kg, etc.)
 #   pip install -e ".[all]"             everything above
 #   pip install -e "."                  core runtime only
 #
@@ -23,7 +22,7 @@
 #   poetry install --extras "viz"       core + Streamlit/PyVis only
 #   poetry install --extras "viz3d"     core + 3D visualizer only
 #   poetry install --extras "simulate"  core + simulation only
-#   poetry install --extras "kgdeps"    core + KG integrations only
+#   poetry install --with kg            core + the dockg/pycodekg CLIs (maintainer tooling)
 #   poetry install                      core runtime only
 #
 # First-time setup
@@ -112,12 +111,6 @@ viz3d = [
     "pyvista>=0.44.0",
     "pyvistaqt>=0.11.0",
 ]
-# note: agent-kg, memory-kg not yet on PyPI — install from git; pycode-kg and doc-kg now on PyPI
-kgdeps = [
-    "doc-kg>=0.21.0",
-    "pycode-kg>=0.21.4",
-]
-
 all = [
     "detect-secrets>=1.5.0",
     "ty>=0.0.41",
@@ -137,9 +130,30 @@ all = [
     "rdflib>=6.0.0",
     "scipy>=1.11.0",
     "streamlit>=1.56.0",
-    "doc-kg>=0.21.0",
-    "pycode-kg>=0.21.4",
 ]
+
+# ---------------------------------------------------------------------------
+# Maintainer tooling (Poetry group, not a PEP 621 extra)
+# ---------------------------------------------------------------------------
+# doc-kg and pycode-kg are tools this repo *runs*, not libraries it imports.
+# Nothing under src/ imports either one. They are here because the
+# "pycodekg + dockg build & snapshot" pre-commit hook rebuilds both indices,
+# .mcp.json serves a `dockg` MCP server, and .claude/commands drive `pycodekg`.
+#
+# They used to live in the `kgdeps` and `all` extras. Extras are *published*
+# metadata, so `pip install metabo-kg[all]` pulled two sibling KG packages into
+# a consumer's environment for tooling they will never run -- and put the whole
+# fleet into one resolution graph. A Poetry group is maintainer-facing: locked
+# and installable, but never written into the wheel.
+#
+#   poetry install --with kg      # get the dockg / pycodekg CLIs into .venv/bin
+#   poetry install                # default: group is optional, skipped
+[tool.poetry.group.kg]
+optional = true
+
+[tool.poetry.group.kg.dependencies]
+doc-kg = ">=0.21.1"
+pycode-kg = ">=0.21.4"
 
 [project.urls]
 Homepage   = "https://github.com/Flux-Frontiers/metabo_kg"
