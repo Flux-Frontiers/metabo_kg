@@ -65,4 +65,3 @@ __all__ = [
     "viz_main",
     "viz3d_main",
 ]
-__version__ = "0.4.0"

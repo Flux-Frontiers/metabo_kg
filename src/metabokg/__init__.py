@@ -21,7 +21,17 @@ Last Revision: 2026-08-03 00:00:00
 
 """
 
-__version__ = "0.11.0"
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _distribution_version
+
+try:
+    # Read the version the package was installed as, so it always agrees with
+    # pyproject.toml. A literal here is what drifted to 0.9.1 while pyproject
+    # said 0.10.0, mislabelling every analysis report in between; the CLI has
+    # always resolved its `--version` this way and never drifted.
+    __version__ = _distribution_version("metabo-kg")
+except PackageNotFoundError:  # pragma: no cover — source tree, never installed
+    __version__ = "0.0.0+unknown"
 
 from metabokg.orchestrator import (
     MetabolicBuildStats,
