@@ -11,7 +11,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **`metabokg.__version__` is now derived from installed package metadata**
+  (`importlib.metadata.version("metabo-kg")`) instead of being a hardcoded
+  literal. 0.11.0 fixed the symptom — the literal had drifted to 0.9.1 while
+  `pyproject.toml` said 0.10.0, mislabelling every analysis report since — but
+  left the mechanism that caused it. Deriving the value means a release bump in
+  `pyproject.toml` cannot disagree with what the package reports. This is the
+  pattern the CLI already used for `--version`, which is why that never drifted.
+
 ### Removed
+
+- **`metabokg.cli.__version__`**, a third version literal stuck at 0.4.0. It was
+  copied from `pyproject.toml` during the 0.4.0 rename and never updated or
+  read: nothing imports it, and `metabokg --version` resolves through
+  `importlib.metadata`, so no output was ever wrong because of it. Removed
+  rather than corrected — a duplicated literal is how it went stale in the
+  first place, and no other subpackage declares one.
 
 ### Fixed
 
