@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`CSVParser` claimed the KEGG annotation TSVs and then reported them as
+  corrupt.** `can_handle()` matched on extension alone, so every `.tsv` that
+  `metabokg init` fetches into the data directory — `kegg_compound_names.tsv`,
+  `hsa_gene_names.tsv`, `sabio_cho_kinetics.tsv` and five more — was accepted as
+  a reaction table and then failed in `parse()` on the missing `substrate` /
+  `product` columns. A build over `data/` logged eight "Failed to parse" errors
+  for files that were never reaction tables to begin with.
+
+  `CSVParser.can_handle()` now reads the header and confirms the required
+  columns are present before claiming the file. Graph output is unchanged
+  (35,852 nodes / 118,267 edges over `data/`); only the spurious errors go, from
+  eight to zero.
+
 ## [0.12.0] - 2026-08-15
 
 ### Changed
