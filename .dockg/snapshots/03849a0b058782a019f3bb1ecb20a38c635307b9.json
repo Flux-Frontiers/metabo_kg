@@ -1,7 +1,7 @@
 {
-  "key": "f94717c6d16b1c6548ca72fc4e55abf6577253fc",
+  "key": "03849a0b058782a019f3bb1ecb20a38c635307b9",
   "branch": "build/fleet-dep-alignment",
-  "timestamp": "2026-08-15T13:14:23.800958+00:00",
+  "timestamp": "2026-08-15T13:18:14.020553+00:00",
   "version": "0.11.0",
   "metrics": {
     "db_path": ".dockg/graph.sqlite",
@@ -113,7 +113,12 @@
     }
   ],
   "issues": [],
-  "vs_previous": null,
+  "vs_previous": {
+    "nodes": 33,
+    "edges": 204,
+    "coverage_delta": 0.00037398309596403667,
+    "issues_delta": 0
+  },
   "vs_baseline": {
     "nodes": 3,
     "edges": -111,
