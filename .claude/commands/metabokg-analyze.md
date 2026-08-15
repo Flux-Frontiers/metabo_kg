@@ -30,7 +30,7 @@ Analyzes the MetaboKG database and produces a polished, PyCodeKG-style report in
 ## Before Running
 
 Make sure you have:
-1. ✓ Built the MetaboKG database: `metabokg-build --data pathways/ --wipe`
+1. ✓ Built the MetaboKG database: `metabokg build --data pathways/ --wipe`
 2. ✓ Database exists at `.metabokg/hsa.sqlite`
 
 ## Output
@@ -48,16 +48,16 @@ Make sure you have:
 
 ```bash
 # Analyze default database
-metabokg-analyze
+metabokg analyze
 
 # Save Markdown report
-metabokg-analyze --db .metabokg/hsa.sqlite --output Analysis_$(date +%Y%m%d).md
+metabokg analyze --db .metabokg/hsa.sqlite --output Analysis_$(date +%Y%m%d).md
 
 # Full details with top 50 items
-metabokg-analyze --top 50 --output report.md
+metabokg analyze --top 50 --output report.md
 
 # Plain text format for piping or scripting
-metabokg-analyze --plain > analysis.txt
+metabokg analyze --plain > analysis.txt
 ```
 
 ## Report Sections

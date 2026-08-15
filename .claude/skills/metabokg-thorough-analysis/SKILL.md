@@ -167,19 +167,19 @@ Compile findings into:
 
 ```bash
 # Build the knowledge graph first
-metabokg-build --data pathways/ --db .metabokg/hsa.sqlite --wipe
+metabokg build --data pathways/ --db .metabokg/hsa.sqlite --wipe
 
 # Run thorough analysis (print to terminal)
-metabokg-analyze --db .metabokg/hsa.sqlite
+metabokg analyze --db .metabokg/hsa.sqlite
 
 # Save Markdown report
-metabokg-analyze --db .metabokg/hsa.sqlite --output Analysis_$(date +%Y%m%d).md
+metabokg analyze --db .metabokg/hsa.sqlite --output Analysis_$(date +%Y%m%d).md
 
 # Top 30 items in each list
-metabokg-analyze --db .metabokg/hsa.sqlite --top 30
+metabokg analyze --db .metabokg/hsa.sqlite --top 30
 
 # Plain text (no Markdown)
-metabokg-analyze --db .metabokg/hsa.sqlite --plain
+metabokg analyze --db .metabokg/hsa.sqlite --plain
 ```
 
 ### Python API
@@ -280,16 +280,16 @@ python scripts/collect_pathway_data.py --delay 1.5
 
 ```bash
 # Analyze current database
-metabokg-analyze
+metabokg analyze
 
 # Full analysis with output saved
-metabokg-analyze --db .metabokg/hsa.sqlite --output reports/pathway_analysis.md --top 25
+metabokg analyze --db .metabokg/hsa.sqlite --output reports/pathway_analysis.md --top 25
 
 # Quick check (top 5 only)
-metabokg-analyze --top 5
+metabokg analyze --top 5
 
 # JSON-friendly plain text
-metabokg-analyze --plain > analysis.txt
+metabokg analyze --plain > analysis.txt
 ```
 
 ---

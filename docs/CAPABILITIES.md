@@ -1444,7 +1444,6 @@ mcp                   = ">=1.0.0"
 | `[biopax]` | `rdflib >= 6.0.0` | BioPAX Level 3 RDF/OWL parsing |
 | `[viz]` | `streamlit >= 1.35.0`, `pyvis >= 0.3.2`, `matplotlib >= 3.8.0`, `pandas >= 2.0.0` | Interactive web UI + plots |
 | `[viz3d]` | `pyvista >= 0.44.0`, `pyvistaqt >= 0.11.0`, `PyQt5 >= 5.15.0` | 3D graph viewer (Qt-embedded PyVista window) |
-| `[all]` | All of the above | Everything |
 
 ```bash
 # With Poetry (recommended)
@@ -1453,12 +1452,12 @@ poetry install --extras simulate      # + FBA / ODE
 poetry install --extras viz           # + Streamlit web UI
 poetry install --extras viz3d         # + PyVista 3D viewer
 poetry install --extras biopax        # + BioPAX parsing
-poetry install --all-extras           # everything
+poetry install --all-extras           # every user-facing extra
+poetry install --with dev             # dev toolchain (Poetry only)
 
 # With pip (after package release)
 pip install metabokg[simulate]
 pip install metabokg[simulate,viz]
-pip install metabokg[all]
 ```
 
 See [`docs/INSTALL.md`](INSTALL.md) for a full step-by-step installation guide.

@@ -628,14 +628,16 @@ metabokg-viz3d --db .metabokg/hsa.sqlite --layout allium
 
 ## 12. Development Install
 
-For contributing to MetaboKG or running the test suite, install with the `dev` extra.
+For contributing to MetaboKG or running the test suite, install the `dev`
+Poetry group. It is a group rather than an extra so the maintainer toolchain
+stays out of published wheel metadata, which means there is no pip equivalent.
 
 ```bash
 # Core + dev tools only (no optional extras)
-poetry install --extras dev
+poetry install --with dev
 
 # All extras + dev tools — recommended for contributors
-poetry install --all-extras
+poetry install --all-extras --with dev
 ```
 
 **What the `dev` extra includes:**
@@ -909,6 +911,6 @@ metabokg-mcp --transport stdio
 | + Web UI | `poetry install --extras viz` |
 | + 3D viewer | `poetry install --extras viz3d` |
 | + BioPAX parsing | `poetry install --extras biopax` |
-| Dev tools only (pytest, ruff, ty…) | `poetry install --extras dev` |
-| Everything, including dev tools | `poetry install --all-extras` |
-| Everything except dev tools | `poetry install --extras "simulate viz viz3d biopax kgdeps"` |
+| Dev tools only (pytest, ruff, ty…) | `poetry install --with dev` |
+| Everything, including dev tools | `poetry install --all-extras --with dev` |
+| Everything except dev tools | `poetry install --all-extras` |

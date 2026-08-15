@@ -45,7 +45,7 @@ Parse KEGG KGML pathway files into the MetaboKG SQLite knowledge graph and sqlit
 Run the full build (wipe + enrich by default):
 
 ```bash
-metabokg-build --data "$DATA_DIR"
+metabokg build --data "$DATA_DIR"
 ```
 
 **Common options:**
@@ -95,7 +95,7 @@ SELECT COUNT(*), category FROM meta_nodes WHERE kind='pathway' GROUP BY category
 Load literature kinetic parameters (Km, Vmax, kcat) for simulations:
 
 ```bash
-metabokg-simulate seed
+metabokg simulate seed
 ```
 
 ---
@@ -120,7 +120,7 @@ Present a summary:
 To add new KGML files without wiping existing data:
 
 ```bash
-metabokg-update --data "$DATA_DIR"
+metabokg update --data "$DATA_DIR"
 ```
 
 Use this when you've downloaded new pathway files and want to merge them in.

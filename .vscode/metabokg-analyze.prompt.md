@@ -20,22 +20,22 @@ Analyzes the MetaboKG database and produces a polished report including:
 
 ```bash
 # Print to terminal
-metabokg-analyze
+metabokg analyze
 
 # Save to file (with timestamp)
-metabokg-analyze --output analysis_$(date +%Y%m%d_%H%M%S).md
+metabokg analyze --output analysis_$(date +%Y%m%d_%H%M%S).md
 
 # Show top N items per ranking
-metabokg-analyze --top 30
+metabokg analyze --top 30
 
 # Plain text format (no Markdown)
-metabokg-analyze --plain
+metabokg analyze --plain
 ```
 
 ## Before Running
 
 Make sure you have:
-1. ✓ Built the MetaboKG database: `metabokg-build --data pathways/ --wipe`
+1. ✓ Built the MetaboKG database: `metabokg build --data pathways/ --wipe`
 2. ✓ Database exists at `.metabokg/hsa.sqlite`
 
 ## Output
@@ -53,16 +53,16 @@ Make sure you have:
 
 ```bash
 # Analyze default database
-metabokg-analyze
+metabokg analyze
 
 # Save Markdown report
-metabokg-analyze --db .metabokg/hsa.sqlite --output analysis_$(date +%Y%m%d).md
+metabokg analyze --db .metabokg/hsa.sqlite --output analysis_$(date +%Y%m%d).md
 
 # Full details with top 50 items
-metabokg-analyze --top 50 --output report.md
+metabokg analyze --top 50 --output report.md
 
 # Plain text format for piping or scripting
-metabokg-analyze --plain > analysis.txt
+metabokg analyze --plain > analysis.txt
 ```
 
 ## Report Sections

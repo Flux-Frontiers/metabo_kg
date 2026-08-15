@@ -1,6 +1,6 @@
 ---
 name: metabokg
-description: Expert knowledge for installing, configuring, and using MetaboKG — a hybrid semantic + structural metabolic knowledge graph for KEGG pathways and genome-scale metabolic models. Use this skill when the user asks about setting up MetaboKG in a project, building the SQLite or sqlite-vec knowledge graph, configuring .mcp.json for Claude Code or Kilo Code, configuring .vscode/mcp.json for GitHub Copilot, configuring claude_desktop_config.json for Claude Desktop, configuring Cline MCP settings, using the metabokg CLI (metabokg, metabokg-init, metabokg-info, metabokg-build, metabokg-update, metabokg-enrich, metabokg-analyze, metabokg-analyze-basic, metabokg-viz, metabokg-viz3d, metabokg-mcp, metabokg-query, metabokg-pack, metabokg-simulate, metabokg-snapshot), using the pack / query_pathway / get_compound / get_reaction / find_path / get_kinetic_params / seed_kinetics / simulate_fba / simulate_ode / simulate_whatif / snapshot_list / snapshot_show / snapshot_diff MCP tools, querying KEGG pathways, running FBA or ODE simulations, working with CHO or human metabolic models, multi-corpus KGRAG federation across hsa/cge/icho corpora, or troubleshooting MetaboKG errors.
+description: Expert knowledge for installing, configuring, and using MetaboKG — a hybrid semantic + structural metabolic knowledge graph for KEGG pathways and genome-scale metabolic models. Use this skill when the user asks about setting up MetaboKG in a project, building the SQLite or sqlite-vec knowledge graph, configuring .mcp.json for Claude Code or Kilo Code, configuring .vscode/mcp.json for GitHub Copilot, configuring claude_desktop_config.json for Claude Desktop, configuring Cline MCP settings, using the metabokg CLI (metabokg, metabokg init, metabokg info, metabokg build, metabokg update, metabokg enrich, metabokg analyze, metabokg analyze-basic, metabokg viz, metabokg viz3d, metabokg-mcp, metabokg query, metabokg pack, metabokg simulate, metabokg snapshot), using the pack / query_pathway / get_compound / get_reaction / find_path / get_kinetic_params / seed_kinetics / simulate_fba / simulate_ode / simulate_whatif / snapshot_list / snapshot_show / snapshot_diff MCP tools, querying KEGG pathways, running FBA or ODE simulations, working with CHO or human metabolic models, multi-corpus KGRAG federation across hsa/cge/icho corpora, or troubleshooting MetaboKG errors.
 ---
 
 # MetaboKG Skill
@@ -28,46 +28,46 @@ Adds to `pyproject.toml`:
 metabo-kg = { git = "https://github.com/Flux-Frontiers/metabo_kg.git", extras = ["mcp"] }
 ```
 
-## First-Time Setup: `metabokg-init`
+## First-Time Setup: `metabokg init`
 
 Use the one-shot initializer instead of running build commands manually. It performs an integrity check, fetches any missing TSV annotation files, builds all bundled corpora (hsa, cge, icho), and seeds kinetic parameters.
 
 ```bash
 # Build every bundled corpus and seed kinetics
-metabokg-init
+metabokg init
 
 # Status-only (no modifications) — show TSV integrity and which corpora exist
-metabokg-init --check
+metabokg init --check
 
 # Initialize a single corpus (repeatable)
-metabokg-init --corpus hsa
-metabokg-init --corpus hsa --corpus cge
+metabokg init --corpus hsa
+metabokg init --corpus hsa --corpus cge
 ```
 
-After init, verify with `metabokg-info`, which prints the active corpus, resolved db/vectors paths, and node/edge counts.
+After init, verify with `metabokg info`, which prints the active corpus, resolved db/vectors paths, and node/edge counts.
 
 ## Build the Knowledge Graph
 
-For per-corpus builds (or after refreshing pathway files), use `metabokg-build`:
+For per-corpus builds (or after refreshing pathway files), use `metabokg build`:
 
 ```bash
 # Full rebuild — wipes existing data, parses pathways, enriches by default
-metabokg-build --data ./data/hsa_pathways
+metabokg build --data ./data/hsa_pathways
 
 # CHO pathways
-metabokg-build --data ./data/cge_pathways
+metabokg build --data ./data/cge_pathways
 
 # iCHO2441 GEM (SBML model)
-metabokg-build --data ./data/icho_model
+metabokg build --data ./data/icho_model
 
 # Merge new files on top without wiping
-metabokg-build --data ./data/hsa_pathways --no-wipe
+metabokg build --data ./data/hsa_pathways --no-wipe
 
 # Skip the vector index (graph SQLite only — fast, no semantic search)
-metabokg-build --data ./data/hsa_pathways --no-index
+metabokg build --data ./data/hsa_pathways --no-index
 
 # Skip enrichment phases (raw KEGG IDs only)
-metabokg-build --data ./data/hsa_pathways --no-enrich
+metabokg build --data ./data/hsa_pathways --no-enrich
 ```
 
 The database and vector index colocate automatically under `<data-dir>/.metabokg/`:
@@ -82,15 +82,15 @@ The database and vector index colocate automatically under `<data-dir>/.metabokg
 
 ```bash
 # Add new KGML files without wiping the existing graph
-metabokg-update --data ./data/hsa_pathways
+metabokg update --data ./data/hsa_pathways
 
 # Re-run only the enrichment phases on an existing build
-metabokg-enrich --db ./data/hsa_pathways/.metabokg/hsa.sqlite
+metabokg enrich --db ./data/hsa_pathways/.metabokg/hsa.sqlite
 ```
 
 ## Enrichment Phases
 
-Enrichment runs by default during `metabokg-build`. Each phase upgrades opaque KEGG IDs into human-readable labels:
+Enrichment runs by default during `metabokg build`. Each phase upgrades opaque KEGG IDs into human-readable labels:
 
 | Phase | What it does | Source |
 |---|---|---|
@@ -102,36 +102,36 @@ Enrichment runs by default during `metabokg-build`. Each phase upgrades opaque K
 | 2e | KO enzyme names (~28k entries) | `data/kegg_ko_names.tsv` |
 | 3 | Enzyme gene names — enables `--knockout Ldha` | `data/{org}_gene_names.tsv` |
 
-Skip with `--no-enrich`. Re-run after data changes with `metabokg-enrich`.
+Skip with `--no-enrich`. Re-run after data changes with `metabokg enrich`.
 
 ## CLI Commands
 
 | Command | Purpose |
 |---|---|
-| `metabokg-init` | First-time setup: integrity check, fetch TSVs, build all corpora, seed kinetics |
-| `metabokg-init --check` | Status-only: TSV integrity and corpus build state |
-| `metabokg-init --corpus hsa` | Initialize a single corpus (repeatable) |
-| `metabokg-info` | Active corpus, resolved paths, node/edge counts |
-| `metabokg-build --data DIR` | Full rebuild: wipe + parse + enrich → SQLite + vectors.sqlite |
-| `metabokg-build --data DIR --no-wipe` | Parse without wiping — merge new files on top |
-| `metabokg-update --data DIR` | Incrementally add new files without wiping |
-| `metabokg-enrich` | Re-run enrichment phases on an existing build |
-| `metabokg-query QUERY` | Semantic + graph search, ranked hits |
-| `metabokg-pack QUERY` | Context-rich Markdown/JSON pack for LLM context |
-| `metabokg-analyze` | Full 7-phase pathway analysis report |
-| `metabokg-analyze-basic` | Quick structural metrics only |
-| `metabokg-viz [--port 8500]` | 2D Streamlit explorer |
-| `metabokg-viz3d [--layout allium\|cake]` | 3D PyVista visualization |
+| `metabokg init` | First-time setup: integrity check, fetch TSVs, build all corpora, seed kinetics |
+| `metabokg init --check` | Status-only: TSV integrity and corpus build state |
+| `metabokg init --corpus hsa` | Initialize a single corpus (repeatable) |
+| `metabokg info` | Active corpus, resolved paths, node/edge counts |
+| `metabokg build --data DIR` | Full rebuild: wipe + parse + enrich → SQLite + vectors.sqlite |
+| `metabokg build --data DIR --no-wipe` | Parse without wiping — merge new files on top |
+| `metabokg update --data DIR` | Incrementally add new files without wiping |
+| `metabokg enrich` | Re-run enrichment phases on an existing build |
+| `metabokg query QUERY` | Semantic + graph search, ranked hits |
+| `metabokg pack QUERY` | Context-rich Markdown/JSON pack for LLM context |
+| `metabokg analyze` | Full 7-phase pathway analysis report |
+| `metabokg analyze-basic` | Quick structural metrics only |
+| `metabokg viz [--port 8500]` | 2D Streamlit explorer |
+| `metabokg viz3d [--layout allium\|cake]` | 3D PyVista visualization |
 | `metabokg-mcp` | Start MCP server (stdio transport) |
-| `metabokg-simulate fba` | Flux Balance Analysis (HiGHS LP solver) |
-| `metabokg-simulate ode` | ODE time-course (BDF stiff solver) |
-| `metabokg-simulate whatif` | Perturbation analysis (knockouts, overrides, scaling) |
-| `metabokg-simulate seed` | Seed kinetic parameters from literature |
-| `metabokg-simulate seed-cho` | Seed 35 CHO-specific kinetic parameters |
-| `metabokg-snapshot save <version>` | Capture metrics snapshot (commit, branch, version) |
-| `metabokg-snapshot list` | List all snapshots in reverse chronological order |
-| `metabokg-snapshot show <id>` | Full details for a single snapshot |
-| `metabokg-snapshot diff <a> <b>` | Compare two snapshots side-by-side |
+| `metabokg simulate fba` | Flux Balance Analysis (HiGHS LP solver) |
+| `metabokg simulate ode` | ODE time-course (BDF stiff solver) |
+| `metabokg simulate whatif` | Perturbation analysis (knockouts, overrides, scaling) |
+| `metabokg simulate seed` | Seed kinetic parameters from literature |
+| `metabokg simulate seed-cho` | Seed 35 CHO-specific kinetic parameters |
+| `metabokg snapshot save <version>` | Capture metrics snapshot (commit, branch, version) |
+| `metabokg snapshot list` | List all snapshots in reverse chronological order |
+| `metabokg snapshot show <id>` | Full details for a single snapshot |
+| `metabokg snapshot diff <a> <b>` | Compare two snapshots side-by-side |
 
 **Common options:**
 - `--db PATH` — SQLite db (default auto-resolved from corpus)
@@ -144,16 +144,16 @@ Skip with `--no-enrich`. Re-run after data changes with `metabokg-enrich`.
 
 ```bash
 # Standard exploration
-metabokg-query "glycolysis pyruvate" --k 8 --hop 1
+metabokg query "glycolysis pyruvate" --k 8 --hop 1
 
 # Pure semantic lookup (no graph expansion)
-metabokg-query "TCA cycle" --hop 0
+metabokg query "TCA cycle" --hop 0
 
 # Substring-only (fast, no embeddings)
-metabokg-query "C00031" --text-only
+metabokg query "C00031" --text-only
 
 # Source-grounded pack for an LLM
-metabokg-pack "fatty acid beta oxidation" --k 8 --hop 1
+metabokg pack "fatty acid beta oxidation" --k 8 --hop 1
 ```
 
 | Goal | Settings |
@@ -223,15 +223,15 @@ Each organism or model builds into its own named DB and registers as a separate 
 
 ```bash
 # One-shot — build all three corpora
-metabokg-init
+metabokg init
 
 # Or build individually
-metabokg-build --data data/hsa_pathways
-metabokg-build --data data/cge_pathways
-metabokg-build --data data/icho_model
+metabokg build --data data/hsa_pathways
+metabokg build --data data/cge_pathways
+metabokg build --data data/icho_model
 ```
 
-Phase 3 enrichment requires `data/{org}_gene_names.tsv`. Once present, `--knockout Ldha` works directly without a node-ID lookup. `metabokg-init` fetches these TSVs automatically when missing.
+Phase 3 enrichment requires `data/{org}_gene_names.tsv`. Once present, `--knockout Ldha` works directly without a node-ID lookup. `metabokg init` fetches these TSVs automatically when missing.
 
 ## Pathway Categories
 
@@ -344,16 +344,16 @@ Config path: `~/Library/Application Support/Claude/claude_desktop_config.json` (
 
 ```bash
 # 2D Streamlit explorer (default port 8500)
-metabokg-viz --port 8500
+metabokg viz --port 8500
 
 # 3D PyVista — hub-spoke layout (pathways at center, reactions radial)
-metabokg-viz3d --layout allium
+metabokg viz3d --layout allium
 
 # 3D PyVista — concentric rings by topological distance
-metabokg-viz3d --layout cake
+metabokg viz3d --layout cake
 
 # Override DB / dimensions
-metabokg-viz3d --db data/cge_pathways/.metabokg/cge.sqlite --width 1600 --height 1000
+metabokg viz3d --db data/cge_pathways/.metabokg/cge.sqlite --width 1600 --height 1000
 ```
 
 In the 3D UI: select a pathway, toggle edges/labels/enzyme detail, then click **Render Graph** to apply changes. Switch layouts dynamically from the sidebar.
@@ -363,10 +363,10 @@ In the 3D UI: select a pathway, toggle edges/labels/enzyme detail, then click **
 Capture metrics over time, just like `dockg snapshot`:
 
 ```bash
-metabokg-snapshot save 0.8.1
-metabokg-snapshot list
-metabokg-snapshot show <id>
-metabokg-snapshot diff 0.8.0 0.8.1
+metabokg snapshot save 0.8.1
+metabokg snapshot list
+metabokg snapshot show <id>
+metabokg snapshot diff 0.8.0 0.8.1
 ```
 
 Snapshot JSON files live under `**/.metabokg/snapshots/` and are tracked in git (the SQLite graph and vector store are not — see `.gitignore` below).
@@ -397,10 +397,10 @@ Snapshot JSON files live under `**/.metabokg/snapshots/` and are tracked in git 
 | Error | Fix |
 |---|---|
 | ODE simulation hangs | Set `ode_method="BDF"` — never use RK45 on metabolic networks |
-| Empty query results | Run `metabokg-init` (or `metabokg-build --data DIR` per corpus) |
-| Enzyme names show as bare integers | Phase 3 enrichment needs `data/{org}_gene_names.tsv` — `metabokg-init` fetches these automatically |
+| Empty query results | Run `metabokg init` (or `metabokg build --data DIR` per corpus) |
+| Enzyme names show as bare integers | Phase 3 enrichment needs `data/{org}_gene_names.tsv` — `metabokg init` fetches these automatically |
 | `--knockout Ldha` not found | Same as above — Phase 3 enrichment must have run |
-| Glycan nodes unresolved (`gl:G#####`) | `data/kegg_glycan_names.tsv` missing — run `metabokg-init` |
+| Glycan nodes unresolved (`gl:G#####`) | `data/kegg_glycan_names.tsv` missing — run `metabokg init` |
 | MCP server not appearing | Use absolute paths in config; reload VS Code |
 | Wrong DB loaded | Multiple corpora in repo — pass explicit `--db` to point at the correct `.sqlite` |
 | `mcp package not found` | `poetry install --all-extras` (must include `[mcp]` extra) |

@@ -24,7 +24,7 @@ Launch the MetaboKG interactive network visualization. Choose between 2D (Stream
    ```bash
    ls -lh .metabokg/hsa.sqlite
    ```
-2. If missing, build first: `metabokg-build --data data/hsa_pathways`
+2. If missing, build first: `metabokg build --data data/hsa_pathways`
 
 ---
 
@@ -33,13 +33,13 @@ Launch the MetaboKG interactive network visualization. Choose between 2D (Stream
 Browser-based interactive network explorer:
 
 ```bash
-metabokg-viz
+metabokg viz
 ```
 
 Options:
 ```bash
-metabokg-viz --port 8500          # Custom port (default: 8500)
-metabokg-viz --db .metabokg/hsa.sqlite
+metabokg viz --port 8500          # Custom port (default: 8500)
+metabokg viz --db .metabokg/hsa.sqlite
 ```
 
 **Features in the UI:**
@@ -57,16 +57,16 @@ Opens automatically in your browser at `http://localhost:8500`.
 Desktop 3D graph visualization with two layout modes:
 
 ```bash
-metabokg-viz3d                          # Default: allium layout
-metabokg-viz3d --layout allium         # Hub-spoke (pathways at center)
-metabokg-viz3d --layout cake           # Concentric rings by topology
+metabokg viz3d                          # Default: allium layout
+metabokg viz3d --layout allium         # Hub-spoke (pathways at center)
+metabokg viz3d --layout cake           # Concentric rings by topology
 ```
 
 Options:
 ```bash
-metabokg-viz3d --layout allium|cake
-metabokg-viz3d --db .metabokg/hsa.sqlite
-metabokg-viz3d --width 1400 --height 900
+metabokg viz3d --layout allium|cake
+metabokg viz3d --db .metabokg/hsa.sqlite
+metabokg viz3d --width 1400 --height 900
 ```
 
 ### Layout Modes
@@ -115,5 +115,5 @@ for p in metabolic:
 
 - **Streamlit not found**: `poetry install --all-extras` or `pip install streamlit`
 - **PyVista not found**: `poetry install --all-extras` or `pip install pyvista`
-- **Port in use**: `metabokg-viz --port 8501`
+- **Port in use**: `metabokg viz --port 8501`
 - **Slow rendering**: Filter to a single pathway first

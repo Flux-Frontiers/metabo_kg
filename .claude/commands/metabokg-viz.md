@@ -20,15 +20,15 @@ Confirm the database exists:
 ls -lh .metabokg/hsa.sqlite
 ```
 
-If missing, build first: `metabokg-build --data data/hsa_pathways`
+If missing, build first: `metabokg build --data data/hsa_pathways`
 
 ---
 
 ## 2D Explorer (Streamlit)
 
 ```bash
-metabokg-viz                   # default port 8500
-metabokg-viz --port 8501       # custom port
+metabokg viz                   # default port 8500
+metabokg viz --port 8501       # custom port
 ```
 
 Opens at `http://localhost:8500` automatically.
@@ -38,10 +38,10 @@ Opens at `http://localhost:8500` automatically.
 ## 3D Visualization (PyVista)
 
 ```bash
-metabokg-viz3d                          # allium layout (default)
-metabokg-viz3d --layout allium         # hub-spoke
-metabokg-viz3d --layout cake           # concentric rings by topology
-metabokg-viz3d --width 1400 --height 900
+metabokg viz3d                          # allium layout (default)
+metabokg viz3d --layout allium         # hub-spoke
+metabokg viz3d --layout cake           # concentric rings by topology
+metabokg viz3d --width 1400 --height 900
 ```
 
 ### Layout Modes
@@ -53,7 +53,7 @@ metabokg-viz3d --width 1400 --height 900
 
 ### Recommended Workflow
 
-1. `metabokg-viz3d --layout cake` — start with flow view
+1. `metabokg viz3d --layout cake` — start with flow view
 2. Select a pathway (e.g., Glycolysis)
 3. Adjust visibility toggles
 4. Click "Render Graph"
@@ -65,5 +65,5 @@ metabokg-viz3d --width 1400 --height 900
 
 - **Streamlit not found**: `poetry install --all-extras`
 - **PyVista not found**: `poetry install --all-extras`
-- **Port in use**: `metabokg-viz --port 8501`
+- **Port in use**: `metabokg viz --port 8501`
 - **Slow rendering**: Filter to a single pathway first

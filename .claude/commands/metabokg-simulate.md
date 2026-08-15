@@ -23,14 +23,14 @@ Run metabolic pathway simulations using the MetaboKG database. Supports four mod
    ```bash
    sqlite3 .metabokg/hsa.sqlite "SELECT COUNT(*) FROM kinetic_parameters;"
    ```
-   If 0, run `metabokg-simulate seed` first.
+   If 0, run `metabokg simulate seed` first.
 
 ---
 
 ## Seed Kinetic Parameters
 
 ```bash
-metabokg-simulate seed
+metabokg simulate seed
 ```
 
 Python equivalent:
@@ -45,7 +45,7 @@ kg.seed_kinetics()
 ## FBA — Steady-State Flux Analysis
 
 ```bash
-metabokg-simulate fba pwy:kegg:hsa00010
+metabokg simulate fba pwy:kegg:hsa00010
 ```
 
 Python:
@@ -60,7 +60,7 @@ result = kg.simulate_fba("pwy:kegg:hsa00010", maximize=True)
 ## ODE — Time-Course Simulation
 
 ```bash
-metabokg-simulate ode pwy:kegg:hsa00010
+metabokg simulate ode pwy:kegg:hsa00010
 ```
 
 Python (with full options):
@@ -83,7 +83,7 @@ result = kg.simulate_ode(
 ## What-If — Perturbation Analysis
 
 ```bash
-metabokg-simulate whatif pwy:kegg:hsa00010
+metabokg simulate whatif pwy:kegg:hsa00010
 ```
 
 Python with scenario JSON:

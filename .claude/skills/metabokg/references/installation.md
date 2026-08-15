@@ -13,7 +13,7 @@
 
 ## CLI Flags Reference
 
-### `metabokg-init`
+### `metabokg init`
 
 | Flag | Default | Description |
 |---|---|---|
@@ -22,11 +22,11 @@
 | `--no-enrich` | false | Skip enrichment phases |
 | `--no-index` | false | Skip the vector index build |
 
-### `metabokg-info`
+### `metabokg info`
 
 No required flags. Prints the active corpus, resolved db/vectors paths, and node/edge counts.
 
-### `metabokg-build`
+### `metabokg build`
 
 | Flag | Default | Description |
 |---|---|---|
@@ -37,14 +37,14 @@ No required flags. Prints the active corpus, resolved db/vectors paths, and node
 | `--no-index` | false | Skip the vector index — graph SQLite only |
 | `--no-enrich` | false | Skip all enrichment phases |
 
-### `metabokg-update`
+### `metabokg update`
 
 | Flag | Default | Description |
 |---|---|---|
 | `--data DIR` | required | Directory of new files to ingest incrementally |
 | `--db PATH` | auto-resolved | Existing SQLite to extend |
 
-### `metabokg-enrich`
+### `metabokg enrich`
 
 | Flag | Default | Description |
 |---|---|---|
@@ -60,7 +60,7 @@ No required flags. Prints the active corpus, resolved db/vectors paths, and node
 | `--vectors PATH` | `.metabokg/vectors.sqlite` | sqlite-vec store |
 | `--transport` | `stdio` | `stdio` or `sse` |
 
-### `metabokg-query`
+### `metabokg query`
 
 | Flag | Default | Description |
 |---|---|---|
@@ -71,7 +71,7 @@ No required flags. Prints the active corpus, resolved db/vectors paths, and node
 | `--db PATH` | auto-resolved | SQLite path |
 | `--vectors PATH` | auto-resolved | Vector-store path |
 
-### `metabokg-pack`
+### `metabokg pack`
 
 | Flag | Default | Description |
 |---|---|---|
@@ -80,7 +80,7 @@ No required flags. Prints the active corpus, resolved db/vectors paths, and node
 | `--hop INT` | `1` | Graph expansion hops |
 | `--format` | `markdown` | `markdown` or `json` |
 
-### `metabokg-simulate`
+### `metabokg simulate`
 
 | Subcommand | Required | Key flags |
 |---|---|---|
@@ -90,14 +90,14 @@ No required flags. Prints the active corpus, resolved db/vectors paths, and node
 | `seed` | — | `--db`, `--force` |
 | `seed-cho` | — | `--db`, `--force` |
 
-### `metabokg-analyze` / `metabokg-analyze-basic`
+### `metabokg analyze` / `metabokg analyze-basic`
 
 | Flag | Default | Description |
 |---|---|---|
 | `--output FILE` | stdout | Write report to file |
 | `--db PATH` | auto-resolved | SQLite path |
 
-### `metabokg-snapshot`
+### `metabokg snapshot`
 
 | Subcommand | Purpose |
 |---|---|
@@ -106,7 +106,7 @@ No required flags. Prints the active corpus, resolved db/vectors paths, and node
 | `show <id>` | Full details for one snapshot |
 | `diff <a> <b>` | Side-by-side comparison |
 
-### `metabokg-viz` / `metabokg-viz3d`
+### `metabokg viz` / `metabokg viz3d`
 
 | Flag | Default | Description |
 |---|---|---|
@@ -213,7 +213,7 @@ poetry env info --path
 
 ## Data Download Scripts
 
-All source data is bundled in the repo (`data/hsa_pathways/`, `data/cge_pathways/`, `data/icho_model/*.xml`, all `data/*.tsv`). TSV annotation files are fetched automatically by `metabokg-init` if missing.
+All source data is bundled in the repo (`data/hsa_pathways/`, `data/cge_pathways/`, `data/icho_model/*.xml`, all `data/*.tsv`). TSV annotation files are fetched automatically by `metabokg init` if missing.
 
 Scripts below are for **refreshing pathway files** only (e.g. after a KEGG update):
 
@@ -248,27 +248,27 @@ Scripts below are for **refreshing pathway files** only (e.g. after a KEGG updat
 
 ```bash
 # Verify env
-metabokg-info
+metabokg info
 
 # Verify build (fast, no vector index or enrichment)
-metabokg-build --data data/hsa_pathways --no-index --no-enrich
+metabokg build --data data/hsa_pathways --no-index --no-enrich
 # → should complete in < 60s
 
 # Verify query
-metabokg-query "glycolysis" --k 3
+metabokg query "glycolysis" --k 3
 
 # Verify pack
-metabokg-pack "TCA cycle" --k 4
+metabokg pack "TCA cycle" --k 4
 
 # Verify MCP server starts
 metabokg-mcp --repo . &
 sleep 2 && kill %1
 
 # Verify FBA
-metabokg-simulate fba --pathway pwy:kegg:hsa00010
+metabokg simulate fba --pathway pwy:kegg:hsa00010
 
 # Verify ODE (must be BDF, not RK45)
-metabokg-simulate ode --pathway pwy:kegg:hsa00010 --t-end 5 --t-points 10 --method BDF
+metabokg simulate ode --pathway pwy:kegg:hsa00010 --t-end 5 --t-points 10 --method BDF
 ```
 
 ---
@@ -278,13 +278,13 @@ metabokg-simulate ode --pathway pwy:kegg:hsa00010 --t-end 5 --t-points 10 --meth
 | Error | Cause | Fix |
 |---|---|---|
 | ODE simulation hangs indefinitely | RK45 solver on stiff metabolic network | Set `ode_method="BDF"` or `"Radau"` |
-| `--knockout Ldha` raises KeyError | Phase 3 enrichment not run | `metabokg-init` (fetches gene name TSVs and rebuilds) |
-| Enzyme names show as bare integers | `data/{org}_gene_names.tsv` missing | `metabokg-init`, or manually `python scripts/download_kegg_names.py --genes hsa cge` |
-| Glycan nodes unresolved (`gl:G#####`) | `data/kegg_glycan_names.tsv` missing | `metabokg-init`, or `python scripts/download_kegg_names.py` |
-| Empty vector query results | Vector index missing or empty | `metabokg-build --data DIR` (do NOT use `--no-index`) |
+| `--knockout Ldha` raises KeyError | Phase 3 enrichment not run | `metabokg init` (fetches gene name TSVs and rebuilds) |
+| Enzyme names show as bare integers | `data/{org}_gene_names.tsv` missing | `metabokg init`, or manually `python scripts/download_kegg_names.py --genes hsa cge` |
+| Glycan nodes unresolved (`gl:G#####`) | `data/kegg_glycan_names.tsv` missing | `metabokg init`, or `python scripts/download_kegg_names.py` |
+| Empty vector query results | Vector index missing or empty | `metabokg build --data DIR` (do NOT use `--no-index`) |
 | Wrong DB loaded | Multiple corpora in repo | Use explicit `--db` pointing to the correct `.sqlite` |
 | MCP server not appearing in agent | Relative path in config | Switch to absolute paths; reload VS Code |
 | `mcp package not found` | `[mcp]` extra not installed | `poetry install --all-extras` |
 | `detect-secrets` pre-commit failure | API key or token in staged file | Run `detect-secrets scan --update .secrets.baseline` |
 | Large file pre-commit failure | KGML or TSV > 1 MB | Already excluded — check `.pre-commit-config.yaml` exclude pattern |
-| `metabokg-init --check` reports missing TSVs | TSV download script never ran | Run `metabokg-init` (auto-fetches) or run a `scripts/download_*.py` directly |
+| `metabokg init --check` reports missing TSVs | TSV download script never ran | Run `metabokg init` (auto-fetches) or run a `scripts/download_*.py` directly |

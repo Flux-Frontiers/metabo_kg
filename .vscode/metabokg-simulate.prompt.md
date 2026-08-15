@@ -28,7 +28,7 @@ Run metabolic pathway simulations using the MetaboKG database. Supports four mod
    ```bash
    sqlite3 .metabokg/hsa.sqlite "SELECT COUNT(*) FROM kinetic_parameters;"
    ```
-   If 0, run `metabokg-simulate seed` first.
+   If 0, run `metabokg simulate seed` first.
 
 ---
 
@@ -37,7 +37,7 @@ Run metabolic pathway simulations using the MetaboKG database. Supports four mod
 Load Km, Vmax, and kcat values from literature sources:
 
 ```bash
-metabokg-simulate seed
+metabokg simulate seed
 ```
 
 This populates the `kinetic_parameters` table. Safe to re-run — idempotent.
@@ -56,12 +56,12 @@ kg.seed_kinetics()
 Find optimal flux distributions at steady state:
 
 ```bash
-metabokg-simulate fba <pathway_id>
+metabokg simulate fba <pathway_id>
 ```
 
 Example:
 ```bash
-metabokg-simulate fba pwy:kegg:hsa00010   # Glycolysis
+metabokg simulate fba pwy:kegg:hsa00010   # Glycolysis
 ```
 
 Python equivalent:
@@ -83,7 +83,7 @@ result = kg.simulate_fba("pwy:kegg:hsa00010", maximize=True)
 Simulate metabolite concentrations over time:
 
 ```bash
-metabokg-simulate ode <pathway_id>
+metabokg simulate ode <pathway_id>
 ```
 
 Python (with full options):
@@ -108,7 +108,7 @@ result = kg.simulate_ode(
 Test enzyme knockouts, activity changes, or substrate overrides:
 
 ```bash
-metabokg-simulate whatif <pathway_id>
+metabokg simulate whatif <pathway_id>
 ```
 
 Python with scenario JSON:
