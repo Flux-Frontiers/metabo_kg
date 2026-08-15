@@ -5,7 +5,6 @@ Registers:
   metabokg query  — semantic (vector) or text search across the knowledge graph
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-08-01
 License: Elastic 2.0
 """
 

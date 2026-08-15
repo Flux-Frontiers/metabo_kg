@@ -1,16 +1,16 @@
 > **Analysis Report Metadata**
-> - **Generated:** 2026-08-15T13:47:40Z
+> - **Generated:** 2026-08-15T19:18:49Z
 > - **Version:** pycode-kg 0.23.0
-> - **Commit:** 6f82b51 (main)
+> - **Commit:** 691a797 (main)
 > - **Platform:** macOS 27.0 | arm64 (arm) | turing | Python 3.12.13
-> - **Graph:** 7394 nodes · 6794 edges (489 meaningful)
+> - **Graph:** 7414 nodes · 6817 edges (490 meaningful)
 > - **Included directories:** scripts, src
 > - **Excluded directories:** none
-> - **Elapsed time:** 5s
+> - **Elapsed time:** 3s
 
 # Metabo_kg Analysis
 
-**Generated:** 2026-08-15 13:47:40 UTC
+**Generated:** 2026-08-15 19:18:49 UTC
 
 ---
 
@@ -27,7 +27,7 @@ Score components:
 | Component | Points | Max | Basis |
 | :--- | ---: | ---: | :--- |
 | Docstring coverage | 37.8 | 40 | 85.1% documented (full marks at 90%) |
-| Dead code | 11.3 | 25 | 12 candidates / 437 definitions scanned (2.7%; zero points at 5%) |
+| Dead code | 11.3 | 25 | 12 candidates / 438 definitions scanned (2.7%; zero points at 5%) |
 | High fan-out | 20.0 | 20 | 0 orchestrator(s); −4 pts each |
 | Circular dependencies | 15.0 | 15 | 0 cycle(s); −5 pts each |
 
@@ -37,21 +37,21 @@ Score components:
 
 | Metric | Value |
 | :--- | :--- |
-| **Total Nodes** | 7394 |
-| **Total Edges** | 6794 |
+| **Total Nodes** | 7414 |
+| **Total Edges** | 6817 |
 | **Modules** | 52 (of 52 total) |
 | **Functions** | 237 |
 | **Classes** | 49 |
-| **Methods** | 151 |
+| **Methods** | 152 |
 
 ### Edge Distribution
 
 | Relationship Type | Count |
 | :--- | ---: |
-| CALLS | 2450 |
-| CONTAINS | 437 |
+| CALLS | 2456 |
+| CONTAINS | 438 |
 | IMPORTS | 446 |
-| ATTR_ACCESS | 2209 |
+| ATTR_ACCESS | 2218 |
 | INHERITS | 10 |
 
 ---
@@ -158,10 +158,10 @@ Docstring coverage directly determines semantic retrieval quality. Nodes without
 | Kind | Documented | Total | Coverage |
 | :--- | ---: | ---: | :--- |
 | `function` | 187 | 237 | [WARN] 78.9% |
-| `method` | 128 | 151 | [OK] 84.8% |
+| `method` | 129 | 152 | [OK] 84.9% |
 | `class` | 49 | 49 | [OK] 100.0% |
 | `module` | 52 | 52 | [OK] 100.0% |
-| **total** | **416** | **489** | **[OK] 85.1%** |
+| **total** | **417** | **490** | **[OK] 85.1%** |
 
 ---
 
@@ -171,21 +171,21 @@ Weighted PageRank aggregated by module — reveals architectural spine. Cross-mo
 
 | Rank | Score | Members | Module |
 | ---: | ---: | ---: | :--- |
-| 1 | 0.144613 | 39 | `src/metabokg/store.py` |
-| 2 | 0.109654 | 36 | `src/metabokg/orchestrator.py` |
-| 3 | 0.088724 | 29 | `src/metabokg/analyze.py` |
-| 4 | 0.082136 | 27 | `src/metabokg/snapshots.py` |
-| 5 | 0.043983 | 21 | `src/metabokg/simulate.py` |
-| 6 | 0.043661 | 15 | `src/metabokg/primitives.py` |
-| 7 | 0.037615 | 29 | `src/metabokg/mcp_tools.py` |
-| 8 | 0.033750 | 11 | `src/metabokg/index.py` |
-| 9 | 0.031826 | 18 | `scripts/generate_wiki.py` |
-| 10 | 0.028972 | 16 | `src/metabokg/layout3d.py` |
-| 11 | 0.027292 | 22 | `src/metabokg/app.py` |
-| 12 | 0.024999 | 15 | `src/metabokg/downloader.py` |
-| 13 | 0.024409 | 14 | `src/metabokg/enrich.py` |
-| 14 | 0.023049 | 19 | `scripts/examples.py` |
-| 15 | 0.021250 | 17 | `src/metabokg/viz3d.py` |
+| 1 | 0.144328 | 39 | `src/metabokg/store.py` |
+| 2 | 0.109438 | 36 | `src/metabokg/orchestrator.py` |
+| 3 | 0.088549 | 29 | `src/metabokg/analyze.py` |
+| 4 | 0.081974 | 27 | `src/metabokg/snapshots.py` |
+| 5 | 0.043896 | 21 | `src/metabokg/simulate.py` |
+| 6 | 0.043567 | 15 | `src/metabokg/primitives.py` |
+| 7 | 0.037541 | 29 | `src/metabokg/mcp_tools.py` |
+| 8 | 0.033683 | 11 | `src/metabokg/index.py` |
+| 9 | 0.031763 | 18 | `scripts/generate_wiki.py` |
+| 10 | 0.028915 | 16 | `src/metabokg/layout3d.py` |
+| 11 | 0.027238 | 22 | `src/metabokg/app.py` |
+| 12 | 0.024949 | 15 | `src/metabokg/downloader.py` |
+| 13 | 0.024361 | 14 | `src/metabokg/enrich.py` |
+| 14 | 0.023003 | 19 | `scripts/examples.py` |
+| 15 | 0.021209 | 17 | `src/metabokg/viz3d.py` |
 
 ---
 
@@ -249,10 +249,10 @@ Recent snapshots in reverse chronological order. Δ columns show change vs. the 
 
 | # | Timestamp | Branch | Version | Nodes | Edges | Coverage | Δ Nodes | Δ Edges | Δ Coverage |
 | ---: | :--- | :--- | :--- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 | 2026-08-15 13:18:04 | build/fleet-dep-alignment | 0.11.0 | 7394 | 6794 | 85.1% | +0 | +0 | +0.0% |
-| 2 | 2026-08-15 13:14:13 | build/fleet-dep-alignment | 0.11.0 | 7394 | 6794 | 85.1% | +2 | -25 | +0.0% |
-| 6 | 2026-08-03 18:23:56 | ci/wheel-smoke-test | 0.10.0 | 7392 | 6819 | 85.1% | +2 | +12 | -0.1% |
-| 8 | 2026-07-27 00:23:36 | main | 0.9.0 | 7390 | 6807 | 85.2% | +0 | +2 | +0.0% |
+| 1 | 2026-08-15 19:11:10 | fix/csv-parser-tsv-claim | 0.12.0 | 7414 | 6817 | 85.1% | +20 | +23 | +0.0% |
+| 4 | 2026-08-15 13:14:13 | build/fleet-dep-alignment | 0.11.0 | 7394 | 6794 | 85.1% | +2 | -25 | +0.0% |
+| 8 | 2026-08-03 18:23:56 | ci/wheel-smoke-test | 0.10.0 | 7392 | 6819 | 85.1% | +2 | +12 | -0.1% |
+| 10 | 2026-07-27 00:23:36 | main | 0.9.0 | 7390 | 6807 | 85.2% | +0 | +2 | +0.0% |
 
 ---
 
@@ -281,7 +281,7 @@ Recent snapshots in reverse chronological order. Δ columns show change vs. the 
 | :--- | :--- | :--- | ---: |
 | `KGMLParser` | class | src/metabokg/parsers/kgml.py | 339 |
 | `SBMLParser` | class | src/metabokg/parsers/sbml.py | 292 |
-| `CSVParser` | class | src/metabokg/parsers/csv_tsv.py | 213 |
+| `CSVParser` | class | src/metabokg/parsers/csv_tsv.py | 242 |
 | `write()` | method | src/metabokg/store.py | 53 |
 | `get_stats()` | method | src/metabokg/orchestrator.py | 27 |
 | `CorpusSpec` | class | src/metabokg/downloader.py | 14 |
@@ -298,26 +298,26 @@ Weighted PageRank over CALLS + IMPORTS + INHERITS edges (test paths excluded). S
 
 | Rank | Score | Kind | Name | Module |
 | ---: | ---: | :--- | :--- | :--- |
-| 1 | 0.000719 | method | `MetaKG.store()` | src/metabokg/orchestrator.py |
-| 2 | 0.000637 | function | `_section()` | scripts/examples.py |
-| 3 | 0.000382 | method | `MetaStore.node()` | src/metabokg/store.py |
-| 4 | 0.000363 | method | `PathwayAnalyzer.conn()` | src/metabokg/analyze.py |
+| 1 | 0.000717 | method | `MetaKG.store()` | src/metabokg/orchestrator.py |
+| 2 | 0.000636 | function | `_section()` | scripts/examples.py |
+| 3 | 0.000381 | method | `MetaStore.node()` | src/metabokg/store.py |
+| 4 | 0.000362 | method | `PathwayAnalyzer.conn()` | src/metabokg/analyze.py |
 | 5 | 0.000337 | function | `rewrite_repo_links()` | scripts/generate_wiki.py |
-| 6 | 0.000308 | class | `SnapshotDelta` | src/metabokg/snapshots.py |
-| 7 | 0.000308 | method | `MetaIndex._new_backend()` | src/metabokg/index.py |
-| 8 | 0.000298 | class | `SnapshotManifest` | src/metabokg/snapshots.py |
-| 9 | 0.000291 | function | `strip_image_refs()` | scripts/generate_wiki.py |
-| 10 | 0.000270 | method | `MetaStore.all_nodes()` | src/metabokg/store.py |
-| 11 | 0.000267 | method | `SnapshotManager.load_manifest()` | src/metabokg/snapshots.py |
-| 12 | 0.000252 | method | `MetaKG.simulator()` | src/metabokg/orchestrator.py |
-| 13 | 0.000248 | function | `_resolve_db_path()` | src/metabokg/app.py |
-| 14 | 0.000239 | method | `MetaStore.close()` | src/metabokg/store.py |
-| 15 | 0.000239 | method | `MetaKG.close()` | src/metabokg/orchestrator.py |
-| 16 | 0.000239 | method | `PathwayAnalyzer.close()` | src/metabokg/analyze.py |
-| 17 | 0.000239 | class | `CSVParserConfig` | src/metabokg/parsers/csv_tsv.py |
-| 18 | 0.000239 | function | `_parse_conc_args()` | src/metabokg/cli/_utils.py |
+| 6 | 0.000307 | class | `SnapshotDelta` | src/metabokg/snapshots.py |
+| 7 | 0.000307 | method | `MetaIndex._new_backend()` | src/metabokg/index.py |
+| 8 | 0.000297 | class | `SnapshotManifest` | src/metabokg/snapshots.py |
+| 9 | 0.000290 | function | `strip_image_refs()` | scripts/generate_wiki.py |
+| 10 | 0.000269 | method | `MetaStore.all_nodes()` | src/metabokg/store.py |
+| 11 | 0.000266 | method | `SnapshotManager.load_manifest()` | src/metabokg/snapshots.py |
+| 12 | 0.000251 | method | `MetaKG.simulator()` | src/metabokg/orchestrator.py |
+| 13 | 0.000247 | function | `_resolve_db_path()` | src/metabokg/app.py |
+| 14 | 0.000238 | method | `MetaStore.close()` | src/metabokg/store.py |
+| 15 | 0.000238 | method | `MetaKG.close()` | src/metabokg/orchestrator.py |
+| 16 | 0.000238 | method | `PathwayAnalyzer.close()` | src/metabokg/analyze.py |
+| 17 | 0.000238 | class | `CSVParserConfig` | src/metabokg/parsers/csv_tsv.py |
+| 18 | 0.000238 | function | `_parse_conc_args()` | src/metabokg/cli/_utils.py |
 | 19 | 0.000227 | method | `SnapshotManager.load_snapshot()` | src/metabokg/snapshots.py |
-| 20 | 0.000217 | function | `_fbc()` | src/metabokg/parsers/sbml.py |
+| 20 | 0.000216 | function | `_fbc()` | src/metabokg/parsers/sbml.py |
 
 ---
 
@@ -367,4 +367,4 @@ Top structurally-dominant nodes per architectural concern (0.60 × semantic + 0.
 
 ---
 
-*Report generated by PyCodeKG Thorough Analysis Tool — analysis completed in 5.0s*
+*Report generated by PyCodeKG Thorough Analysis Tool — analysis completed in 4.0s*

@@ -34,7 +34,6 @@ Or mount onto an existing FastMCP instance::
     register_tools(mcp, metabokg)
 Author: Eric G. Suchanek, PhD
 
-Last Revision: 2026-07-29 14:44:31
 """
 
 from __future__ import annotations

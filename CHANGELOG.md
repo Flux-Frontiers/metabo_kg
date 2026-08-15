@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-08-15
+
 ### Fixed
 
 - **`CSVParser` claimed the KEGG annotation TSVs and then reported them as
@@ -21,6 +23,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   columns are present before claiming the file. Graph output is unchanged
   (35,852 nodes / 118,267 edges over `data/`); only the spurious errors go, from
   eight to zero.
+
+### Removed
+
+- **`Last Revision:` header lines, from all 28 source files that carried one.**
+  The field cannot be kept truthful: correcting it is itself a change to the
+  file, so git's last-change date moves and the line is stale again. Across the
+  fleet on 2026-08-15, 71% of these headers were wrong, some by four months.
+  `git log -1 --format=%cd -- <file>` is exact and free. `Author:` and
+  `License:` stay — those are real provenance and do not decay.
 
 ## [0.12.0] - 2026-08-15
 

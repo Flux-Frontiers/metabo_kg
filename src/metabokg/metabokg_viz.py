@@ -9,7 +9,6 @@ Launches ``streamlit run`` against the bundled app.py in the package directory.
 Works both from the source tree and when installed from a wheel.
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-08-01
 License: Elastic 2.0
 """
 

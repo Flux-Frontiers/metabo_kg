@@ -6,7 +6,6 @@ Re-exports the shared ``Embedder`` and ``SentenceTransformerEmbedder`` from
 ``extract_distance``) used by :mod:`metabokg.index`.
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-08-01
 
 """
 

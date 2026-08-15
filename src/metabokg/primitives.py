@@ -6,7 +6,6 @@ and the kind/relation constants used throughout the metabokg subpackage.
 
     Author: Eric G. Suchanek, PhD
 
-    Last Revision: 2026-07-29 14:44:31
 """
 
 from __future__ import annotations

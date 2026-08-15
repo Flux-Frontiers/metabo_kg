@@ -6,7 +6,6 @@ Owns the full pipeline:
 
 Author: Eric G. Suchanek, PhD
 
-Last Revision: 2026-08-01 17:22:51
 """
 
 from __future__ import annotations

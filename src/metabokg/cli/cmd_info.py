@@ -5,7 +5,6 @@ Registers:
   metabokg info  — show which corpus is active and its node/edge counts
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-08-01
 License: Elastic 2.0
 """
 

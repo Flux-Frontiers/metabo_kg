@@ -28,7 +28,6 @@ Usage::
         print(f"Seeded {n_kp} kinetic params, {n_ri} regulatory interactions.")
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-07-29 14:44:31
 """
 
 from __future__ import annotations

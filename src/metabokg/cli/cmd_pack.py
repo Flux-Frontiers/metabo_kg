@@ -5,7 +5,6 @@ Registers:
   metabokg pack  — semantic search + graph expansion → rich context pack
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-08-01
 License: Elastic 2.0
 """
 

@@ -8,7 +8,6 @@ aggregates the resulting nodes and edges.
 Analogous to ``pycode_kg.graph.CodeGraph``.
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-08-01 18:22:53
 
 """
 

@@ -1,7 +1,7 @@
 [![CI](https://github.com/flux-frontiers/metabo_kg/actions/workflows/ci.yml/badge.svg)](https://github.com/flux-frontiers/metabo_kg/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/)
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic--2.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
-[![Version](https://img.shields.io/badge/version-0.12.0-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
+[![Version](https://img.shields.io/badge/version-0.12.1-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19740563.svg)](https://doi.org/10.5281/zenodo.19740563)
 
@@ -170,7 +170,7 @@ metabokg/
 +-- visualization/   # Streamlit + PyVista (2D/3D)
 ```
 
-The MCP server and CLI are thin wrappers over the same `MetaKG` orchestrator that the Python API exposes; there is exactly one code path for each capability. Architectural deep-dives (complexity, coupling, hotspots, and the PageRank/centrality of the Python codebase itself) live in [docs/analysis_v0.12.0.md](docs/analysis_v0.12.0.md), [docs/meta_kg_analysis_20260306.md](docs/meta_kg_analysis_20260306.md), and [docs/metakg-codekg-analysis-2026-03-03.md](docs/metakg-codekg-analysis-2026-03-03.md).
+The MCP server and CLI are thin wrappers over the same `MetaKG` orchestrator that the Python API exposes; there is exactly one code path for each capability. Architectural deep-dives (complexity, coupling, hotspots, and the PageRank/centrality of the Python codebase itself) live in [docs/analysis_v0.12.1.md](docs/analysis_v0.12.1.md), [docs/meta_kg_analysis_20260306.md](docs/meta_kg_analysis_20260306.md), and [docs/metakg-codekg-analysis-2026-03-03.md](docs/metakg-codekg-analysis-2026-03-03.md).
 
 ---
 
@@ -206,13 +206,13 @@ If you use MetaboKG in your research, please cite it:
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19740563.svg)](https://doi.org/10.5281/zenodo.19740563)
 
-> Suchanek, E. G. (2026). *MetaboKG: Metabolic Pathway Knowledge Graph* (Version 0.12.0) [Software]. Flux-Frontiers. https://doi.org/10.5281/zenodo.19740563
+> Suchanek, E. G. (2026). *MetaboKG: Metabolic Pathway Knowledge Graph* (Version 0.12.1) [Software]. Flux-Frontiers. https://doi.org/10.5281/zenodo.19740563
 
 ```bibtex
 @software{suchanek_metabo_kg,
   author    = {Suchanek, Eric G.},
   title     = {{MetaboKG}: Metabolic Pathway Knowledge Graph},
-  version   = {0.12.0},
+  version   = {0.12.1},
   year      = {2026},
   publisher = {Flux-Frontiers},
   doi       = {10.5281/zenodo.19740563},

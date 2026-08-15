@@ -2,7 +2,6 @@
 options.py — Reusable Click option decorators for MetaKG CLI commands.
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-08-01
 License: Elastic 2.0
 """
 
