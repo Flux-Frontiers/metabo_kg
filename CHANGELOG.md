@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Dependency floors raised**: `kgmodule-utils` `>=0.13.1` → `>=0.13.2`, and in
+  the maintainer `kg` group `pycode-kg` `>=0.23.0` → `>=0.23.1`.
+
+  0.13.1 is skipped fleet-wide: it made `SnapshotManager.repo_root` a read-only
+  property, which breaks every subclass that assigns it. This repo has such a
+  subclass — `src/metabokg/snapshots.py` — so the old floor pointed at a release
+  that could break `metabokg snapshot` outright. The lock was already resolving
+  0.13.2 while `pyproject.toml` still declared 0.13.1, so the manifest and the
+  lock disagreed about what this package requires; both say 0.13.2 now.
+
+### Fixed
+
+- **`tests/test_hooks.py` failed during a real `git commit`.** The tests build
+  throwaway repositories and commit inside them, passing `cwd=` but inheriting
+  the environment. Run from a git hook — which is exactly how the `pytest`
+  pre-commit hook invokes them — git has already exported `GIT_DIR` and
+  `GIT_INDEX_FILE` pointing at this repository. Git reads those before `cwd`, so
+  the inner commit tried to write a tree from the outer index and died with
+
+      error: invalid object 100644 <sha> for '.claude/agents/cco.md'
+      fatal: git-write-tree: error building trees
+
+  which reads like repository corruption and is nothing of the sort. `_git()`
+  and the one direct hook invocation now strip the six `GIT_*` variables that
+  bind a command to a specific repository.
+
+  Nothing caught this because both `pre-commit run --all-files` and CI run with
+  no commit in progress, leaving those variables unset. It failed only during an
+  actual commit — 4 of 16 tests, every time.
+
 ## [0.12.1] - 2026-08-15
 
 ### Fixed
