@@ -1,6 +1,6 @@
 {
   "format": "1.0",
-  "last_update": "2026-08-03T21:47:27.879003+00:00",
+  "last_update": "2026-08-15T13:18:14.021129+00:00",
   "snapshots": [
     {
       "key": "ae4bee95d9a40dd13f35c47f942c9743301caa39",
@@ -9,7 +9,7 @@
       "version": "0.9.0",
       "file": "ae4bee95d9a40dd13f35c47f942c9743301caa39.json",
       "metrics": {
-        "db_path": "/Users/egs/repos/Metabo_kg/.dockg/graph.sqlite",
+        "db_path": ".dockg/graph.sqlite",
         "total_nodes": 4661,
         "total_edges": 40648,
         "node_counts": {
@@ -52,7 +52,7 @@
       "version": "0.9.0",
       "file": "939e37de7b5306921f303ff902ef2e2a4c770415.json",
       "metrics": {
-        "db_path": "/Users/egs/repos/Metabo_kg/.dockg/graph.sqlite",
+        "db_path": ".dockg/graph.sqlite",
         "total_nodes": 4678,
         "total_edges": 40825,
         "node_counts": {
@@ -95,7 +95,7 @@
       "version": "0.9.0",
       "file": "d6ef166a9802a126488287f735bf71c61cf2b8e5.json",
       "metrics": {
-        "db_path": "/Users/egs/repos/Metabo_kg/.dockg/graph.sqlite",
+        "db_path": ".dockg/graph.sqlite",
         "total_nodes": 4672,
         "total_edges": 40812,
         "node_counts": {
@@ -138,7 +138,7 @@
       "version": "0.9.0",
       "file": "e2a63a6b5e10c61266196daf49726c0acc2e31ba.json",
       "metrics": {
-        "db_path": "/Users/egs/repos/Metabo_kg/.dockg/graph.sqlite",
+        "db_path": ".dockg/graph.sqlite",
         "total_nodes": 4679,
         "total_edges": 40880,
         "node_counts": {
@@ -181,7 +181,7 @@
       "version": "0.10.0",
       "file": "809fb3bd447a24a844bc3ec2b81e3639ca30cd7f.json",
       "metrics": {
-        "db_path": "/Users/egs/repos/Metabo_kg/.dockg/graph.sqlite",
+        "db_path": ".dockg/graph.sqlite",
         "total_nodes": 4618,
         "total_edges": 40198,
         "node_counts": {
@@ -224,7 +224,7 @@
       "version": "0.11.0",
       "file": "c24db507a073da96ef17ebc6e64793d37a672d5a.json",
       "metrics": {
-        "db_path": "/Users/egs/repos/Metabo_kg/.dockg/graph.sqlite",
+        "db_path": ".dockg/graph.sqlite",
         "total_nodes": 4631,
         "total_edges": 40333,
         "node_counts": {
@@ -256,6 +256,49 @@
           "nodes": -30,
           "edges": -315,
           "coverage_delta": 7.561705742886726e-05,
+          "issues_delta": -1
+        }
+      }
+    },
+    {
+      "key": "03849a0b058782a019f3bb1ecb20a38c635307b9",
+      "branch": "build/fleet-dep-alignment",
+      "timestamp": "2026-08-15T13:18:14.020553+00:00",
+      "version": "0.11.0",
+      "file": "03849a0b058782a019f3bb1ecb20a38c635307b9.json",
+      "metrics": {
+        "db_path": ".dockg/graph.sqlite",
+        "total_nodes": 4664,
+        "total_edges": 40537,
+        "node_counts": {
+          "chunk": 1106,
+          "document": 34,
+          "entity": 1161,
+          "keyword": 1021,
+          "section": 649,
+          "topic": 693
+        },
+        "edge_counts": {
+          "CONTAINS": 1755,
+          "CO_OCCURS_WITH": 25158,
+          "HAS_KEYWORD": 4423,
+          "HAS_TOPIC": 1123,
+          "MENTIONS_ENTITY": 5130,
+          "NEXT": 382,
+          "REFERENCES": 50,
+          "SIMILAR_TO": 2516
+        },
+        "meaningful_nodes": 4630,
+        "coverage_score": 0.9590114526823387,
+        "issues_count": 0,
+        "complexity_median": 23.0
+      },
+      "deltas": {
+        "vs_previous": null,
+        "vs_baseline": {
+          "nodes": 3,
+          "edges": -111,
+          "coverage_delta": 0.00044960015339290393,
           "issues_delta": -1
         }
       }

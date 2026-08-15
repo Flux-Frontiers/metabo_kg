@@ -44,8 +44,8 @@ repos:
         args: ['--baseline', '.secrets.baseline', '--exclude-files', '^\.[^/]+/|/\.metabokg/snapshots/']
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.10
+    rev: v0.15.22
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: [--fix]
       - id: ruff-format

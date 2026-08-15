@@ -1,32 +1,32 @@
 {
-  "key": "809fb3bd447a24a844bc3ec2b81e3639ca30cd7f",
-  "branch": "chore/kg-tooling-group",
-  "timestamp": "2026-08-03T20:27:35.699411+00:00",
-  "version": "0.10.0",
+  "key": "03849a0b058782a019f3bb1ecb20a38c635307b9",
+  "branch": "build/fleet-dep-alignment",
+  "timestamp": "2026-08-15T13:18:14.020553+00:00",
+  "version": "0.11.0",
   "metrics": {
     "db_path": ".dockg/graph.sqlite",
-    "total_nodes": 4618,
-    "total_edges": 40198,
+    "total_nodes": 4664,
+    "total_edges": 40537,
     "node_counts": {
-      "chunk": 1093,
+      "chunk": 1106,
       "document": 34,
-      "entity": 1152,
-      "keyword": 1012,
+      "entity": 1161,
+      "keyword": 1021,
       "section": 649,
-      "topic": 678
+      "topic": 693
     },
     "edge_counts": {
-      "CONTAINS": 1742,
-      "CO_OCCURS_WITH": 24964,
-      "HAS_KEYWORD": 4371,
-      "HAS_TOPIC": 1110,
-      "MENTIONS_ENTITY": 5092,
-      "NEXT": 374,
+      "CONTAINS": 1755,
+      "CO_OCCURS_WITH": 25158,
+      "HAS_KEYWORD": 4423,
+      "HAS_TOPIC": 1123,
+      "MENTIONS_ENTITY": 5130,
+      "NEXT": 382,
       "REFERENCES": 50,
-      "SIMILAR_TO": 2495
+      "SIMILAR_TO": 2516
     },
-    "meaningful_nodes": 4584,
-    "coverage_score": 0.9585239402256786,
+    "meaningful_nodes": 4630,
+    "coverage_score": 0.9590114526823387,
     "issues_count": 0,
     "complexity_median": 23.0
   },
@@ -40,7 +40,7 @@
       "total_links": 32
     },
     {
-      "id": "chunk:CHANGELOG.md:0126",
+      "id": "chunk:CHANGELOG.md:0139",
       "file_path": "CHANGELOG.md",
       "label": "Added",
       "references": 0,
@@ -114,15 +114,15 @@
   ],
   "issues": [],
   "vs_previous": {
-    "nodes": -61,
-    "edges": -682,
-    "coverage_delta": -0.0003760295537109659,
+    "nodes": 33,
+    "edges": 204,
+    "coverage_delta": 0.00037398309596403667,
     "issues_delta": 0
   },
   "vs_baseline": {
-    "nodes": -43,
-    "edges": -450,
-    "coverage_delta": -3.791230326721795e-05,
+    "nodes": 3,
+    "edges": -111,
+    "coverage_delta": 0.00044960015339290393,
     "issues_delta": -1
   }
 }

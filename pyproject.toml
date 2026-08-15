@@ -7,29 +7,30 @@
 #
 # Quick install (pip)
 # -------------------
-#   pip install -e ".[dev]"             core + dev tools (pytest, ruff, ty, etc.)
 #   pip install -e ".[viz]"             core + Streamlit/PyVis visualizer
 #   pip install -e ".[viz3d]"           core + PyVista 3D visualizer
 #   pip install -e ".[simulate]"        core + scipy ODE/FBA simulation
 #   pip install -e ".[biopax]"          core + RDFLib BioPAX parser
-#   pip install -e ".[all]"             everything above
 #   pip install -e "."                  core runtime only
 #
 # Quick install (poetry)
 # ----------------------
-#   poetry install --all-extras         everything
-#   poetry install --extras "dev"       core + dev tools only
+#   poetry install --all-extras         all user-facing extras (not dev tooling)
+#   poetry install --with dev           core + dev tools (pytest, ruff, ty, etc.)
 #   poetry install --extras "viz"       core + Streamlit/PyVis only
 #   poetry install --extras "viz3d"     core + 3D visualizer only
 #   poetry install --extras "simulate"  core + simulation only
 #   poetry install --with kg            core + the dockg/pycodekg CLIs (maintainer tooling)
 #   poetry install                      core runtime only
 #
+# Dev tooling lives in the Poetry `dev` group, not an extra, so it stays out of
+# published wheel metadata. pip-only setups can't install it — use poetry for
+# development. (Fleet convention: extras are user-facing features, groups are
+# repo tooling. See kgrag_priv/docs/FLEET_STANDARDS.md.)
+#
 # First-time setup
 # ----------------
-#   python -m venv .venv
-#   source .venv/bin/activate       # Windows: .venv\Scripts\activate
-#   pip install -e ".[dev]"
+#   poetry install --with dev
 #
 # Run tests
 # ---------
@@ -83,20 +84,15 @@ dependencies = [
     "numpy>=1.24.0",
     "sentence-transformers>=5.4.1",
     "watchdoc>=0.0.1",
-    "kgmodule-utils[semantic,sqlite-vec]>=0.12.1",
+    "kgmodule-utils[semantic,sqlite-vec]>=0.13.1",
 ]
 
+# Extras are user-facing features only. Dev tooling is a Poetry group below.
+# There is deliberately no `all` extra: an aggregate that re-lists every other
+# extra duplicates each package in the marker space and sends `poetry lock`
+# into resolution restarts. Use `poetry install --all-extras`.
+# See kgrag_priv/docs/FLEET_STANDARDS.md.
 [project.optional-dependencies]
-dev = [
-    "detect-secrets>=1.5.0",
-    "ty>=0.0.41",
-    "pre-commit>=4.0.0",
-    "pylint>=4.0.5",
-    "pytest>=9.0.3",
-    "pytest-cov>=5.0.0",
-    "pytest-timeout>=2.4.0",
-    "ruff>=0.4.0,<0.16",
-]
 biopax   = ["rdflib>=6.0.0"]
 simulate = ["scipy>=1.11.0"]
 viz = [
@@ -105,32 +101,42 @@ viz = [
     "pyvis>=0.3.2",
     "streamlit>=1.56.0",
 ]
+# Hand-listed rather than pulled via `kgmodule-utils[viz3d-render]`, which is
+# the fleet default. Deliberate: metabokg/viz3d.py drives PyVista directly and
+# imports nothing from `kg_utils.viz3d` — no organic tree engine, no Layout3D.
+# Depending on the SDK extra would add a render stack this package does not
+# call. Revisit if metabokg ever grows a grown-tree scene.
 viz3d = [
     "param>=2.0.0",
     "PyQt5>=5.15.0",
     "pyvista>=0.44.0",
     "pyvistaqt>=0.11.0",
 ]
-all = [
-    "detect-secrets>=1.5.0",
-    "ty>=0.0.41",
-    "pre-commit>=4.0.0",
-    "pylint>=4.0.5",
-    "pytest>=9.0.3",
-    "pytest-cov>=5.0.0",
-    "pytest-timeout>=2.4.0",
-    "ruff>=0.4.0,<0.16",
-    "matplotlib>=3.8.0",
-    "pandas>=2.0.0",
-    "param>=2.0.0",
-    "PyQt5>=5.15.0",
-    "pyvis>=0.3.2",
-    "pyvista>=0.44.0",
-    "pyvistaqt>=0.11.0",
-    "rdflib>=6.0.0",
-    "scipy>=1.11.0",
-    "streamlit>=1.56.0",
-]
+
+# ---------------------------------------------------------------------------
+# Dev tooling (Poetry group, not a PEP 621 extra)
+# ---------------------------------------------------------------------------
+# An extra is a feature of the *package*; dev tooling is a property of the
+# *repo*. As a published extra, `metabo-kg[dev]` offered every consumer the
+# maintainer toolchain and its repo-reasoned pins (ruff<0.16). Optional, so a
+# bare `poetry install` stays core runtime only.
+#
+#   poetry install --with dev     # test/lint/type toolchain
+#
+# There is no pip path for this on purpose — dev setups are Poetry-only across
+# the fleet. Same shape as gutenberg_kg and pycode_kg.
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+detect-secrets = ">=1.5.0"
+ty = ">=0.0.41"
+pre-commit = ">=4.0.0"
+pylint = ">=4.0.5"
+pytest = ">=9.0.3"
+pytest-cov = ">=5.0.0"
+pytest-timeout = ">=2.4.0"
+ruff = ">=0.4.0,<0.16"
 
 # ---------------------------------------------------------------------------
 # Maintainer tooling (Poetry group, not a PEP 621 extra)
@@ -152,29 +158,25 @@ all = [
 optional = true
 
 [tool.poetry.group.kg.dependencies]
-doc-kg = ">=0.21.1"
-pycode-kg = ">=0.22.0"
+doc-kg = ">=0.21.2"
+pycode-kg = ">=0.23.0"
 
 [project.urls]
 Homepage   = "https://github.com/Flux-Frontiers/metabo_kg"
 Repository = "https://github.com/Flux-Frontiers/metabo_kg"
 
 [project.scripts]
-metabokg                = "metabokg.cli.main:cli"
-metabokg-info           = "metabokg.cli:info_main"
-metabokg-init           = "metabokg.cli:init_main"
-metabokg-build          = "metabokg.cli:build_main"
-metabokg-update         = "metabokg.cli:update_main"
-metabokg-enrich         = "metabokg.cli:enrich_main"
-metabokg-mcp            = "metabokg.cli:mcp_main"
-metabokg-viz            = "metabokg.cli:viz_main"
-metabokg-viz3d          = "metabokg.cli:viz3d_main"
-metabokg-query          = "metabokg.cli:query_main"
-metabokg-pack           = "metabokg.cli:pack_main"
-metabokg-analyze        = "metabokg.cli:analyze_main"
-metabokg-analyze-basic  = "metabokg.cli:analyze_basic_main"
-metabokg-simulate       = "metabokg.cli:simulate_main"
-metabokg-snapshot       = "metabokg.cli:snapshot_main"
+# The per-subcommand aliases (`metabokg-build`, `metabokg-simulate`, ...) went
+# in 0.12.0, matching pycode_kg 0.23.0. Every one had an identical
+# `metabokg <subcommand>` form via the Click group, so they bought a saved
+# space while making each new command ask whether it needed an alias — a
+# question that had already drifted (`install-hooks` never got one).
+#
+# `metabokg-mcp` stays: the documented Claude Desktop / Copilot setups put that
+# path into users' config files, so removing it would break their MCP server on
+# upgrade with a "command not found" that reads as a broken install.
+metabokg     = "metabokg.cli.main:cli"
+metabokg-mcp = "metabokg.cli:mcp_main"
 
 # ---------------------------------------------------------------------------
 # Tool configuration

@@ -11,7 +11,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **`metabokg.__version__` is now derived from installed package metadata**
+- **Dependency floors raised to the current fleet releases**: `kgmodule-utils`
+  `>=0.12.1` → `>=0.13.1`, and in the maintainer `kg` group `doc-kg`
+  `>=0.21.1` → `>=0.21.2`, `pycode-kg` `>=0.22.0` → `>=0.23.0`.
+
+  `kgmodule-utils` 0.13.1 is the floor rather than 0.13.0 because it is the
+  release that stops snapshots recording absolute paths. That matters here in
+  particular: this repo's committed `.dockg` snapshots are rewritten to
+  relative paths in this same change, and against 0.13.0 the pre-commit hook
+  would rebuild them and restore the absolute form.
+
+- **Dev tooling moved from a PEP 621 extra to an optional Poetry group.**
+  `metabo-kg[dev]` published the maintainer toolchain — and its repo-reasoned
+  pins such as `ruff<0.16` — in wheel metadata, offering it to every consumer.
+  An extra is a feature of the package; dev tooling is a property of the repo.
+  Install with `poetry install --with dev`; there is deliberately no pip path.
+  CI's `--extras dev` becomes `--with dev` in all three jobs. Matches
+  gutenberg_kg and pycode_kg; the fleet rule is in
+  `kgrag_priv/docs/FLEET_STANDARDS.md`.
+
+### Removed
+
+- **The `all` aggregate extra.** It re-listed every other extra *plus* the dev
+  tooling, so `pip install metabo-kg[all]` installed pytest, ruff and ty. An
+  aggregate also duplicates each package in the marker space, which is what
+  sends `poetry lock` into resolution restarts. Use `poetry install
+  --all-extras`. The published wheel now advertises four extras — `biopax`,
+  `simulate`, `viz`, `viz3d` — and no dev tooling in `Requires-Dist`.
+
+- **The per-subcommand console scripts.** `metabokg-build`,
+  `metabokg-simulate`, `metabokg-analyze` and eleven more are gone; use
+  `metabokg <subcommand>`, which the Click group has exposed for every one of
+  them. They made each new command ask whether it needed an alias, a question
+  that had already drifted — `install-hooks` never got one. The repo's own
+  `.claude/commands`, `.claude/skills` and `.vscode` prompts were rewritten to
+  the subcommand form (161 references across 12 files).
+
+  **`metabokg-mcp` stays.** The documented Claude Desktop and Copilot setups
+  put that path into users' config files, so removing it would break their MCP
+  server on upgrade with a "command not found" that reads as a broken install.
+
+### Fixed
+
+- **`.mcp.json` addressed the wrong copilot workspace.** `WORKSPACE_ID` was
+  `code_kg`, so this repo's copilot-memory and task-copilot state was filed
+  under another project's namespace; it is now `metabo_kg`. The `codekg`
+  server is also renamed `pycodekg` and both KG servers now use the fleet's
+  relative `.venv/bin/<cli> mcp` form instead of absolute paths.
   (`importlib.metadata.version("metabo-kg")`) instead of being a hardcoded
   literal. 0.11.0 fixed the symptom — the literal had drifted to 0.9.1 while
   `pyproject.toml` said 0.10.0, mislabelling every analysis report since — but
