@@ -1580,14 +1580,14 @@ referencing = ">=0.31.0"
 
 [[package]]
 name = "kgmodule-utils"
-version = "0.13.1"
+version = "0.13.2"
 description = "Shared types, graph store, semantic index, and pipeline base for the KGModule SDK"
 optional = false
 python-versions = "<3.14,>=3.12"
 groups = ["main", "kg"]
 files = [
-    {file = "kgmodule_utils-0.13.1-py3-none-any.whl", hash = "sha256:890eae1b0adb1b930ba41d6d33111d786487bdf07ec3e3061cdaecd023b507a9"},
-    {file = "kgmodule_utils-0.13.1.tar.gz", hash = "sha256:e82623f44015a6dcfbb3de7ca44cde1002e304d4432a5492341dd871fe81dac7"},
+    {file = "kgmodule_utils-0.13.2-py3-none-any.whl", hash = "sha256:379f6a6f47ed3523375a53895fb310830272b6782e057492c4b2b089f5464890"},
+    {file = "kgmodule_utils-0.13.2.tar.gz", hash = "sha256:43d6797f7dec305ee841cd997f4ea0e55de7d04546e15ae6199865bbdf58ea86"},
 ]
 
 [package.dependencies]
@@ -2965,19 +2965,19 @@ files = [
 
 [[package]]
 name = "pycode-kg"
-version = "0.23.0"
+version = "0.23.1"
 description = "A tool to build a searchable knowledge graph from Python repositories"
 optional = false
 python-versions = "<3.14,>=3.12"
 groups = ["kg"]
 files = [
-    {file = "pycode_kg-0.23.0-py3-none-any.whl", hash = "sha256:a0b82526c7519d7e6eab72f43a456937836c3663edb7a4c1afa6ae3afc39592d"},
-    {file = "pycode_kg-0.23.0.tar.gz", hash = "sha256:cd4721d221e8dc13fcb5ad905850ed0698d056aca84b92795ff01cf830a836cb"},
+    {file = "pycode_kg-0.23.1-py3-none-any.whl", hash = "sha256:3904100f333a688aacbd1e637bf52dec9d3adaa3e79786cd8848f2203e305f1c"},
+    {file = "pycode_kg-0.23.1.tar.gz", hash = "sha256:b3896b9043d5b978239af2e7a5ecb09eb3cb8ee906b696fd8d7015050fde4926"},
 ]
 
 [package.dependencies]
 click = ">=8.1.0,<9"
-kgmodule-utils = {version = ">=0.12.1", extras = ["semantic", "viz3d"]}
+kgmodule-utils = {version = ">=0.13.1", extras = ["semantic", "viz3d"]}
 mcp = ">=1.0.0,<2"
 networkx = ">=3.0"
 numpy = ">=1.24.0"
@@ -5182,4 +5182,4 @@ viz3d = ["PyQt5", "param", "pyvista", "pyvistaqt"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "0dd41d47444d792099c3a922e79e4c19a5f69ba8e3bcec03334cf298aac603a4"
+content-hash = "7e0ecc798ae9b0b715369b7dde739a925582c3eea4dd5f9673c823fcac74caf5"

@@ -1,32 +1,32 @@
 {
-  "key": "338927d1d678e5c38af5cee8a4cc863f59cc8335",
-  "branch": "main",
-  "timestamp": "2026-08-15T19:25:18.320594+00:00",
+  "key": "dea0544e3852e28043fc38a5037fb7cbf7b599ac",
+  "branch": "chore/floors-0.13.2",
+  "timestamp": "2026-08-15T22:03:09.245443+00:00",
   "version": "0.12.1",
   "metrics": {
     "db_path": ".dockg/graph.sqlite",
-    "total_nodes": 4700,
-    "total_edges": 40857,
+    "total_nodes": 4718,
+    "total_edges": 40927,
     "node_counts": {
-      "chunk": 1113,
+      "chunk": 1118,
       "document": 34,
       "entity": 1171,
-      "keyword": 1036,
+      "keyword": 1044,
       "section": 649,
-      "topic": 697
+      "topic": 702
     },
     "edge_counts": {
-      "CONTAINS": 1762,
-      "CO_OCCURS_WITH": 25394,
-      "HAS_KEYWORD": 4451,
-      "HAS_TOPIC": 1132,
-      "MENTIONS_ENTITY": 5163,
-      "NEXT": 387,
+      "CONTAINS": 1767,
+      "CO_OCCURS_WITH": 25416,
+      "HAS_KEYWORD": 4471,
+      "HAS_TOPIC": 1137,
+      "MENTIONS_ENTITY": 5170,
+      "NEXT": 391,
       "REFERENCES": 50,
-      "SIMILAR_TO": 2518
+      "SIMILAR_TO": 2525
     },
-    "meaningful_nodes": 4666,
-    "coverage_score": 0.9592692422881103,
+    "meaningful_nodes": 4684,
+    "coverage_score": 0.9591532498509242,
     "issues_count": 0,
     "complexity_median": 23.0
   },
@@ -40,7 +40,7 @@
       "total_links": 31
     },
     {
-      "id": "chunk:CHANGELOG.md:0143",
+      "id": "chunk:CHANGELOG.md:0148",
       "file_path": "CHANGELOG.md",
       "label": "Added",
       "references": 0,
@@ -113,16 +113,11 @@
     }
   ],
   "issues": [],
-  "vs_previous": {
-    "nodes": -7,
-    "edges": -46,
-    "coverage_delta": -7.305965508852541e-05,
-    "issues_delta": 0
-  },
+  "vs_previous": null,
   "vs_baseline": {
-    "nodes": 39,
-    "edges": 209,
-    "coverage_delta": 0.0007073897591645117,
+    "nodes": 57,
+    "edges": 279,
+    "coverage_delta": 0.0005913973219784374,
     "issues_delta": -1
   }
 }
