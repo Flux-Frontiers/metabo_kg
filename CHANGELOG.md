@@ -12,8 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Dependency floors raised to the current fleet releases**: `kgmodule-utils`
-  `>=0.12.1` → `>=0.13.0`, and in the maintainer `kg` group `doc-kg`
+  `>=0.12.1` → `>=0.13.1`, and in the maintainer `kg` group `doc-kg`
   `>=0.21.1` → `>=0.21.2`, `pycode-kg` `>=0.22.0` → `>=0.23.0`.
+
+  `kgmodule-utils` 0.13.1 is the floor rather than 0.13.0 because it is the
+  release that stops snapshots recording absolute paths. That matters here in
+  particular: this repo's committed `.dockg` snapshots are rewritten to
+  relative paths in this same change, and against 0.13.0 the pre-commit hook
+  would rebuild them and restore the absolute form.
 
 - **Dev tooling moved from a PEP 621 extra to an optional Poetry group.**
   `metabo-kg[dev]` published the maintainer toolchain — and its repo-reasoned

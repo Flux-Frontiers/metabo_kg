@@ -84,7 +84,7 @@ dependencies = [
     "numpy>=1.24.0",
     "sentence-transformers>=5.4.1",
     "watchdoc>=0.0.1",
-    "kgmodule-utils[semantic,sqlite-vec]>=0.13.0",
+    "kgmodule-utils[semantic,sqlite-vec]>=0.13.1",
 ]
 
 # Extras are user-facing features only. Dev tooling is a Poetry group below.
