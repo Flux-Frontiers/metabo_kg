@@ -12,6 +12,7 @@ These execute it: a real ``git init``, a real commit, a real exit code.
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -35,8 +36,37 @@ pytestmark = pytest.mark.skipif(
 HAS_PRE_COMMIT = shutil.which("pre-commit") is not None
 
 
+#: Git environment variables that bind a command to a *specific* repository.
+#: `cwd=` does not override them — git reads these first — so a test that only
+#: sets `cwd` still operates on whatever repo the caller was in.
+_GIT_REPO_ENV = (
+    "GIT_DIR",
+    "GIT_INDEX_FILE",
+    "GIT_WORK_TREE",
+    "GIT_OBJECT_DIRECTORY",
+    "GIT_COMMON_DIR",
+    "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+)
+
+
 def _git(*args: str, cwd: Path) -> subprocess.CompletedProcess:
-    return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, check=False)
+    """Run git in `cwd`, detached from any repository the caller is bound to.
+
+    These tests build throwaway repos and commit inside them. Run normally that
+    is fine, but run *from a git hook* — which is how the pytest pre-commit hook
+    invokes them — git exports GIT_DIR and GIT_INDEX_FILE pointing at the real
+    repository. The subprocess inherits them, `cwd` loses, and the commit here
+    tries to write a tree from the outer repo's index instead:
+
+        error: invalid object 100644 <sha> for '.claude/agents/cco.md'
+        fatal: git-write-tree: error building trees
+
+    which reads like repository corruption and is nothing of the sort.
+    """
+    env = {k: v for k, v in os.environ.items() if k not in _GIT_REPO_ENV}
+    return subprocess.run(
+        ["git", *args], cwd=cwd, capture_output=True, text=True, check=False, env=env
+    )
 
 
 @pytest.fixture
@@ -134,6 +164,8 @@ class TestHookExecution:
             cwd=repo,
             capture_output=True,
             text=True,
+            env={k: v for k, v in os.environ.items() if k not in _GIT_REPO_ENV},
+            check=False,
         )
         assert result.returncode == 0, result.stderr
 
