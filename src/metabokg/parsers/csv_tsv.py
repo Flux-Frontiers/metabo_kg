@@ -103,6 +103,35 @@ class CSVParser(PathwayParser):
     def supported_extensions(self) -> tuple[str, ...]:
         return (".csv", ".tsv", ".txt")
 
+    def can_handle(self, path: Path) -> bool:
+        """
+        Check the extension *and* that the header carries the required columns.
+
+        The base implementation matches on extension alone, which is too eager
+        here: ``.tsv`` is also the extension of the KEGG annotation tables that
+        ``metabokg init`` drops into the data directory
+        (``kegg_compound_names.tsv``, ``hsa_gene_names.tsv``, ...). Claiming
+        those and then failing in :meth:`parse` reports them to the user as
+        corrupt input, when they are simply not reaction tables.
+
+        :param path: Path to inspect.
+        :return: ``True`` if the file is a reaction table this parser can read.
+        """
+        if path.suffix.lower() not in self.supported_extensions:
+            return False
+
+        cfg = self.config
+        delim = "\t" if path.suffix.lower() == ".tsv" else cfg.delimiter
+        required = {cfg.substrate, cfg.product}
+
+        try:
+            with path.open(newline="", encoding="utf-8-sig") as fh:
+                fieldnames = csv.DictReader(fh, delimiter=delim).fieldnames
+        except OSError:
+            return False
+
+        return required.issubset(set(fieldnames or ()))
+
     def parse(self, path: Path) -> tuple[list[MetaNode], list[MetaEdge]]:
         """
         Parse a tabular reaction file.

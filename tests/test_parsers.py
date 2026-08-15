@@ -323,6 +323,47 @@ class TestCSVParser:
         nodes, edges = CSVParser().parse(f)
         assert len(nodes) > 0
 
+    def test_can_handle_reaction_table(self, tmp_path):
+        from metabokg.parsers.csv_tsv import CSVParser
+
+        f = tmp_path / "reactions.csv"
+        f.write_text(CSV_SAMPLE)
+        assert CSVParser().can_handle(f)
+
+    def test_can_handle_reaction_tsv(self, tmp_path):
+        from metabokg.parsers.csv_tsv import CSVParser
+
+        f = tmp_path / "reactions.tsv"
+        f.write_text(CSV_SAMPLE.replace(",", "\t"))
+        assert CSVParser().can_handle(f)
+
+    def test_cannot_handle_kegg_name_table(self, tmp_path):
+        """KEGG annotation TSVs share the extension but are not reaction tables."""
+        from metabokg.parsers.csv_tsv import CSVParser
+
+        f = tmp_path / "kegg_compound_names.tsv"
+        f.write_text("compound_id\tname\nC00031\tD-Glucose\n")
+        assert not CSVParser().can_handle(f)
+
+    def test_cannot_handle_gene_name_table(self, tmp_path):
+        from metabokg.parsers.csv_tsv import CSVParser
+
+        f = tmp_path / "hsa_gene_names.tsv"
+        f.write_text("gene_id\tsymbol\nhsa:2538\tG6PC1\n")
+        assert not CSVParser().can_handle(f)
+
+    def test_cannot_handle_wrong_extension(self, tmp_path):
+        from metabokg.parsers.csv_tsv import CSVParser
+
+        f = tmp_path / "pathway.xml"
+        f.write_text("<pathway/>")
+        assert not CSVParser().can_handle(f)
+
+    def test_can_handle_missing_file_is_false(self, tmp_path):
+        from metabokg.parsers.csv_tsv import CSVParser
+
+        assert not CSVParser().can_handle(tmp_path / "nope.csv")
+
 
 class TestMetabolicGraph:
     def test_extract_directory(self, tmp_path):
