@@ -15,7 +15,7 @@ All columns except ``substrate`` and ``product`` are optional.
 Rows with the same ``reaction_id`` are merged into a single reaction node.
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-03-17
+Last Revision: 2026-07-29
 """
 
 from __future__ import annotations

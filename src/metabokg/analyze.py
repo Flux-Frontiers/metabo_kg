@@ -41,7 +41,7 @@ Or via CLI::
     metabokg-analyze --db .metabokg/hsa.sqlite --output report.md
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-02-28 20:55:28
+Last Revision: 2026-08-01 18:22:53
 
 """
 

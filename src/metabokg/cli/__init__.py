@@ -12,7 +12,7 @@ Standalone entry-point aliases (referenced by pyproject.toml [tool.poetry.script
 are re-exported here so that e.g. ``metabokg.cli:build_main`` resolves correctly.
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-05-02
+Last Revision: 2026-08-13
 License: Elastic 2.0
 """
 

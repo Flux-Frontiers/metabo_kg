@@ -16,7 +16,7 @@ Usage::
     print(render_thorough_report(report))
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-04-19 10:38:41
+Last Revision: 2026-08-01 18:22:53
 
 """
 

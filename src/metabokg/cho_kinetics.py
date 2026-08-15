@@ -44,7 +44,7 @@ Usage::
         print(f"Seeded {n_kp} CHO kinetic params, {n_ri} regulatory interactions.")
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-05-07 18:38:30
+Last Revision: 2026-05-07 23:39:12
 """
 
 from __future__ import annotations

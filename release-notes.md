@@ -1,40 +1,64 @@
-# Release Notes — v0.9.1
+# Release Notes — v0.12.0
 
-> Released: 2026-07-29
+> Released: 2026-08-15
 
-A dependency-correctness release. The headline is a hard upper bound on `mcp`: a clean
-install of MetaboKG could resolve mcp 2.x, which breaks the MCP server the moment it is
-built. If `metabokg mcp` failed to start with an error about `mcp.server.fastmcp`,
-upgrading fixes it.
+A packaging-hygiene release, and the one that removes the per-subcommand console
+scripts. If you invoke `metabokg-build`, `metabokg-analyze`, `metabokg-simulate` or any
+of their siblings from a script, a Makefile or a shell alias, those commands are gone in
+this version — use `metabokg <subcommand>` instead. `metabokg-mcp` deliberately survives.
+Everything else here is about what the published wheel offers a consumer versus what the
+repo needs for its own maintenance, a line that had blurred.
 
 ## What changed
 
-**`mcp` bounded below 2.0.** mcp 2.0 split FastMCP out into a standalone `fastmcp` package
-and removed the bundled `mcp.server.fastmcp` module, so the previous unbounded
-`mcp>=1.0.0` let a fresh install pick up 2.x. Developers never saw it — a pinned lock file
-keeps every local checkout working, which is exactly how this reached the index across the
-KG family before anyone noticed. The bound stays until the server is ported to the
-standalone package.
+**The per-subcommand aliases are gone.** Fourteen console scripts each had an identical
+`metabokg <subcommand>` form already exposed by the Click group, so they bought nothing
+but a saved keystroke — while making every new command ask whether it needed an alias, a
+question that had already drifted (`install-hooks` never got one). `metabokg-mcp` is the
+exception and stays: the documented Claude Desktop and Copilot setups write that path
+into users' config files, so removing it would break their MCP server on upgrade with a
+"command not found" that reads as a broken install. This matches pycode_kg 0.23.0.
 
-**Regression tests shaped to how MetaKG actually builds its server.** MetaboKG differs from
-its sibling KGs in a way that matters here: it does not construct the server at module
-import. `create_server()` builds `FastMCP` behind a function-level import and
-`register_tools()` attaches the tools imperatively. An import-only test — the pattern used
-in the sibling repos — would therefore pass against an incompatible `mcp` while
-`metabokg mcp` stayed dead on arrival. The new `tests/test_mcp_server.py` calls
-`create_server()` for real and asserts all thirteen tools register. Building a throwaway
-server costs nothing, because `MetaKG.__init__` only resolves paths — no database or index
-is opened.
+**Dev tooling left the published metadata.** `metabo-kg[dev]` advertised the maintainer
+toolchain — pytest, ruff, ty, and repo-reasoned pins such as `ruff<0.16` — in wheel
+metadata, offering it to every consumer. An extra is a feature of the package; dev
+tooling is a property of the repo. It now lives in an optional Poetry group. There is no
+pip path for it on purpose.
 
-**Housekeeping: `.gitignore` normalized across the KG fleet.** All eleven KG repos now
-share one canonical set of ignore rules — databases, vector indexes and model caches are
-ignored; `snapshots/` never is. The rules are written so MetaboKG's nested snapshot store
-at `data/hsa_pathways/.metabokg/snapshots/` stays tracked.
+**The `all` aggregate extra is removed.** It re-listed every other extra *plus* the dev
+tooling, so `pip install metabo-kg[all]` quietly installed a test and lint stack. An
+aggregate also duplicates each package in the marker space, which is what sends
+`poetry lock` into resolution restarts. The wheel now advertises four extras — `biopax`,
+`simulate`, `viz`, `viz3d` — and no dev tooling in `Requires-Dist`.
+
+**Version reporting can no longer drift.** `metabokg.__version__` is derived from
+installed package metadata rather than a hardcoded literal. 0.11.0 fixed the symptom —
+the literal had reached 0.9.1 while `pyproject.toml` said 0.10.0, mislabelling every
+analysis report in between — but left the mechanism intact. A third stale literal,
+`metabokg.cli.__version__`, sat at 0.4.0 and is deleted rather than corrected.
+
+**Dependency floors moved to the current fleet releases.** `kgmodule-utils` is now
+`>=0.13.1` specifically, because 0.13.1 is the release that stops snapshots recording
+absolute paths — this repo's committed `.dockg` snapshots are rewritten to relative form
+in the same change, and against 0.13.0 the pre-commit hook would restore the absolute
+paths on the next run.
+
+**`.mcp.json` addressed the wrong workspace.** `WORKSPACE_ID` was `code_kg`, so this
+repo's copilot-memory and task-copilot state was filed under a sibling project's
+namespace. It is now `metabo_kg`.
 
 ## Upgrading
 
-Nothing to do beyond upgrading. No rebuild, no migration, no API change. If you had pinned
-`mcp` yourself to work around the crash, you can drop that pin.
+Replace any `metabokg-<subcommand>` invocation with `metabokg <subcommand>` — the
+arguments are unchanged. Leave `metabokg-mcp` alone; it still works and your MCP client
+config needs no edit.
+
+If you installed with `pip install metabo-kg[all]`, that extra no longer exists; use
+`poetry install --all-extras`, or name the extras you actually want. Maintainers who used
+`poetry install --extras dev` want `poetry install --with dev` now, and
+`poetry install --extras kgdeps` became `poetry install --with kg`.
+
+No database rebuild, no migration, and no change to the Python API or the MCP tools.
 
 ---
 

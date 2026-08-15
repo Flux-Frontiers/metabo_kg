@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+## [0.12.0] - 2026-08-15
 
 ### Changed
 
@@ -30,6 +30,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   gutenberg_kg and pycode_kg; the fleet rule is in
   `kgrag_priv/docs/FLEET_STANDARDS.md`.
 
+- **`metabokg.__version__` is now derived from installed package metadata**
+  (`importlib.metadata.version("metabo-kg")`) instead of being a hardcoded
+  literal. 0.11.0 fixed the symptom — the literal had drifted to 0.9.1 while
+  `pyproject.toml` said 0.10.0, mislabelling every analysis report since — but
+  left the mechanism that caused it. Deriving the value means a release bump in
+  `pyproject.toml` cannot disagree with what the package reports. This is the
+  pattern the CLI already used for `--version`, which is why that never drifted.
+
 ### Removed
 
 - **The `all` aggregate extra.** It re-listed every other extra *plus* the dev
@@ -51,22 +59,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   put that path into users' config files, so removing it would break their MCP
   server on upgrade with a "command not found" that reads as a broken install.
 
-### Fixed
-
-- **`.mcp.json` addressed the wrong copilot workspace.** `WORKSPACE_ID` was
-  `code_kg`, so this repo's copilot-memory and task-copilot state was filed
-  under another project's namespace; it is now `metabo_kg`. The `codekg`
-  server is also renamed `pycodekg` and both KG servers now use the fleet's
-  relative `.venv/bin/<cli> mcp` form instead of absolute paths.
-  (`importlib.metadata.version("metabo-kg")`) instead of being a hardcoded
-  literal. 0.11.0 fixed the symptom — the literal had drifted to 0.9.1 while
-  `pyproject.toml` said 0.10.0, mislabelling every analysis report since — but
-  left the mechanism that caused it. Deriving the value means a release bump in
-  `pyproject.toml` cannot disagree with what the package reports. This is the
-  pattern the CLI already used for `--version`, which is why that never drifted.
-
-### Removed
-
 - **`metabokg.cli.__version__`**, a third version literal stuck at 0.4.0. It was
   copied from `pyproject.toml` during the 0.4.0 rename and never updated or
   read: nothing imports it, and `metabokg --version` resolves through
@@ -75,6 +67,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   first place, and no other subpackage declares one.
 
 ### Fixed
+
+- **`.mcp.json` addressed the wrong copilot workspace.** `WORKSPACE_ID` was
+  `code_kg`, so this repo's copilot-memory and task-copilot state was filed
+  under another project's namespace; it is now `metabo_kg`. The `codekg`
+  server is also renamed `pycodekg` and both KG servers now use the fleet's
+  relative `.venv/bin/<cli> mcp` form instead of absolute paths.
 
 ## [0.11.0] - 2026-08-03
 

@@ -55,7 +55,7 @@ Public API
     enrich_enzyme_names(store, data_dir, *, quiet=False) -> int
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-05-07 19:48:53
+Last Revision: 2026-05-07 23:39:12
 License: Elastic 2.0
 """
 

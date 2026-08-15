@@ -15,7 +15,7 @@ Embedding text format:
   <description>
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-05-02
+Last Revision: 2026-08-01
 
 """
 

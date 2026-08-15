@@ -16,7 +16,7 @@ Reference: https://sbml.org/software/libsbml/libsbml-docs/api/python/
 SBML detection: root element tag ends with ``sbml`` (may have namespace prefix).
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-04-21
+Last Revision: 2026-07-29
 """
 
 from __future__ import annotations

@@ -19,7 +19,7 @@ If rdflib is not installed, ``BioPAXParser.parse()`` raises ``ImportError``
 with an install hint.
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-03-17
+Last Revision: 2026-07-29
 """
 
 from __future__ import annotations

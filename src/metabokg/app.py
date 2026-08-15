@@ -12,7 +12,7 @@ Run with:
     poetry run metabokg-viz
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-07-25 00:21:15
+Last Revision: 2026-08-01 17:22:51
 
 """
 

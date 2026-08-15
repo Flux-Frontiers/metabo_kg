@@ -17,7 +17,7 @@ Quick start::
     path = kg.find_path("glucose", "pyruvate")
 
 Author: Eric G. Suchanek, PhD
-Last Revision: 2026-08-03 00:00:00
+Last Revision: 2026-08-13 22:16:24
 
 """
 
