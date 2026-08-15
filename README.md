@@ -3,7 +3,7 @@
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic--2.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
 [![Version](https://img.shields.io/badge/version-0.12.0-blue.svg)](https://github.com/flux-frontiers/metabo_kg/releases)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
-[![DOI](https://zenodo.org/badge/1184537477.svg)](https://zenodo.org/badge/latestdoi/1184537477)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19740563.svg)](https://doi.org/10.5281/zenodo.19740563)
 
 # MetaboKG: Metabolic Pathway Knowledge Graph
 
@@ -204,9 +204,9 @@ External pull requests are not currently being accepted while contribution licen
 
 If you use MetaboKG in your research, please cite it:
 
-[![DOI](https://zenodo.org/badge/1184537477.svg)](https://zenodo.org/badge/latestdoi/1184537477)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19740563.svg)](https://doi.org/10.5281/zenodo.19740563)
 
-> Suchanek, E. G. (2026). *MetaboKG: Metabolic Pathway Knowledge Graph* (Version 0.12.0) [Software]. Flux-Frontiers. https://github.com/flux-frontiers/metabo_kg
+> Suchanek, E. G. (2026). *MetaboKG: Metabolic Pathway Knowledge Graph* (Version 0.12.0) [Software]. Flux-Frontiers. https://doi.org/10.5281/zenodo.19740563
 
 ```bibtex
 @software{suchanek_metabo_kg,
@@ -215,6 +215,7 @@ If you use MetaboKG in your research, please cite it:
   version   = {0.12.0},
   year      = {2026},
   publisher = {Flux-Frontiers},
+  doi       = {10.5281/zenodo.19740563},
   url       = {https://github.com/flux-frontiers/metabo_kg},
 }
 ```

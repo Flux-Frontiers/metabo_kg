@@ -4,7 +4,7 @@ We are releasing **MetaboKG**: an open-source Python toolkit that turns the worl
 
 **Repo:** https://github.com/flux-frontiers/metabo_kg
 **License:** Elastic License 2.0 (free to use, modify, and redistribute; no hosted-service resale)
-**DOI:** [10.5281/zenodo.1184537477](https://zenodo.org/badge/latestdoi/1184537477)
+**DOI:** [10.5281/zenodo.19740563](https://doi.org/10.5281/zenodo.19740563)
 
 ---
 
@@ -84,7 +84,7 @@ Together they form **KGRAG**, the orchestration layer for all KG adaptors.
 - **Issues and feature requests:** [GitHub Issues](https://github.com/flux-frontiers/metabo_kg/issues)
 - **Q&A and ideas:** [GitHub Discussions](https://github.com/flux-frontiers/metabo_kg/discussions)
 
-If you use MetaboKG in research, please cite via the [Zenodo DOI](https://zenodo.org/badge/latestdoi/1184537477) or [`CITATION.cff`](CITATION.cff).
+If you use MetaboKG in research, please cite via the [Zenodo DOI](https://doi.org/10.5281/zenodo.19740563) or [`CITATION.cff`](CITATION.cff).
 
 We would love to hear what you build with it.
 
