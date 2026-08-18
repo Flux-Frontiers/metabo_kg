@@ -23,10 +23,23 @@ _PRE_COMMIT_HOOK = """\
 # MetaboKG pre-commit hook — runs quality checks, keeps local indices in sync,
 # and captures metrics snapshots for PyCodeKG, MetaboKG, and DocKG.
 # Installed by: metabokg install-hooks
-# Skip with: METABOKG_SKIP_SNAPSHOT=1 git commit ...
+#
+# Snapshots are opt-in and OFF by default (2026-08-18):
+#
+#   METABOKG_SNAPSHOT=1 git commit ...        opt in to a per-commit snapshot
+#   METABOKG_SKIP_SNAPSHOT=1 git commit ...   force snapshots off (wins)
+#
+# METABOKG_SKIP_SNAPSHOT no longer skips the quality checks. It used to
+# short-circuit the whole hook, so a variable named "skip snapshot" also
+# silently skipped ruff, ty and pytest. It now gates only what it names.
+#
+# A per-commit snapshot records `git write-tree` and is then staged into that
+# same commit, so the recorded hash can never equal the tree it names — an
+# audit of 605 fleet snapshots found only 63 (10.4%) keyed to a real commit
+# tree. The fix is to snapshot at release, keyed on the tag; until that lands
+# this hook runs quality checks only.
+# See kgrag_priv/docs/SNAPSHOT_STRATEGY.md.
 set -euo pipefail
-
-[ "${METABOKG_SKIP_SNAPSHOT:-0}" = "1" ] && exit 0
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 
@@ -46,6 +59,14 @@ if [ -f "$REPO_ROOT/.pre-commit-config.yaml" ]; then
 fi
 
 cd "$REPO_ROOT"
+
+# ---------------------------------------------------------------------------
+# Opt-in index rebuild + snapshots. Everything below is skipped unless
+# METABOKG_SNAPSHOT=1 is set, and is skipped regardless if
+# METABOKG_SKIP_SNAPSHOT=1.
+# ---------------------------------------------------------------------------
+[ "${METABOKG_SNAPSHOT:-0}" = "1" ] || exit 0
+[ "${METABOKG_SKIP_SNAPSHOT:-0}" = "1" ] && exit 0
 
 TREE_HASH=$(git write-tree)
 # `rev-parse --abbrev-ref HEAD` is fatal on an unborn HEAD, which under
