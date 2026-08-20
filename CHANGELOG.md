@@ -1049,7 +1049,7 @@ metabokg-init --force        # or: metabokg-build --data <DIR> per corpus
 - **Embedding Model** — Integrates with sentence-transformers via LanceDB for semantic search
 - **Database** — SQLite persistence with indexed queries for graph operations
 
-## [0.1.0] — 2024-02-27
+## [0.1.0] - 2024-02-27
 
 ### Added
 
