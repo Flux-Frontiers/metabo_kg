@@ -9,7 +9,7 @@
 #   claude   — Claude Code  (.claude/claude_code_config.json)
 #   kilo     — Kilo Code    (.mcp.json, shared with Claude Code)
 #   copilot  — GitHub Copilot (.vscode/mcp.json)
-#   cline    — Cline        (.claude/commands/metabokg.md slash command)
+#   cline    — Cline        (.claude/commands/metabokg-build.md slash command + cline_mcp_settings.json)
 #
 # Usage (from a target repo, no clone needed):
 #   curl -fsSL https://raw.githubusercontent.com/Flux-Frontiers/metabo_kg/main/scripts/install-skill.sh | bash
@@ -33,10 +33,11 @@
 #        a. pip install from latest GitHub release wheel (preferred, no git needed)
 #        b. pip install from git+https (fallback, needs git)
 #        c. poetry add (fallback for Poetry-managed repos)
-#   5. Builds the SQLite knowledge graph (skips if already present, unless --wipe)
-#   6. Builds the sqlite-vec vector index  (skips if already present, unless --wipe)
-#   7. Writes provider MCP configs as requested
-#   8. Prints a final summary
+#   5. Reports whether the MetaKG for this repo has been built yet (building
+#      requires a pathway data directory this installer cannot discover, so
+#      it is never run for you)
+#   6. Writes provider MCP configs as requested
+#   7. Prints a final summary
 #
 # Author: Eric G. Suchanek, PhD
 # Last Revision: 2026-08-01
@@ -117,19 +118,20 @@ SKILL_DIRS=(
     "${HOME}/.agents/skills/metabokg"
 )
 
-# Global Claude Code command files to install to ~/.claude/commands/
+# Global Claude Code command files to install to ~/.claude/commands/.
+# changelog-commit.md is fleet-wide and lives in ~/.claude/commands already —
+# shipping a repo copy would overwrite the global one with a stale fork.
+# setup-mcp.md, release.md and pycodekg-rebuild.md were removed: none of the
+# three exist in this repo (locally or on GitHub), so installing them always
+# 404'd and aborted the script under `set -e`.
 CLAUDE_COMMAND_FILES=(
     "metabokg-build.md"
     "metabokg-analyze.md"
     "metabokg-simulate.md"
     "metabokg-viz.md"
-    "setup-mcp.md"
-    "changelog-commit.md"
     "continue.md"
     "protocol.md"
-    "release.md"
     "pycodekg.md"
-    "pycodekg-rebuild.md"
 )
 
 # ── Detect if we're running from inside the repo ─────────────────────────────
@@ -279,9 +281,9 @@ else
     echo "  – Skipped (cline not selected)"
 fi
 
-# ── Step 4: Install pycode-kg if not already present ────────────────────────────
+# ── Step 4: Install metabo-kg if not already present ────────────────────────────
 echo ""
-echo "── Step 4: Checking pycode-kg installation ────────────"
+echo "── Step 4: Checking metabo-kg installation ────────────"
 echo ""
 
 # Resolve the latest GitHub release wheel URL (requires curl or wget + python3).
@@ -395,8 +397,8 @@ if "mcpServers" not in data:
 
 data["mcpServers"][server_key] = {
     "command": metabokg_bin,
-    "args": ["mcp", "--repo", target_repo,
-             "--db", f"{target_repo}/.metabokg/graph.sqlite"]
+    "args": ["mcp", "--db", f"{target_repo}/.metabokg/graph.sqlite",
+             "--vectors", f"{target_repo}/.metabokg/vectors.sqlite"]
 }
 
 with open(cline_settings, "w") as f:
@@ -409,58 +411,29 @@ else
     echo "  – Skipped (cline not selected)"
 fi
 
-# ── Step 4: Build the SQLite knowledge graph ──────────────────────────────────
+# ── Step 5: Report MetaKG build status ────────────────────────────────────────
 echo ""
-echo "── Step 5: Building SQLite knowledge graph ──────────"
+echo "── Step 5: MetaKG build status ──────────────────────"
 echo ""
 
-if [ -f "$SQLITE_DB" ] && [ -z "$WIPE_FLAG" ]; then
-    echo "  ✓ SQLite graph already exists: ${SQLITE_DB} — skipping build"
-    echo "    (Run with --wipe to force rebuild)"
+# metabokg has no build-sqlite/build-index subcommands — a single `build`
+# command does both, and it requires --data pointing at a directory of
+# pathway files (KGML/SBML/BioPAX/CSV), which this installer has no way to
+# discover automatically. Report status; never attempt the build.
+if [ -f "$SQLITE_DB" ] && [ -f "$VECTORS_PATH" ]; then
+    echo "  ✓ MetaKG already built:"
+    echo "    ${SQLITE_DB}"
+    echo "    ${VECTORS_PATH}"
 else
-    if [ -n "$DRY_RUN" ]; then
-        echo "  [dry-run] would run: metabokg build-sqlite --repo ${TARGET_REPO}${WIPE_FLAG:+ --wipe}"
-    else
-        _exec mkdir -p "$(dirname "$SQLITE_DB")"
-        echo "  → Building SQLite graph at: ${SQLITE_DB}"
-        _WIPE_ARG=${WIPE_FLAG:+--wipe}
-        (cd "${TARGET_REPO}" && "${metabokg_BIN}" build-sqlite --repo "${TARGET_REPO}" ${_WIPE_ARG})
-        if [ -f "$SQLITE_DB" ]; then
-            echo "  ✓ Built: ${SQLITE_DB}"
-        else
-            echo "  ✗ Build failed — ${SQLITE_DB} not created"
-            exit 1
-        fi
-    fi
+    echo "  – MetaKG has not been built at ${SQLITE_DB} yet."
+    echo "    Building requires a pathway data directory and is never run"
+    echo "    automatically. Build it yourself, e.g.:"
+    echo "      ${metabokg_BIN} build --data <pathway-dir> --db ${SQLITE_DB} --vectors ${VECTORS_PATH}"
 fi
 
-# ── Step 5: Build the sqlite-vec vector index ─────────────────────────────────
+# ── Step 6: Write .mcp.json (Claude Code + Kilo Code) ────────────────────────
 echo ""
-echo "── Step 6: Building sqlite-vec vector index ─────────"
-echo ""
-
-if [ -f "$VECTORS_PATH" ] && [ -z "$WIPE_FLAG" ]; then
-    echo "  ✓ Vector index already exists: ${VECTORS_PATH} — skipping build"
-    echo "    (Run with --wipe to force rebuild)"
-else
-    if [ -n "$DRY_RUN" ]; then
-        echo "  [dry-run] would run: metabokg build-index --repo ${TARGET_REPO}${WIPE_FLAG:+ --wipe}"
-    else
-        echo "  → Building vector index at: ${VECTORS_PATH}"
-        _WIPE_ARG=${WIPE_FLAG:+--wipe}
-        (cd "${TARGET_REPO}" && "${metabokg_BIN}" build-index --repo "${TARGET_REPO}" ${_WIPE_ARG})
-        if [ -f "$VECTORS_PATH" ]; then
-            echo "  ✓ Built: ${VECTORS_PATH}"
-        else
-            echo "  ✗ Build failed — ${VECTORS_PATH} not created"
-            exit 1
-        fi
-    fi
-fi
-
-# ── Step 7: Write .mcp.json (Claude Code + Kilo Code) ────────────────────────
-echo ""
-echo "── Step 7: Configuring .mcp.json (Claude Code + Kilo Code) ──"
+echo "── Step 6: Configuring .mcp.json (Claude Code + Kilo Code) ──"
 echo ""
 
 MCP_JSON="${TARGET_REPO}/.mcp.json"
@@ -477,7 +450,8 @@ elif [ ! -f "$MCP_JSON" ]; then
       "command": "${metabokg_BIN}",
       "args": [
         "mcp",
-        "--repo", "${TARGET_REPO}"
+        "--db",      "${SQLITE_DB}",
+        "--vectors", "${VECTORS_PATH}"
       ]
     }
   }
@@ -496,7 +470,8 @@ if "mcpServers" not in data:
     data["mcpServers"] = {}
 data["mcpServers"]["metabokg"] = {
     "command": metabokg_bin,
-    "args": ["mcp", "--repo", target_repo]
+    "args": ["mcp", "--db", f"{target_repo}/.metabokg/graph.sqlite",
+             "--vectors", f"{target_repo}/.metabokg/vectors.sqlite"]
 }
 with open(mcp_json, "w") as f:
     json.dump(data, f, indent=2)
@@ -505,9 +480,9 @@ PYEOF
     echo "  ✓ Updated metabokg entry in ${MCP_JSON}"
 fi
 
-# ── Step 8: Write .vscode/mcp.json (GitHub Copilot) ──────────────────────────
+# ── Step 7: Write .vscode/mcp.json (GitHub Copilot) ──────────────────────────
 echo ""
-echo "── Step 8: Configuring .vscode/mcp.json (GitHub Copilot) ──"
+echo "── Step 7: Configuring .vscode/mcp.json (GitHub Copilot) ──"
 echo ""
 
 VSCODE_DIR="${TARGET_REPO}/.vscode"
@@ -530,11 +505,11 @@ else
   "servers": {
     "metabokg": {
       "type": "stdio",
-      "command": "metabokg",
+      "command": "${metabokg_BIN}",
       "args": [
         "mcp",
-        "--repo", "${TARGET_REPO}",
-        "--db",   "${TARGET_REPO}/.metabokg/graph.sqlite"
+        "--db",      "${SQLITE_DB}",
+        "--vectors", "${VECTORS_PATH}"
       ]
     }
   }
@@ -554,8 +529,8 @@ if "servers" not in data:
 data["servers"]["metabokg"] = {
     "type": "stdio",
     "command": metabokg_bin,
-    "args": ["mcp", "--repo", target_repo,
-             "--db", f"{target_repo}/.metabokg/graph.sqlite"]
+    "args": ["mcp", "--db", f"{target_repo}/.metabokg/graph.sqlite",
+             "--vectors", f"{target_repo}/.metabokg/vectors.sqlite"]
 }
 with open(vscode_mcp, "w") as f:
     json.dump(data, f, indent=2)
@@ -582,17 +557,9 @@ echo "  SQLite:  ${SQLITE_DB}"
 echo "  Vectors: ${VECTORS_PATH}"
 echo ""
 echo "  Claude commands installed:"
-echo "    ✓ ~/.claude/commands/metabokg-build.md"
-echo "    ✓ ~/.claude/commands/metabokg-analyze.md"
-echo "    ✓ ~/.claude/commands/metabokg-simulate.md"
-echo "    ✓ ~/.claude/commands/metabokg-viz.md"
-echo "    ✓ ~/.claude/commands/setup-mcp.md"
-echo "    ✓ ~/.claude/commands/changelog-commit.md"
-echo "    ✓ ~/.claude/commands/continue.md"
-echo "    ✓ ~/.claude/commands/protocol.md"
-echo "    ✓ ~/.claude/commands/release.md"
-echo "    ✓ ~/.claude/commands/pycodekg.md"
-echo "    ✓ ~/.claude/commands/pycodekg-rebuild.md"
+for _CMD_FILE in "${CLAUDE_COMMAND_FILES[@]}"; do
+    echo "    ✓ ~/.claude/commands/${_CMD_FILE}"
+done
 echo ""
 echo "  Providers configured:"
 ( [ "$DO_CLAUDE" = "1" ] || [ "$DO_KILO" = "1" ] ) && echo "    ✓ Claude Code + Kilo Code  (.mcp.json)"
