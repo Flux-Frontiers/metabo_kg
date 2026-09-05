@@ -49,7 +49,13 @@ def snapshot() -> None:
     "--tree-hash",
     default="",
     type=str,
-    help="Git tree hash; auto-detected if not provided.",
+    help="Git tree hash, recorded as provenance; auto-detected if not provided.",
+)
+@click.option(
+    "--subject",
+    default="",
+    type=str,
+    help="What was measured, e.g. 'corpus:hsa' or 'repo:metabo-kg'.",
 )
 def save_snapshot(
     version: str,
@@ -57,19 +63,25 @@ def save_snapshot(
     snapshots_dir: str | None,
     branch: str | None,
     tree_hash: str,
+    subject: str,
 ) -> None:
     """
     Capture current MetaKG graph metrics and save as a temporal snapshot.
 
-    VERSION is optional — defaults to the installed package version.
+    The snapshot is keyed on VERSION. **Pass it explicitly at release time.**
+    An omitted VERSION is auto-detected from the installed metabo-kg package,
+    which names the measuring tool rather than the corpus being measured, so it
+    is recorded but never used as the key; omitting it keys the snapshot on a
+    UTC timestamp instead, which is the right answer for a corpus.
 
-    Reads graph statistics, kinetic parameter counts, and hub metabolites
-    from the SQLite database, then saves a snapshot tagged with VERSION.
-    Snapshots are keyed by git tree hash and stored in .metabokg/snapshots/.
+    Reads graph statistics, kinetic parameter counts, and hub metabolites from
+    the SQLite database. Snapshots are stored in .metabokg/snapshots/{key}.json.
+    The git tree hash is recorded as provenance and is not the key -- it is read
+    before `git add` stages the snapshot, so it names a tree never committed.
 
     Example:
         metabokg snapshot save 1.2.0
-        metabokg snapshot save          # uses installed package version
+        metabokg snapshot save --subject corpus:hsa   # timestamp-keyed
     """
     db_path = Path(resolve_db(db))
     if not db_path.exists():
@@ -94,6 +106,10 @@ def save_snapshot(
         branch=branch,
         graph_stats_dict=stats,
         tree_hash=tree_hash,
+        # An explicit VERSION is a release tag and becomes the key. An
+        # auto-detected one is the measuring tool's version and must not be.
+        key=version or "",
+        subject=subject,
     )
 
     snapshot_file = mgr.save_snapshot(snapshot_obj)

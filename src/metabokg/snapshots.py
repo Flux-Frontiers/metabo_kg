@@ -71,6 +71,21 @@ class SnapshotDelta:
     pathway_delta: int = 0
 
 
+_TREE_HASH_CHARS = set("0123456789abcdef")
+
+
+def _is_tree_hash(key: str) -> bool:
+    """Return ``True`` if *key* has the shape of a git object hash.
+
+    Used only to decide whether a legacy key can also be recorded as
+    ``tree_hash`` provenance. A release tag or a timestamp cannot.
+
+    :param key: The stored snapshot key.
+    :return: ``True`` for a 40-character lowercase hex string.
+    """
+    return len(key) == 40 and set(key) <= _TREE_HASH_CHARS
+
+
 @dataclass
 class Snapshot:
     """A temporal snapshot of MetaKG metrics."""
@@ -82,20 +97,36 @@ class Snapshot:
     hub_metabolites: list[dict[str, Any]] = field(default_factory=list)  # top hub compounds
     vs_previous: SnapshotDelta | None = None
     vs_baseline: SnapshotDelta | None = None
-    tree_hash: str = ""  # git tree hash; stable file key
+    tree_hash: str = ""  # git tree hash; provenance, not an identifier
+    snapshot_key: str = ""  # release tag or timestamp; the identifier
+    subject: str = ""  # what was measured, e.g. "corpus:hsa"
+    tool: str = ""  # measuring package
+    tool_version: str = ""  # version of the measuring package
 
     @property
     def key(self) -> str:
-        """Stable file key: tree hash."""
-        return self.tree_hash
+        """Identifier: the supplied key, falling back to the tree hash.
+
+        The fallback keeps snapshots written before the key change addressable
+        by the key they were stored under. New snapshots always carry an
+        explicit key -- a release tag, or a UTC timestamp for a corpus.
+
+        The tree hash cannot serve as the key: it is read before ``git add``
+        stages the snapshot, so it names a tree that is never committed.
+        """
+        return self.snapshot_key or self.tree_hash
 
     def to_dict(self) -> dict:
         """Convert to dict for JSON serialization."""
         return {
-            "key": self.tree_hash,
+            "key": self.key,
             "branch": self.branch,
             "timestamp": self.timestamp,
             "version": self.version,
+            "subject": self.subject,
+            "tool": self.tool,
+            "tool_version": self.tool_version,
+            "tree_hash": self.tree_hash,
             "metrics": asdict(self.metrics),
             "hub_metabolites": self.hub_metabolites,
             "vs_previous": asdict(self.vs_previous) if self.vs_previous else None,
@@ -115,12 +146,17 @@ class Snapshot:
         vs_base_data = data.pop("vs_baseline", None)
         vs_base = SnapshotDelta(**vs_base_data) if vs_base_data else None
 
-        key = data.pop("key", "")
-        data.pop("tree_hash", None)
+        # Dual-read: entries written before the key change are keyed on a tree
+        # hash and stay addressable by it.
+        tree_hash = data.pop("tree_hash", "")
+        key = data.pop("key", "") or tree_hash
+        if not tree_hash and _is_tree_hash(key):
+            tree_hash = key
         data.setdefault("version", "")
 
         return Snapshot(
-            tree_hash=key,
+            snapshot_key=key,
+            tree_hash=tree_hash,
             metrics=metrics,
             vs_previous=vs_prev,
             vs_baseline=vs_base,
@@ -159,8 +195,12 @@ class SnapshotManager(_BaseSnapshotManager):
 
     Overrides every public method of the base ``SnapshotManager`` to operate
     on this module's own ``Snapshot``/``SnapshotManifest`` dataclasses, which
-    predate and are not subclasses of ``kg_utils.snapshots``'s. Migrating to
-    the shared base's data model is a separate decision.
+    predate and are not subclasses of ``kg_utils.snapshots``'s. ty's Liskov
+    checks therefore flag the whole surface, and each method carries a
+    suppression. They track the base's signatures: they were briefly unused
+    against kgmodule-utils 0.18.0 and are needed again from 0.19.0, so treat an
+    ``unused-ignore`` here as a signal that the base moved, not as dead weight.
+    Migrating to the shared data model is a separate decision.
     """
 
     def __init__(self, snapshots_dir: Path | str, db_path: Path | str | None = None):
@@ -181,7 +221,7 @@ class SnapshotManager(_BaseSnapshotManager):
     # Capture
     # ------------------------------------------------------------------
 
-    def capture(
+    def capture(  # ty: ignore[invalid-method-override]
         self,
         version: str | None = None,
         branch: str | None = None,
@@ -189,6 +229,8 @@ class SnapshotManager(_BaseSnapshotManager):
         tree_hash: str = "",
         dead_end_count: int = 0,
         hub_metabolites: list[dict] | None = None,
+        key: str = "",
+        subject: str = "",
     ) -> Snapshot:
         """
         Capture a snapshot from current database state.
@@ -198,9 +240,15 @@ class SnapshotManager(_BaseSnapshotManager):
         :param branch: Git branch name; auto-detected if ``None``.
         :param graph_stats_dict: Output from ``MetaStore.stats()``; queried
             from ``db_path`` if not provided.
-        :param tree_hash: Git tree hash; auto-detected if empty.
+        :param tree_hash: Git tree hash, recorded as provenance; auto-detected
+            if empty. It is not the snapshot's key.
         :param dead_end_count: Number of dead-end metabolites from analysis.
         :param hub_metabolites: Top hub compounds with reaction counts.
+        :param key: Snapshot identifier. Pass the release tag at release time;
+            omit it and the snapshot is keyed on a UTC timestamp, which is the
+            right answer for a corpus.
+        :param subject: What was measured, e.g. ``corpus:hsa``. Recorded
+            separately from ``version``, which names the measuring tool.
         :return: New :class:`Snapshot` instance.
         """
         if not version:
@@ -209,6 +257,8 @@ class SnapshotManager(_BaseSnapshotManager):
             branch = self._get_current_branch()
         if not tree_hash:
             tree_hash = self._get_current_tree_hash()
+        if not key:
+            key = datetime.now(UTC).isoformat()
         if graph_stats_dict is None:
             graph_stats_dict = self._collect_graph_stats()
 
@@ -237,9 +287,13 @@ class SnapshotManager(_BaseSnapshotManager):
             metrics=metrics,
             hub_metabolites=hub_metabolites,
             tree_hash=tree_hash,
+            snapshot_key=key,
+            subject=subject,
+            tool="metabo-kg",
+            tool_version=_package_version(),
         )
 
-        prev = self.get_previous(tree_hash)
+        prev = self.get_previous(snapshot.key)
         if prev:
             snapshot.vs_previous = self._compute_delta(snapshot, prev)
 
@@ -253,7 +307,7 @@ class SnapshotManager(_BaseSnapshotManager):
     # Persistence
     # ------------------------------------------------------------------
 
-    def save_snapshot(self, snapshot: Snapshot) -> Path:
+    def save_snapshot(self, snapshot: Snapshot) -> Path:  # ty: ignore[invalid-method-override]
         """
         Save snapshot to ``.metabokg/snapshots/{key}.json`` and update manifest.
 
@@ -282,6 +336,9 @@ class SnapshotManager(_BaseSnapshotManager):
             "branch": snapshot.branch,
             "timestamp": snapshot.timestamp,
             "version": snapshot.version,
+            "subject": snapshot.subject,
+            "tool": snapshot.tool,
+            "tool_version": snapshot.tool_version,
             "file": snapshot_file.name,
             "metrics": asdict(snapshot.metrics),
             "deltas": {
@@ -299,18 +356,24 @@ class SnapshotManager(_BaseSnapshotManager):
         self._save_manifest(manifest)
         return snapshot_file
 
-    def load_manifest(self) -> SnapshotManifest:
+    def load_manifest(self) -> SnapshotManifest:  # ty: ignore[invalid-method-override]
         """Load manifest.json; return empty manifest if it doesn't exist."""
         if not self.manifest_path.exists():
             return SnapshotManifest()
         with open(self.manifest_path) as f:
-            return SnapshotManifest.from_dict(json.load(f))
+            manifest = SnapshotManifest.from_dict(json.load(f))
+        # Dual-read, permanent rather than transitional: tree-hash-keyed
+        # entries predate the key change and cannot be re-keyed onto versions.
+        for entry in manifest.snapshots:
+            if not entry.get("key") and "tree_hash" in entry:
+                entry["key"] = entry.pop("tree_hash")
+        return manifest
 
-    def _save_manifest(self, manifest: SnapshotManifest) -> None:
+    def _save_manifest(self, manifest: SnapshotManifest) -> None:  # ty: ignore[invalid-method-override]
         with open(self.manifest_path, "w") as f:
             json.dump(manifest.to_dict(), f, indent=2)
 
-    def load_snapshot(self, key: str) -> Snapshot | None:
+    def load_snapshot(self, key: str) -> Snapshot | None:  # ty: ignore[invalid-method-override]
         """
         Load a snapshot by key (tree hash) or ``"latest"``.
 
@@ -362,7 +425,7 @@ class SnapshotManager(_BaseSnapshotManager):
     # Retrieval helpers
     # ------------------------------------------------------------------
 
-    def get_previous(self, key: str) -> Snapshot | None:
+    def get_previous(self, key: str) -> Snapshot | None:  # ty: ignore[invalid-method-override]
         """Get the snapshot immediately before this one (by timestamp)."""
         manifest = self.load_manifest()
         current_ts = next((s["timestamp"] for s in manifest.snapshots if s.get("key") == key), None)
@@ -375,7 +438,7 @@ class SnapshotManager(_BaseSnapshotManager):
                 break
         return self.load_snapshot(prev_entry["key"]) if prev_entry else None
 
-    def get_baseline(self) -> Snapshot | None:
+    def get_baseline(self) -> Snapshot | None:  # ty: ignore[invalid-method-override]
         """Get the oldest snapshot (baseline for comparison)."""
         manifest = self.load_manifest()
         if not manifest.snapshots:
@@ -383,7 +446,7 @@ class SnapshotManager(_BaseSnapshotManager):
         baseline_entry = min(manifest.snapshots, key=lambda x: x["timestamp"])
         return self.load_snapshot(baseline_entry["key"])
 
-    def list_snapshots(self, limit: int | None = None) -> list[dict]:
+    def list_snapshots(self, limit: int | None = None) -> list[dict]:  # ty: ignore[invalid-method-override]
         """
         List all snapshots in reverse chronological order.
 
@@ -446,7 +509,7 @@ class SnapshotManager(_BaseSnapshotManager):
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _compute_delta(snap_new: Snapshot, snap_old: Snapshot) -> SnapshotDelta:
+    def _compute_delta(snap_new: Snapshot, snap_old: Snapshot) -> SnapshotDelta:  # ty: ignore[invalid-method-override]
         """Compute metrics delta (new − old)."""
         return SnapshotDelta(
             nodes=snap_new.metrics.total_nodes - snap_old.metrics.total_nodes,
