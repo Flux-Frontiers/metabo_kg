@@ -16,7 +16,10 @@ repos:
     hooks:
       - id: ty
         name: ty
-        entry: .venv/bin/ty check src/
+        # --python pins the environment. Without it ty resolves whatever
+        # interpreter the hook's env leads to, which is not this venv under
+        # pre-commit, and it then type-checks against a different kg_utils.
+        entry: .venv/bin/ty check src/ --python .venv
         language: system
         pass_filenames: false
         always_run: true

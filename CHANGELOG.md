@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Snapshots are keyed on a release tag or timestamp, not a git tree hash.**
+  The hash is read before `git add` stages the snapshot, so it names a tree
+  that is never committed -- 63 of 605 snapshot keys across the fleet resolve.
+  `Snapshot.key` is now `snapshot_key` with a fallback to `tree_hash`, and
+  `capture()` takes `key=`. `tree_hash` stays as a field: real provenance,
+  never an identifier.
+
+  `metabokg snapshot save VERSION` uses VERSION as the key. Pass it explicitly
+  at release time -- an omitted VERSION is auto-detected from the installed
+  metabo-kg package, which names the measuring tool rather than the corpus
+  being measured. Omitting it keys on a UTC timestamp, which is correct for a
+  corpus.
+
+  This repo does not subclass the shared `Snapshot`, so it does not inherit the
+  fix from `kgmodule-utils` 0.19.0; the same semantics are implemented here
+  directly. The floor still moves to `>=0.19.0` to keep the two in step.
+
+- **`Snapshot.from_dict` and the manifest loader dual-read.** Tree-hash-keyed
+  entries stay addressable by the key they were stored under. A key that is a
+  real 40-character hash is also kept as `tree_hash` provenance; a release tag
+  is not.
+
+### Fixed
+
+- **The nine `ty: ignore[invalid-method-override]` suppressions in
+  `snapshots.py` are back.** They were removed earlier in this cycle as unused,
+  which was correct against `kgmodule-utils` 0.18.0 and wrong from 0.19.0: the
+  base's `capture()` signature moved, so the Liskov mismatch this manager has
+  by design -- its own `Snapshot`/`SnapshotManifest` model, no `hotspots` or
+  `issues` -- is real again. They track the base's signatures; an
+  `unused-ignore` here means the base moved, not that the comment is dead.
+
+### Added
+
+- **`subject`, `tool` and `tool_version` on `Snapshot`,** and `--subject` on
+  `snapshot save`. `version` names the *measuring tool*, not the thing
+  measured, so a `.metabokg` snapshot of the hsa corpus carried metabo-kg's
+  version and nothing recorded the corpus. `subject` (`corpus:hsa`,
+  `repo:metabo-kg`) does.
+
 ### Removed
 
 - **`watchdoc` is no longer a runtime dependency.** It was declared in
