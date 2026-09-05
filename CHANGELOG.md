@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **`watchdoc` is no longer a runtime dependency.** It was declared in
+  `[project.dependencies]`, so every install of the published package pulled it,
+  and nothing in `src/` or `tests/` imports it. It is not `watchdog`: `watchdoc`
+  is an unrelated 0.0.1 package that watches Markdown and Jupyter files and
+  generates docx/pptx/pdf from them, which has nothing to do with a metabolic
+  knowledge graph. Removed, relocked, and the full suite still passes (396
+  passed, 1 skipped).
+
+### Fixed
+
+- **Nine unused `ty: ignore[invalid-method-override]` comments removed from
+  `snapshots.py`.** `ty check src/` flags them as `unused-ignore`, which blocked
+  commits. They were added 2026-08-25, when removing them failed CI against
+  `kgmodule-utils` 0.18.0. The lock still pins 0.18.0, so what changed is the
+  local venv, which had drifted from the lock until it was rebuilt with
+  `--sync`.
+
 ### Changed
 
 - **Dependency floors raised**: `kgmodule-utils` `>=0.13.1` → `>=0.13.2`, and in

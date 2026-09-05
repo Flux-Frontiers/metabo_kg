@@ -4893,18 +4893,6 @@ numpy = ["numpy (>=1.9)"]
 web = ["wslink (>=1.0.4)"]
 
 [[package]]
-name = "watchdoc"
-version = "0.0.1"
-description = "Markdown and Jupyter Notebook file watcher. It generates automatically a docx, a pptx, and a pdf for each md or ipynb file."
-optional = false
-python-versions = ">=3.7"
-groups = ["main"]
-files = [
-    {file = "watchdoc-0.0.1-py3-none-any.whl", hash = "sha256:d220e3291ec7d79733e886e6df2468455be66d9b3ce302ab2c0bcfa413393414"},
-    {file = "watchdoc-0.0.1.tar.gz", hash = "sha256:f0f719e20590770153e2a37a5dd228a5243d0d650ac9a7425280998bc5aae1a2"},
-]
-
-[[package]]
 name = "watchdog"
 version = "6.0.0"
 description = "Filesystem events monitoring"
@@ -5090,4 +5078,4 @@ viz3d = ["PyQt5", "param", "pyvista", "pyvistaqt"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "ebb58bccc13b82e940b954990dc768b8b0eafd827981183a799940f5024e5076"
+content-hash = "9bd4c3c9b10bdbffd5bea8820b14d493f8e5ecd4a451ebfffc102560d3939669"
