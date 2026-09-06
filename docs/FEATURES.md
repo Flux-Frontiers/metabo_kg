@@ -1,7 +1,5 @@
 # MetaboKG — Knowledge Graph Features
 
-**Last updated:** 2026-04-21
-
 Three corpora are bundled and ready to build. Each targets a different level of
 metabolic resolution: curated human pathways, CHO-organism pathways, and a
 genome-scale stoichiometric model.

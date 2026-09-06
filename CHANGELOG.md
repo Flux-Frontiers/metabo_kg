@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-09-06
+
+### Added
+
+- **`subject`, `tool` and `tool_version` on `Snapshot`,** and `--subject` on
+  `snapshot save`. `version` names the *measuring tool*, not the thing
+  measured, so a `.metabokg` snapshot of the hsa corpus carried metabo-kg's
+  version and nothing recorded the corpus. `subject` (`corpus:hsa`,
+  `repo:metabo-kg`) does.
+
 ### Changed
 
 - **Snapshots are keyed on a release tag or timestamp, not a git tree hash.**
@@ -31,45 +41,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   real 40-character hash is also kept as `tree_hash` provenance; a release tag
   is not.
 
-### Fixed
-
-- **The nine `ty: ignore[invalid-method-override]` suppressions in
-  `snapshots.py` are back.** They were removed earlier in this cycle as unused,
-  which was correct against `kgmodule-utils` 0.18.0 and wrong from 0.19.0: the
-  base's `capture()` signature moved, so the Liskov mismatch this manager has
-  by design -- its own `Snapshot`/`SnapshotManifest` model, no `hotspots` or
-  `issues` -- is real again. They track the base's signatures; an
-  `unused-ignore` here means the base moved, not that the comment is dead.
-
-### Added
-
-- **`subject`, `tool` and `tool_version` on `Snapshot`,** and `--subject` on
-  `snapshot save`. `version` names the *measuring tool*, not the thing
-  measured, so a `.metabokg` snapshot of the hsa corpus carried metabo-kg's
-  version and nothing recorded the corpus. `subject` (`corpus:hsa`,
-  `repo:metabo-kg`) does.
-
-### Removed
-
-- **`watchdoc` is no longer a runtime dependency.** It was declared in
-  `[project.dependencies]`, so every install of the published package pulled it,
-  and nothing in `src/` or `tests/` imports it. It is not `watchdog`: `watchdoc`
-  is an unrelated 0.0.1 package that watches Markdown and Jupyter files and
-  generates docx/pptx/pdf from them, which has nothing to do with a metabolic
-  knowledge graph. Removed, relocked, and the full suite still passes (396
-  passed, 1 skipped).
-
-### Fixed
-
-- **Nine unused `ty: ignore[invalid-method-override]` comments removed from
-  `snapshots.py`.** `ty check src/` flags them as `unused-ignore`, which blocked
-  commits. They were added 2026-08-25, when removing them failed CI against
-  `kgmodule-utils` 0.18.0. The lock still pins 0.18.0, so what changed is the
-  local venv, which had drifted from the lock until it was rebuilt with
-  `--sync`.
-
-### Changed
-
 - **Dependency floors raised**: `kgmodule-utils` `>=0.13.1` → `>=0.13.2`, and in
   the maintainer `kg` group `pycode-kg` `>=0.23.0` → `>=0.23.1`.
 
@@ -81,6 +52,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   lock disagreed about what this package requires; both say 0.13.2 now.
 
 ### Fixed
+
+- **The nine `ty: ignore[invalid-method-override]` suppressions in
+  `snapshots.py` are back.** They were removed earlier in this cycle as unused,
+  which was correct against `kgmodule-utils` 0.18.0 and wrong from 0.19.0: the
+  base's `capture()` signature moved, so the Liskov mismatch this manager has
+  by design -- its own `Snapshot`/`SnapshotManifest` model, no `hotspots` or
+  `issues` -- is real again. They track the base's signatures; an
+  `unused-ignore` here means the base moved, not that the comment is dead.
+
+- **Nine unused `ty: ignore[invalid-method-override]` comments removed from
+  `snapshots.py`.** `ty check src/` flags them as `unused-ignore`, which blocked
+  commits. They were added 2026-08-25, when removing them failed CI against
+  `kgmodule-utils` 0.18.0. The lock still pins 0.18.0, so what changed is the
+  local venv, which had drifted from the lock until it was rebuilt with
+  `--sync`.
 
 - **`tests/test_hooks.py` failed during a real `git commit`.** The tests build
   throwaway repositories and commit inside them, passing `cwd=` but inheriting
@@ -99,6 +85,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Nothing caught this because both `pre-commit run --all-files` and CI run with
   no commit in progress, leaving those variables unset. It failed only during an
   actual commit — 4 of 16 tests, every time.
+
+### Removed
+
+- **`watchdoc` is no longer a runtime dependency.** It was declared in
+  `[project.dependencies]`, so every install of the published package pulled it,
+  and nothing in `src/` or `tests/` imports it. It is not `watchdog`: `watchdoc`
+  is an unrelated 0.0.1 package that watches Markdown and Jupyter files and
+  generates docx/pptx/pdf from them, which has nothing to do with a metabolic
+  knowledge graph. Removed, relocked, and the full suite still passes (396
+  passed, 1 skipped).
 
 ## [0.12.1] - 2026-08-15
 
