@@ -1,50 +1,76 @@
 """
 snapshots.py — Temporal Snapshots of MetaKG Metrics
 
-Captures, stores, and compares metrics snapshots of the metabolic knowledge
-graph over time.  Each snapshot is keyed by git tree hash and contains:
+Thin layer over the shared ``kg_utils.snapshots`` module.
 
-  - Timestamp and branch metadata
-  - Full store.stats() output (node/edge counts by kind/relation)
-  - Kinetic parameter and pathway counts
-  - Top hub metabolites (compounds in the most reactions)
-  - Dead-end metabolite count (quality signal)
-  - Deltas vs. previous and baseline snapshots
+``Snapshot``, ``SnapshotManifest`` and ``PruneResult`` are re-exported from
+``kg_utils.snapshots`` unchanged.  A snapshot's ``metrics``, ``vs_previous``
+and ``vs_baseline`` are plain dicts, which is what the shared manager reads
+and writes.
 
-Snapshots are stored in .metabokg/snapshots/ as JSON blobs, with a
-manifest index (manifest.json) tracking all snapshots and their metadata.
+This module adds:
+
+  - ``SnapshotMetrics`` / ``SnapshotDelta`` — domain dataclasses, used as
+    converters by callers that want attribute access.  Convert with
+    ``metrics_from_dict`` / ``metrics_to_dict`` and ``delta_from_dict`` /
+    ``delta_to_dict``; a ``Snapshot`` never holds one.
+  - a ``SnapshotManager`` subclass that sets ``package_name="metabo-kg"``,
+    queries the graph, kinetic parameters, pathway categories and hub
+    metabolites in ``capture()``, and adds ``kinetic_params_delta`` and
+    ``pathway_delta`` to deltas.
+
+Top hub metabolites are stored in the shared ``hotspots`` field.  Snapshots
+written before this module adopted the shared model carry them in a top-level
+``hub_metabolites`` key instead; ``load_snapshot`` back-fills those so both
+shapes read the same way.
+
+This module used to define its own ``Snapshot``, ``SnapshotMetrics``,
+``SnapshotDelta`` and ``SnapshotManifest`` dataclasses and override every
+public manager method to operate on them.  That parallel model is what kept
+the fleet's snapshot fixes from reaching this repo, and in two sibling repos
+the equivalent ``save_snapshot`` override dropped ``snapshot_key``, ``subject``
+and ``tool`` on the way to disk.
 
 Usage
 -----
->>> from metabokg.snapshots import SnapshotManager
->>> from metabokg.store import MetaStore
->>> store = MetaStore(".metabokg/hsa.sqlite")
+>>> from metabokg.snapshots import SnapshotManager, metrics_from_dict
 >>> mgr = SnapshotManager(".metabokg/snapshots", db_path=".metabokg/hsa.sqlite")
->>> snapshot = mgr.capture("v1.0.0", graph_stats_dict=store.stats())
+>>> snapshot = mgr.capture(version="1.0.0", key="v1.0.0", subject="corpus:hsa")
 >>> mgr.save_snapshot(snapshot)
->>> mgr.list_snapshots()
+>>> metrics_from_dict(snapshot.metrics).pathway_count
+0
 """
 
 from __future__ import annotations
 
-import importlib.metadata
 import json
 import sqlite3
-from dataclasses import asdict, dataclass, field
-from datetime import UTC, datetime
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 from kg_utils.snapshots import PruneResult as PruneResult  # noqa: F401 — re-export
+from kg_utils.snapshots import Snapshot as Snapshot  # noqa: F401 — re-export
 from kg_utils.snapshots import SnapshotManager as _BaseSnapshotManager
+from kg_utils.snapshots import SnapshotManifest as SnapshotManifest  # noqa: F401 — re-export
+
+__all__ = [
+    "PruneResult",
+    "Snapshot",
+    "SnapshotDelta",
+    "SnapshotManager",
+    "SnapshotManifest",
+    "SnapshotMetrics",
+    "delta_from_dict",
+    "delta_to_dict",
+    "metrics_from_dict",
+    "metrics_to_dict",
+]
 
 
-def _package_version() -> str:
-    """Return the installed metabo-kg package version, or 'unknown'."""
-    try:
-        return importlib.metadata.version("metabo-kg")
-    except importlib.metadata.PackageNotFoundError:
-        return "unknown"
+# ---------------------------------------------------------------------------
+# Domain dataclasses — converters, not storage
+# ---------------------------------------------------------------------------
 
 
 @dataclass
@@ -71,169 +97,129 @@ class SnapshotDelta:
     pathway_delta: int = 0
 
 
-_TREE_HASH_CHARS = set("0123456789abcdef")
+# ---------------------------------------------------------------------------
+# Conversion helpers
+# ---------------------------------------------------------------------------
 
 
-def _is_tree_hash(key: str) -> bool:
-    """Return ``True`` if *key* has the shape of a git object hash.
+def metrics_to_dict(m: SnapshotMetrics) -> dict[str, Any]:
+    """Convert a ``SnapshotMetrics`` dataclass to a plain dict."""
+    return {
+        "total_nodes": m.total_nodes,
+        "total_edges": m.total_edges,
+        "node_counts": m.node_counts,
+        "edge_counts": m.edge_counts,
+        "kinetic_params": m.kinetic_params,
+        "pathway_count": m.pathway_count,
+        "dead_end_count": m.dead_end_count,
+        "category_counts": m.category_counts,
+    }
 
-    Used only to decide whether a legacy key can also be recorded as
-    ``tree_hash`` provenance. A release tag or a timestamp cannot.
 
-    :param key: The stored snapshot key.
-    :return: ``True`` for a 40-character lowercase hex string.
+def metrics_from_dict(d: dict[str, Any]) -> SnapshotMetrics:
+    """Reconstruct a ``SnapshotMetrics`` dataclass from a plain dict.
+
+    Absent keys take the dataclass defaults, so a snapshot written before a
+    field existed still converts.
     """
-    return len(key) == 40 and set(key) <= _TREE_HASH_CHARS
+    return SnapshotMetrics(
+        total_nodes=int(d.get("total_nodes", 0)),
+        total_edges=int(d.get("total_edges", 0)),
+        node_counts=d.get("node_counts", {}),
+        edge_counts=d.get("edge_counts", {}),
+        kinetic_params=int(d.get("kinetic_params", 0)),
+        pathway_count=int(d.get("pathway_count", 0)),
+        dead_end_count=int(d.get("dead_end_count", 0)),
+        category_counts=d.get("category_counts", {}),
+    )
 
 
-@dataclass
-class Snapshot:
-    """A temporal snapshot of MetaKG metrics."""
-
-    branch: str  # git branch name
-    timestamp: str  # ISO 8601 UTC
-    metrics: SnapshotMetrics
-    version: str = ""  # e.g., "1.0.0"; auto-detected from package if not supplied
-    hub_metabolites: list[dict[str, Any]] = field(default_factory=list)  # top hub compounds
-    vs_previous: SnapshotDelta | None = None
-    vs_baseline: SnapshotDelta | None = None
-    tree_hash: str = ""  # git tree hash; provenance, not an identifier
-    snapshot_key: str = ""  # release tag or timestamp; the identifier
-    subject: str = ""  # what was measured, e.g. "corpus:hsa"
-    tool: str = ""  # measuring package
-    tool_version: str = ""  # version of the measuring package
-
-    @property
-    def key(self) -> str:
-        """Identifier: the supplied key, falling back to the tree hash.
-
-        The fallback keeps snapshots written before the key change addressable
-        by the key they were stored under. New snapshots always carry an
-        explicit key -- a release tag, or a UTC timestamp for a corpus.
-
-        The tree hash cannot serve as the key: it is read before ``git add``
-        stages the snapshot, so it names a tree that is never committed.
-        """
-        return self.snapshot_key or self.tree_hash
-
-    def to_dict(self) -> dict:
-        """Convert to dict for JSON serialization."""
-        return {
-            "key": self.key,
-            "branch": self.branch,
-            "timestamp": self.timestamp,
-            "version": self.version,
-            "subject": self.subject,
-            "tool": self.tool,
-            "tool_version": self.tool_version,
-            "tree_hash": self.tree_hash,
-            "metrics": asdict(self.metrics),
-            "hub_metabolites": self.hub_metabolites,
-            "vs_previous": asdict(self.vs_previous) if self.vs_previous else None,
-            "vs_baseline": asdict(self.vs_baseline) if self.vs_baseline else None,
-        }
-
-    @staticmethod
-    def from_dict(data: dict) -> Snapshot:
-        """Reconstruct from dict loaded from JSON."""
-        data = dict(data)
-        metrics_data = data.pop("metrics")
-        metrics = SnapshotMetrics(**metrics_data)
-
-        vs_prev_data = data.pop("vs_previous", None)
-        vs_prev = SnapshotDelta(**vs_prev_data) if vs_prev_data else None
-
-        vs_base_data = data.pop("vs_baseline", None)
-        vs_base = SnapshotDelta(**vs_base_data) if vs_base_data else None
-
-        # Dual-read: entries written before the key change are keyed on a tree
-        # hash and stay addressable by it.
-        tree_hash = data.pop("tree_hash", "")
-        key = data.pop("key", "") or tree_hash
-        if not tree_hash and _is_tree_hash(key):
-            tree_hash = key
-        data.setdefault("version", "")
-
-        return Snapshot(
-            snapshot_key=key,
-            tree_hash=tree_hash,
-            metrics=metrics,
-            vs_previous=vs_prev,
-            vs_baseline=vs_base,
-            **data,
-        )
+def delta_to_dict(delta: SnapshotDelta | None) -> dict[str, Any] | None:
+    """Convert a ``SnapshotDelta`` to a plain dict, or return ``None``."""
+    if delta is None:
+        return None
+    return {
+        "nodes": delta.nodes,
+        "edges": delta.edges,
+        "kinetic_params_delta": delta.kinetic_params_delta,
+        "pathway_delta": delta.pathway_delta,
+    }
 
 
-@dataclass
-class SnapshotManifest:
-    """Index of all snapshots, with fast lookup by tree hash."""
+def delta_from_dict(d: dict[str, Any] | None) -> SnapshotDelta | None:
+    """Reconstruct a ``SnapshotDelta`` from a plain dict, or return ``None``."""
+    if d is None:
+        return None
+    return SnapshotDelta(
+        nodes=int(d.get("nodes", 0)),
+        edges=int(d.get("edges", 0)),
+        kinetic_params_delta=int(d.get("kinetic_params_delta", 0)),
+        pathway_delta=int(d.get("pathway_delta", 0)),
+    )
 
-    format_version: str = "1.0"
-    last_update: str = ""
-    snapshots: list[dict] = field(default_factory=list)
 
-    def to_dict(self) -> dict:
-        """Serialize to dict."""
-        return {
-            "format": self.format_version,
-            "last_update": self.last_update,
-            "snapshots": self.snapshots,
-        }
-
-    @staticmethod
-    def from_dict(data: dict) -> SnapshotManifest:
-        """Reconstruct from dict."""
-        return SnapshotManifest(
-            format_version=data.get("format", "1.0"),
-            last_update=data.get("last_update", ""),
-            snapshots=data.get("snapshots", []),
-        )
+# ---------------------------------------------------------------------------
+# SnapshotManager — metabo-kg specialisation of the shared manager
+# ---------------------------------------------------------------------------
 
 
 class SnapshotManager(_BaseSnapshotManager):
-    """Manages MetaKG snapshot storage, retrieval, and comparison.
+    """MetaKG snapshot manager.
 
-    Overrides every public method of the base ``SnapshotManager`` to operate
-    on this module's own ``Snapshot``/``SnapshotManifest`` dataclasses, which
-    predate and are not subclasses of ``kg_utils.snapshots``'s. ty's Liskov
-    checks therefore flag the whole surface, and each method carries a
-    suppression. They track the base's signatures: they were briefly unused
-    against kgmodule-utils 0.18.0 and are needed again from 0.19.0, so treat an
-    ``unused-ignore`` here as a signal that the base moved, not as dead weight.
-    Migrating to the shared data model is a separate decision.
+    Subclasses the shared ``kg_utils.snapshots.SnapshotManager`` and adds:
+
+    * ``package_name="metabo-kg"`` default for version detection.
+    * A ``capture()`` that queries graph stats, the kinetic-parameter count,
+      pathway categories and hub metabolites from SQLite when they are not
+      supplied.
+    * ``_compute_delta_from_metrics`` extended with ``kinetic_params_delta``
+      and ``pathway_delta``.
+    * ``load_snapshot`` back-filling ``hotspots`` from the legacy top-level
+      ``hub_metabolites`` key.
+
+    Everything else -- saving, listing, pruning, key handling, the manifest --
+    is inherited unchanged.  This class used to override all of it to operate
+    on a parallel data model, which is why fleet-wide snapshot fixes did not
+    reach this repo.
     """
 
-    def __init__(self, snapshots_dir: Path | str, db_path: Path | str | None = None):
-        """
-        Initialize snapshot manager.
+    def __init__(
+        self,
+        snapshots_dir: Path | str,
+        db_path: Path | str | None = None,
+        *,
+        package_name: str = "metabo-kg",
+    ) -> None:
+        """Initialize the manager rooted at ``snapshots_dir``.
 
-        :param snapshots_dir: Directory to store snapshot JSON files and manifest.
+        :param snapshots_dir: Directory holding snapshot JSON and the manifest.
         :param db_path: Optional path to the MetaKG SQLite database.  When
             provided, ``capture()`` queries kinetic params, categories, and
             hub metabolites automatically.
+        :param package_name: Package name used for version detection.
         """
-        self.snapshots_dir = Path(snapshots_dir)
-        self.snapshots_dir.mkdir(parents=True, exist_ok=True)
-        self.manifest_path = self.snapshots_dir / "manifest.json"
-        self.db_path = Path(db_path) if db_path else None
+        super().__init__(snapshots_dir, package_name=package_name, db_path=db_path)
 
     # ------------------------------------------------------------------
-    # Capture
+    # capture — query the graph, then delegate
     # ------------------------------------------------------------------
 
-    def capture(  # ty: ignore[invalid-method-override]
+    def capture(
         self,
         version: str | None = None,
         branch: str | None = None,
-        graph_stats_dict: dict | None = None,
+        graph_stats_dict: dict[str, Any] | None = None,
         tree_hash: str = "",
-        dead_end_count: int = 0,
-        hub_metabolites: list[dict] | None = None,
+        hotspots: list[dict[str, Any]] | None = None,
+        issues: list[str] | None = None,
         key: str = "",
         subject: str = "",
+        *,
+        dead_end_count: int = 0,
+        hub_metabolites: list[dict[str, Any]] | None = None,
+        **extra_metrics: Any,
     ) -> Snapshot:
-        """
-        Capture a snapshot from current database state.
+        """Capture a snapshot from current database state.
 
         :param version: Version string; auto-detected from the installed
             ``metabo-kg`` package if not provided.
@@ -242,287 +228,103 @@ class SnapshotManager(_BaseSnapshotManager):
             from ``db_path`` if not provided.
         :param tree_hash: Git tree hash, recorded as provenance; auto-detected
             if empty. It is not the snapshot's key.
-        :param dead_end_count: Number of dead-end metabolites from analysis.
-        :param hub_metabolites: Top hub compounds with reaction counts.
+        :param hotspots: Top hub compounds. Alias for ``hub_metabolites``,
+            which is the name this repo has always used; queried from
+            ``db_path`` when neither is given.
+        :param issues: Issue description strings.
         :param key: Snapshot identifier. Pass the release tag at release time;
             omit it and the snapshot is keyed on a UTC timestamp, which is the
-            right answer for a corpus.
+            right answer for a corpus. Named explicitly rather than left to
+            ``**extra_metrics``, which would silently record it as a metric
+            instead of passing it to the base.
         :param subject: What was measured, e.g. ``corpus:hsa``. Recorded
             separately from ``version``, which names the measuring tool.
-        :return: New :class:`Snapshot` instance.
+        :param dead_end_count: Number of dead-end metabolites from analysis.
+        :param hub_metabolites: Top hub compounds with reaction counts.
+        :param extra_metrics: Additional domain-specific metric fields.
+        :return: New :class:`~kg_utils.snapshots.Snapshot` (not yet persisted).
         """
-        if not version:
-            version = _package_version()
-        if branch is None:
-            branch = self._get_current_branch()
-        if not tree_hash:
-            tree_hash = self._get_current_tree_hash()
-        if not key:
-            key = datetime.now(UTC).isoformat()
-        if graph_stats_dict is None:
-            graph_stats_dict = self._collect_graph_stats()
+        stats = graph_stats_dict if graph_stats_dict is not None else self._collect_graph_stats()
+        hubs = hub_metabolites if hub_metabolites is not None else hotspots
+        if hubs is None:
+            hubs = self._collect_hub_metabolites()
 
-        timestamp = datetime.now(UTC).isoformat()
-        kinetic_params = self._collect_kinetic_params_count()
-        category_counts = self._collect_category_counts()
+        node_counts: dict[str, int] = stats.get("node_counts", {})
 
-        metrics = SnapshotMetrics(
-            total_nodes=graph_stats_dict.get("total_nodes", 0),
-            total_edges=graph_stats_dict.get("total_edges", 0),
-            node_counts=graph_stats_dict.get("node_counts", {}),
-            edge_counts=graph_stats_dict.get("edge_counts", {}),
-            kinetic_params=kinetic_params,
-            pathway_count=graph_stats_dict.get("node_counts", {}).get("pathway", 0),
-            dead_end_count=dead_end_count,
-            category_counts=category_counts,
-        )
-
-        if hub_metabolites is None:
-            hub_metabolites = self._collect_hub_metabolites()
-
-        snapshot = Snapshot(
-            branch=branch,
-            timestamp=timestamp,
+        return super().capture(
             version=version,
-            metrics=metrics,
-            hub_metabolites=hub_metabolites,
-            tree_hash=tree_hash,
-            snapshot_key=key,
-            subject=subject,
-            tool="metabo-kg",
-            tool_version=_package_version(),
-        )
-
-        prev = self.get_previous(snapshot.key)
-        if prev:
-            snapshot.vs_previous = self._compute_delta(snapshot, prev)
-
-        baseline = self.get_baseline()
-        if baseline:
-            snapshot.vs_baseline = self._compute_delta(snapshot, baseline)
-
-        return snapshot
-
-    # ------------------------------------------------------------------
-    # Persistence
-    # ------------------------------------------------------------------
-
-    def save_snapshot(self, snapshot: Snapshot) -> Path:  # ty: ignore[invalid-method-override]
-        """
-        Save snapshot to ``.metabokg/snapshots/{key}.json`` and update manifest.
-
-        :param snapshot: Snapshot to save.
-        :return: Path to saved snapshot file.
-        :raises ValueError: If the snapshot has zero nodes.
-        """
-        if snapshot.metrics.total_nodes == 0:
-            raise ValueError(
-                "Refusing to save degenerate snapshot with 0 nodes. "
-                "Run 'metabokg-build' before capturing a snapshot."
-            )
-
-        snapshot_file = self.snapshots_dir / f"{snapshot.key}.json"
-        with open(snapshot_file, "w") as f:
-            json.dump(snapshot.to_dict(), f, indent=2)
-
-        manifest = self.load_manifest()
-        existing_idx = next(
-            (i for i, s in enumerate(manifest.snapshots) if s.get("key") == snapshot.key),
-            None,
-        )
-
-        manifest_entry = {
-            "key": snapshot.key,
-            "branch": snapshot.branch,
-            "timestamp": snapshot.timestamp,
-            "version": snapshot.version,
-            "subject": snapshot.subject,
-            "tool": snapshot.tool,
-            "tool_version": snapshot.tool_version,
-            "file": snapshot_file.name,
-            "metrics": asdict(snapshot.metrics),
-            "deltas": {
-                "vs_previous": asdict(snapshot.vs_previous) if snapshot.vs_previous else None,
-                "vs_baseline": asdict(snapshot.vs_baseline) if snapshot.vs_baseline else None,
+            branch=branch,
+            graph_stats_dict={
+                "total_nodes": stats.get("total_nodes", 0),
+                "total_edges": stats.get("total_edges", 0),
+                "node_counts": node_counts,
+                "edge_counts": stats.get("edge_counts", {}),
+                "kinetic_params": self._collect_kinetic_params_count(),
+                "pathway_count": node_counts.get("pathway", 0),
+                "dead_end_count": dead_end_count,
+                "category_counts": self._collect_category_counts(),
             },
-        }
+            tree_hash=tree_hash,
+            hotspots=hubs,
+            issues=issues,
+            key=key,
+            subject=subject,
+            **extra_metrics,
+        )
 
-        if existing_idx is not None:
-            manifest.snapshots[existing_idx] = manifest_entry
-        else:
-            manifest.snapshots.append(manifest_entry)
+    # ------------------------------------------------------------------
+    # load_snapshot — back-fill hotspots from the legacy field
+    # ------------------------------------------------------------------
 
-        manifest.last_update = datetime.now(UTC).isoformat()
-        self._save_manifest(manifest)
-        return snapshot_file
+    def load_snapshot(self, key: str) -> Snapshot | None:
+        """Load a snapshot, back-filling ``hotspots`` for legacy files.
 
-    def load_manifest(self) -> SnapshotManifest:  # ty: ignore[invalid-method-override]
-        """Load manifest.json; return empty manifest if it doesn't exist."""
-        if not self.manifest_path.exists():
-            return SnapshotManifest()
-        with open(self.manifest_path) as f:
-            manifest = SnapshotManifest.from_dict(json.load(f))
-        # Dual-read, permanent rather than transitional: tree-hash-keyed
-        # entries predate the key change and cannot be re-keyed onto versions.
-        for entry in manifest.snapshots:
-            if not entry.get("key") and "tree_hash" in entry:
-                entry["key"] = entry.pop("tree_hash")
-        return manifest
+        Snapshots written before this module adopted the shared model store
+        the top hub compounds in a top-level ``hub_metabolites`` key, which
+        the shared model does not know about. They are read into ``hotspots``
+        so both shapes present the same way.
 
-    def _save_manifest(self, manifest: SnapshotManifest) -> None:  # ty: ignore[invalid-method-override]
-        with open(self.manifest_path, "w") as f:
-            json.dump(manifest.to_dict(), f, indent=2)
-
-    def load_snapshot(self, key: str) -> Snapshot | None:  # ty: ignore[invalid-method-override]
+        :param key: Snapshot key, or ``"latest"`` for the most recent.
+        :return: The snapshot, or ``None`` if no file matches.
         """
-        Load a snapshot by key (tree hash) or ``"latest"``.
+        snap = super().load_snapshot(key)
+        if snap is None or snap.hotspots:
+            return snap
 
-        :param key: Tree hash key, or the string ``"latest"`` for the most
-            recent snapshot.
-        :return: :class:`Snapshot` or ``None`` if not found.
-        """
-        if key == "latest":
-            manifest = self.load_manifest()
-            if not manifest.snapshots:
-                return None
-            key = max(manifest.snapshots, key=lambda s: s["timestamp"])["key"]
-
-        snapshot_file = self.snapshots_dir / f"{key}.json"
+        snapshot_file = self.snapshots_dir / f"{snap.key}.json"
         if not snapshot_file.exists():
-            return None
-        with open(snapshot_file) as f:
-            snap = Snapshot.from_dict(json.load(f))
-
-        # Backfill deltas for legacy snapshots
-        if snap.vs_previous is None or snap.vs_baseline is None:
-            manifest = self.load_manifest()
-            entries = sorted(manifest.snapshots, key=lambda x: x.get("timestamp", ""), reverse=True)
-            idx = next((i for i, s in enumerate(entries) if s.get("key") == key), None)
-
-            if idx is not None:
-                if snap.vs_previous is None and idx + 1 < len(entries):
-                    prev = entries[idx + 1].get("metrics", {})
-                    snap.vs_previous = SnapshotDelta(
-                        nodes=snap.metrics.total_nodes - prev.get("total_nodes", 0),
-                        edges=snap.metrics.total_edges - prev.get("total_edges", 0),
-                        kinetic_params_delta=snap.metrics.kinetic_params
-                        - prev.get("kinetic_params", 0),
-                        pathway_delta=snap.metrics.pathway_count - prev.get("pathway_count", 0),
-                    )
-                if snap.vs_baseline is None and entries:
-                    base = entries[-1].get("metrics", {})
-                    snap.vs_baseline = SnapshotDelta(
-                        nodes=snap.metrics.total_nodes - base.get("total_nodes", 0),
-                        edges=snap.metrics.total_edges - base.get("total_edges", 0),
-                        kinetic_params_delta=snap.metrics.kinetic_params
-                        - base.get("kinetic_params", 0),
-                        pathway_delta=snap.metrics.pathway_count - base.get("pathway_count", 0),
-                    )
-
+            return snap
+        try:
+            raw = json.loads(snapshot_file.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return snap
+        legacy = raw.get("hub_metabolites")
+        if legacy:
+            snap.hotspots = legacy
         return snap
 
     # ------------------------------------------------------------------
-    # Retrieval helpers
+    # Delta computation — adds kinetic_params_delta and pathway_delta
     # ------------------------------------------------------------------
 
-    def get_previous(self, key: str) -> Snapshot | None:  # ty: ignore[invalid-method-override]
-        """Get the snapshot immediately before this one (by timestamp)."""
-        manifest = self.load_manifest()
-        current_ts = next((s["timestamp"] for s in manifest.snapshots if s.get("key") == key), None)
-        if not current_ts:
-            return None
-        prev_entry = None
-        for s in sorted(manifest.snapshots, key=lambda x: x["timestamp"], reverse=True):
-            if s["timestamp"] < current_ts:
-                prev_entry = s
-                break
-        return self.load_snapshot(prev_entry["key"]) if prev_entry else None
-
-    def get_baseline(self) -> Snapshot | None:  # ty: ignore[invalid-method-override]
-        """Get the oldest snapshot (baseline for comparison)."""
-        manifest = self.load_manifest()
-        if not manifest.snapshots:
-            return None
-        baseline_entry = min(manifest.snapshots, key=lambda x: x["timestamp"])
-        return self.load_snapshot(baseline_entry["key"])
-
-    def list_snapshots(self, limit: int | None = None) -> list[dict]:  # ty: ignore[invalid-method-override]
-        """
-        List all snapshots in reverse chronological order.
-
-        Missing ``vs_previous`` deltas are computed on-the-fly from adjacent
-        manifest entries.
-
-        :param limit: Max number to return; ``None`` = all.
-        :return: List of snapshot metadata dicts.
-        """
-        manifest = self.load_manifest()
-        all_snaps = sorted(manifest.snapshots, key=lambda x: x["timestamp"], reverse=True)
-
-        for i, snap in enumerate(all_snaps):
-            if snap.get("deltas", {}).get("vs_previous") is None and i + 1 < len(all_snaps):
-                prev = all_snaps[i + 1]
-                snap.setdefault("deltas", {})["vs_previous"] = {
-                    "nodes": snap["metrics"]["total_nodes"] - prev["metrics"]["total_nodes"],
-                    "edges": snap["metrics"]["total_edges"] - prev["metrics"]["total_edges"],
-                    "kinetic_params_delta": snap["metrics"].get("kinetic_params", 0)
-                    - prev["metrics"].get("kinetic_params", 0),
-                    "pathway_delta": snap["metrics"].get("pathway_count", 0)
-                    - prev["metrics"].get("pathway_count", 0),
-                }
-
-        return all_snaps[:limit] if limit else all_snaps
-
-    def diff_snapshots(self, key_a: str, key_b: str) -> dict:
-        """
-        Compare two snapshots side-by-side.
-
-        :param key_a: First snapshot key.
-        :param key_b: Second snapshot key.
-        :return: Dict with metrics from both and computed deltas (B − A).
-        """
-        snap_a = self.load_snapshot(key_a)
-        snap_b = self.load_snapshot(key_b)
-
-        if not snap_a or not snap_b:
-            return {"error": "One or both snapshots not found"}
-
-        all_node_kinds = set(snap_a.metrics.node_counts) | set(snap_b.metrics.node_counts)
-        all_edge_rels = set(snap_a.metrics.edge_counts) | set(snap_b.metrics.edge_counts)
-
+    def _compute_delta_from_metrics(
+        self, new_m: dict[str, Any], old_m: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Compute delta dict including metabo-kg specific fields."""
         return {
-            "a": {"key": snap_a.key, "metrics": asdict(snap_a.metrics)},
-            "b": {"key": snap_b.key, "metrics": asdict(snap_b.metrics)},
-            "delta": asdict(self._compute_delta(snap_b, snap_a)),
-            "node_counts_delta": {
-                k: snap_b.metrics.node_counts.get(k, 0) - snap_a.metrics.node_counts.get(k, 0)
-                for k in all_node_kinds
-            },
-            "edge_counts_delta": {
-                k: snap_b.metrics.edge_counts.get(k, 0) - snap_a.metrics.edge_counts.get(k, 0)
-                for k in all_edge_rels
-            },
+            "nodes": new_m.get("total_nodes", 0) - old_m.get("total_nodes", 0),
+            "edges": new_m.get("total_edges", 0) - old_m.get("total_edges", 0),
+            "kinetic_params_delta": (
+                new_m.get("kinetic_params", 0) - old_m.get("kinetic_params", 0)
+            ),
+            "pathway_delta": new_m.get("pathway_count", 0) - old_m.get("pathway_count", 0),
         }
-
-    # ------------------------------------------------------------------
-    # Delta computation
-    # ------------------------------------------------------------------
-
-    @staticmethod
-    def _compute_delta(snap_new: Snapshot, snap_old: Snapshot) -> SnapshotDelta:  # ty: ignore[invalid-method-override]
-        """Compute metrics delta (new − old)."""
-        return SnapshotDelta(
-            nodes=snap_new.metrics.total_nodes - snap_old.metrics.total_nodes,
-            edges=snap_new.metrics.total_edges - snap_old.metrics.total_edges,
-            kinetic_params_delta=snap_new.metrics.kinetic_params - snap_old.metrics.kinetic_params,
-            pathway_delta=snap_new.metrics.pathway_count - snap_old.metrics.pathway_count,
-        )
 
     # ------------------------------------------------------------------
     # DB helpers
     # ------------------------------------------------------------------
 
-    def _collect_graph_stats(self) -> dict:
+    def _collect_graph_stats(self) -> dict[str, Any]:
         """Query graph stats from SQLite if db_path is available."""
         if not self.db_path or not self.db_path.exists():
             return {}
@@ -574,7 +376,7 @@ class SnapshotManager(_BaseSnapshotManager):
         except sqlite3.Error:
             return {}
 
-    def _collect_hub_metabolites(self, top: int = 10) -> list[dict]:
+    def _collect_hub_metabolites(self, top: int = 10) -> list[dict[str, Any]]:
         """Return top compounds by total reaction participation."""
         if not self.db_path or not self.db_path.exists():
             return []
@@ -597,5 +399,3 @@ class SnapshotManager(_BaseSnapshotManager):
             return [dict(r) for r in rows]
         except sqlite3.Error:
             return []
-
-    # _get_current_tree_hash and _get_current_branch inherited from _BaseSnapshotManager

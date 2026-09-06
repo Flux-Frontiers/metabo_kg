@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **MetaboKG uses the shared snapshot model.** This module defined its own
+  `Snapshot`, `SnapshotMetrics`, `SnapshotDelta` and `SnapshotManifest`
+  dataclasses, none of them derived from `kg_utils.snapshots`, and overrode
+  every public manager method to operate on them, each with a ty suppression.
+  That parallel model is why fleet-wide snapshot work reached this repo only by
+  being reimplemented here, and in two sibling repos the equivalent
+  `save_snapshot` override dropped `snapshot_key`, `subject` and `tool` on the
+  way to disk.
+
+  `Snapshot`, `SnapshotManifest` and `PruneResult` are now re-exported from
+  `kg_utils.snapshots`. A snapshot's `metrics`, `vs_previous` and `vs_baseline`
+  are plain dicts. `SnapshotMetrics` and `SnapshotDelta` remain exported as
+  converters, with new `metrics_to_dict`, `metrics_from_dict`, `delta_to_dict`
+  and `delta_from_dict` helpers. Read a metric as
+  `snap.metrics["pathway_count"]`, or as
+  `metrics_from_dict(snap.metrics).pathway_count` when you want the converter's
+  defaults for keys an older snapshot does not carry.
+
+  `SnapshotManager` keeps only what is genuinely MetaboKG-specific: the
+  `package_name` default, the `capture()` that queries graph stats, the
+  kinetic-parameter count, pathway categories and hub metabolites from SQLite,
+  `kinetic_params_delta` and `pathway_delta` in `_compute_delta_from_metrics`,
+  the four `_collect_*` helpers, and the legacy back-fill described below.
+  Saving, listing, pruning, key handling and the manifest are the shared
+  implementations. Every `# ty: ignore[invalid-method-override]` in the module
+  is gone.
+
+- **Top hub metabolites are stored in the shared `hotspots` field.** Snapshots
+  written before this change carry them in a top-level `hub_metabolites` key,
+  which the shared model does not know about, so `load_snapshot` back-fills
+  those into `hotspots`. Both shapes read the same way, and the four snapshots
+  committed under `data/hsa_pathways/` were verified to load with their hub
+  metabolites, metrics and deltas intact. `capture()` still accepts
+  `hub_metabolites=` as well as the base's `hotspots=`.
+
 ## [0.13.0] - 2026-09-06
 
 ### Added
