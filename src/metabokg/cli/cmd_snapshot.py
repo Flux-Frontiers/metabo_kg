@@ -16,7 +16,12 @@ import click
 
 from metabokg.cli.main import cli
 from metabokg.cli.options import db_option, resolve_db
-from metabokg.snapshots import SnapshotManager
+from metabokg.snapshots import (
+    SnapshotDelta,
+    SnapshotManager,
+    delta_from_dict,
+    metrics_from_dict,
+)
 from metabokg.store import MetaStore
 
 
@@ -117,10 +122,11 @@ def save_snapshot(
     click.echo(f"  Key:      {snapshot_obj.key}")
     click.echo(f"  Version:  {snapshot_obj.version}")
     click.echo(f"  Branch:   {snapshot_obj.branch}")
-    click.echo(f"  Nodes:    {snapshot_obj.metrics.total_nodes}")
-    click.echo(f"  Edges:    {snapshot_obj.metrics.total_edges}")
-    click.echo(f"  Pathways: {snapshot_obj.metrics.pathway_count}")
-    click.echo(f"  Kinetics: {snapshot_obj.metrics.kinetic_params}")
+    saved_metrics = metrics_from_dict(snapshot_obj.metrics)
+    click.echo(f"  Nodes:    {saved_metrics.total_nodes}")
+    click.echo(f"  Edges:    {saved_metrics.total_edges}")
+    click.echo(f"  Pathways: {saved_metrics.pathway_count}")
+    click.echo(f"  Kinetics: {saved_metrics.kinetic_params}")
 
 
 # ---------------------------------------------------------------------------
@@ -214,33 +220,35 @@ def show_snapshot(key: str, snapshots_dir: str | None) -> None:
     click.echo(f"Version:   {snap.version}")
     click.echo()
 
+    metrics = metrics_from_dict(snap.metrics)
+
     click.echo("Metrics:")
-    click.echo(f"  Total Nodes:    {snap.metrics.total_nodes}")
-    click.echo(f"  Total Edges:    {snap.metrics.total_edges}")
-    click.echo(f"  Pathways:       {snap.metrics.pathway_count}")
-    click.echo(f"  Kinetic Params: {snap.metrics.kinetic_params}")
-    click.echo(f"  Dead Ends:      {snap.metrics.dead_end_count}")
+    click.echo(f"  Total Nodes:    {metrics.total_nodes}")
+    click.echo(f"  Total Edges:    {metrics.total_edges}")
+    click.echo(f"  Pathways:       {metrics.pathway_count}")
+    click.echo(f"  Kinetic Params: {metrics.kinetic_params}")
+    click.echo(f"  Dead Ends:      {metrics.dead_end_count}")
     click.echo()
 
     click.echo("Node Breakdown:")
-    for kind, count in sorted(snap.metrics.node_counts.items()):
+    for kind, count in sorted(metrics.node_counts.items()):
         click.echo(f"  {kind}: {count}")
     click.echo()
 
     click.echo("Edge Breakdown:")
-    for rel, count in sorted(snap.metrics.edge_counts.items()):
+    for rel, count in sorted(metrics.edge_counts.items()):
         click.echo(f"  {rel}: {count}")
     click.echo()
 
-    if snap.metrics.category_counts:
+    if metrics.category_counts:
         click.echo("Pathways by Category:")
-        for cat, count in sorted(snap.metrics.category_counts.items(), key=lambda x: -x[1]):
+        for cat, count in sorted(metrics.category_counts.items(), key=lambda x: -x[1]):
             click.echo(f"  {cat}: {count}")
         click.echo()
 
-    if snap.hub_metabolites:
+    if snap.hotspots:
         click.echo("Top Hub Metabolites:")
-        for i, hub in enumerate(snap.hub_metabolites[:5], 1):
+        for i, hub in enumerate(snap.hotspots[:5], 1):
             name = hub.get("name", hub.get("id", "?"))
             rxns = hub.get("reaction_count", 0)
             formula = hub.get("formula") or ""
@@ -248,7 +256,7 @@ def show_snapshot(key: str, snapshots_dir: str | None) -> None:
         click.echo()
 
     if snap.vs_previous:
-        d = snap.vs_previous
+        d = delta_from_dict(snap.vs_previous) or SnapshotDelta()
         click.echo("Delta vs. Previous:")
         click.echo(f"  Nodes:          {d.nodes:+d}")
         click.echo(f"  Edges:          {d.edges:+d}")
@@ -257,7 +265,7 @@ def show_snapshot(key: str, snapshots_dir: str | None) -> None:
         click.echo()
 
     if snap.vs_baseline:
-        d = snap.vs_baseline
+        d = delta_from_dict(snap.vs_baseline) or SnapshotDelta()
         click.echo("Delta vs. Baseline:")
         click.echo(f"  Nodes:          {d.nodes:+d}")
         click.echo(f"  Edges:          {d.edges:+d}")
