@@ -44,6 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   metabolites, metrics and deltas intact. `capture()` still accepts
   `hub_metabolites=` as well as the base's `hotspots=`.
 
+## [0.14.0] - 2026-09-06
+
 ## [0.13.0] - 2026-09-06
 
 ### Added
