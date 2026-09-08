@@ -82,7 +82,11 @@ dependencies = [
     "mcp>=1.0.0,<2",
     "numpy>=1.24.0",
     "sentence-transformers>=5.4.1",
-    "kgmodule-utils[semantic,sqlite-vec]>=0.19.0",
+    # 0.20.0 is a hard requirement, not a preference: snapshots.py sets the
+    # package_name class attribute instead of carrying an __init__ that only
+    # forwarded to super(). Against 0.19.x the manager reports itself as
+    # "kg-utils" in every snapshot's tool field.
+    "kgmodule-utils[semantic,sqlite-vec]>=0.20.0",
 ]
 
 # Extras are user-facing features only. Dev tooling is a Poetry group below.
