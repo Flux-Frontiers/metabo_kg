@@ -338,3 +338,13 @@ def test_save_snapshot_persists_key_subject_and_tool(
     entry = json.loads(mgr.manifest_path.read_text(encoding="utf-8"))["snapshots"][0]
     assert entry["key"] == "v0.14.0"
     assert entry["subject"] == "corpus:hsa"
+
+
+def test_package_name_comes_from_the_class_attribute(mgr: SnapshotManager) -> None:
+    """Replaces the deleted __init__, whose only job was this string.
+
+    Against kgmodule-utils < 0.20.0 the base has no package_name class
+    attribute, so every snapshot's tool field would read "kg-utils".
+    """
+    assert mgr.package_name == "metabo-kg"
+    assert SnapshotManager.package_name == "metabo-kg"

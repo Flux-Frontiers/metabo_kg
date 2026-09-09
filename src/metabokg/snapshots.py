@@ -46,7 +46,6 @@ from __future__ import annotations
 import json
 import sqlite3
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any
 
 from kg_utils.snapshots import PruneResult as PruneResult  # noqa: F401 — re-export
@@ -183,22 +182,9 @@ class SnapshotManager(_BaseSnapshotManager):
     reach this repo.
     """
 
-    def __init__(
-        self,
-        snapshots_dir: Path | str,
-        db_path: Path | str | None = None,
-        *,
-        package_name: str = "metabo-kg",
-    ) -> None:
-        """Initialize the manager rooted at ``snapshots_dir``.
-
-        :param snapshots_dir: Directory holding snapshot JSON and the manifest.
-        :param db_path: Optional path to the MetaKG SQLite database.  When
-            provided, ``capture()`` queries kinetic params, categories, and
-            hub metabolites automatically.
-        :param package_name: Package name used for version detection.
-        """
-        super().__init__(snapshots_dir, package_name=package_name, db_path=db_path)
+    #: Version detection reads this; the base records it as the snapshot's
+    #: ``tool``. Replaces an ``__init__`` that only forwarded to ``super()``.
+    package_name = "metabo-kg"
 
     # ------------------------------------------------------------------
     # capture — query the graph, then delegate
