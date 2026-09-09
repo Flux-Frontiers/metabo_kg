@@ -524,7 +524,7 @@ with MetaKG(db_path=CGE_DB, vectors_path=CGE_VECTORS) as kg:
 
 Expected output:
 ```
-CHO graph: 16938 nodes, 40851 edges
+CHO graph: 16932 nodes, 40851 edges
 ```
 
 ### Simulate lactate metabolism — a key CHO bioprocess bottleneck

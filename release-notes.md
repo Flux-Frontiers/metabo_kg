@@ -1,44 +1,42 @@
-# Release Notes — v0.14.0
+# Release Notes — v0.15.0
 
-> Released: 2026-09-06
+> Released: 2026-09-08
 
-MetaboKG's snapshot support moves onto the fleet's shared model, replacing a
-parallel data model that had stood since before the fleet adopted a common
-snapshot schema.
+MetaboKG 0.15.0 finishes the move onto the fleet's shared snapshot model that
+0.14.0 started. The module no longer carries its own `SnapshotManager`
+constructor, and it now requires the `kgmodule-utils` release that makes that
+possible. The tooling pins on `doc-kg` and `pycode-kg` are raised to match.
 
 ## What changed
 
-**The standalone `Snapshot`, `SnapshotMetrics`, `SnapshotDelta`, and
-`SnapshotManifest` dataclasses are gone.** MetaboKG defined its own copies of
-all four, none derived from `kg_utils.snapshots`, and overrode every public
-manager method to operate on them. That parallel model meant fleet-wide
-snapshot fixes reached this repo only by being reimplemented here — the
-0.19.0 key-scheme fix had to be hand-copied into this module's own logic
-rather than simply inherited.
+**The snapshot manager loses its constructor.** `SnapshotManager.__init__`
+existed only to forward a package name to the base class, the same one-string
+override that seven of the fleet's eight KG modules were carrying.
+`kgmodule-utils` 0.20.0 added a `package_name` class attribute for exactly
+this, so the override is gone. `capture()` stays, because it does more than
+build a metrics dict: it back-fills the `hotspots` field from the hub
+metabolites, and that field lives outside the metrics the shared hook can
+supply. `load_snapshot()` also stays, still reading the legacy
+`hub_metabolites` key from the snapshots committed under `data/hsa_pathways/`.
 
-`Snapshot`, `SnapshotManifest`, and `PruneResult` are now re-exported from
-`kg_utils.snapshots` unchanged. A snapshot's `metrics`, `vs_previous`, and
-`vs_baseline` are plain dicts. `SnapshotMetrics` and `SnapshotDelta` remain
-available as converters for code that wants attribute access. Top hub
-metabolites move into the shared `hotspots` field; snapshots written before
-this release carry them under a legacy `hub_metabolites` key, which
-`load_snapshot` still reads transparently.
+**A hard floor on `kgmodule-utils`.** The dependency now requires 0.20.0 or
+later. Against 0.19.x the base class has no `package_name` attribute, so every
+snapshot's `tool` field would silently read `"kg-utils"` instead of
+`"metabo-kg"`.
 
-**The `kgmodule-utils` 0.19.1 delta-backfill fix now reaches MetaboKG.**
-Loading a saved snapshot previously reported `kinetic_params_delta` and
-`pathway_delta` as absent, even though listing and diffing snapshots
-computed them correctly for the same pair — the exact read path
-`snapshot show` uses was the one giving the wrong answer. With the floor
-resolving to 0.19.1, `snapshot show` now reports the same numbers as every
-other view of a snapshot.
+**Tooling pins catch up.** The optional `kg` group pinned `doc-kg` and
+`pycode-kg` four and five releases behind. Both now floor on the releases that
+retired their own snapshot overrides (doc-kg 0.26.0, pycode-kg 0.27.0), so
+`poetry install --with kg` cannot resolve a `dockg` or `pycodekg` that predates
+the shared extension points into an environment that depends on them.
 
 ## Upgrading
 
-No action required for normal use — snapshot files, the CLI, and the MCP
-tools are unchanged. If your code accessed `Snapshot.metrics` as an object
-with attributes (`snap.metrics.total_nodes`), switch to dict access
-(`snap.metrics["total_nodes"]`) or call `metrics_from_dict(snap.metrics)`
-for the old style with attribute access.
+Run `poetry install` (or `pip install --upgrade metabo-kg`) to pick up the
+`kgmodule-utils` floor. No rebuild of any corpus is needed, and existing
+snapshot files load unchanged. If your code subclassed `SnapshotManager` and
+called its `__init__` with a package name, drop that call: the base
+constructor takes no arguments and the name comes from the class attribute.
 
 ---
 

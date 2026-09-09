@@ -1,6 +1,6 @@
 {
   "format": "1.0",
-  "last_update": "2026-04-19T03:06:01.972977+00:00",
+  "last_update": "2026-09-09T02:30:01.952245+00:00",
   "snapshots": [
     {
       "key": "d1d7739022a14ab4bc65190e293ec9eafb131f08",
@@ -174,6 +174,53 @@
           "nodes": 0,
           "edges": 0,
           "kinetic_params_delta": 33,
+          "pathway_delta": 0
+        }
+      }
+    },
+    {
+      "key": "0.15.0",
+      "branch": "main",
+      "timestamp": "2026-09-09T02:30:01.951096+00:00",
+      "version": "0.15.0",
+      "subject": "corpus:hsa",
+      "tool": "metabo-kg",
+      "tool_version": "0.15.0",
+      "file": "0.15.0.json",
+      "metrics": {
+        "total_nodes": 17058,
+        "total_edges": 41334,
+        "node_counts": {
+          "compound": 5115,
+          "enzyme": 9427,
+          "pathway": 369,
+          "reaction": 2147
+        },
+        "edge_counts": {
+          "CATALYZES": 2579,
+          "CONTAINS": 33255,
+          "PRODUCT_OF": 2745,
+          "SUBSTRATE_OF": 2755
+        },
+        "kinetic_params": 40,
+        "pathway_count": 369,
+        "dead_end_count": 0,
+        "category_counts": {
+          "cellular_process": 39,
+          "genetic_info_processing": 29,
+          "human_disease": 84,
+          "metabolic": 99,
+          "organismal_system": 98,
+          "signaling": 19,
+          "transport": 1
+        }
+      },
+      "deltas": {
+        "vs_previous": null,
+        "vs_baseline": {
+          "nodes": 8,
+          "edges": 1168,
+          "kinetic_params_delta": 8,
           "pathway_delta": 0
         }
       }

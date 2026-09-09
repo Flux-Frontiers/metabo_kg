@@ -1,0 +1,108 @@
+{
+  "key": "0.15.0",
+  "branch": "main",
+  "timestamp": "2026-09-09T02:30:01.951096+00:00",
+  "version": "0.15.0",
+  "subject": "corpus:hsa",
+  "tool": "metabo-kg",
+  "tool_version": "0.15.0",
+  "tree_hash": "f5b320f5d3d65b5e7377394762dceca3da96e9fa",
+  "metrics": {
+    "total_nodes": 17058,
+    "total_edges": 41334,
+    "node_counts": {
+      "compound": 5115,
+      "enzyme": 9427,
+      "pathway": 369,
+      "reaction": 2147
+    },
+    "edge_counts": {
+      "CATALYZES": 2579,
+      "CONTAINS": 33255,
+      "PRODUCT_OF": 2745,
+      "SUBSTRATE_OF": 2755
+    },
+    "kinetic_params": 40,
+    "pathway_count": 369,
+    "dead_end_count": 0,
+    "category_counts": {
+      "cellular_process": 39,
+      "genetic_info_processing": 29,
+      "human_disease": 84,
+      "metabolic": 99,
+      "organismal_system": 98,
+      "signaling": 19,
+      "transport": 1
+    }
+  },
+  "hotspots": [
+    {
+      "id": "cpd:kegg:C00022",
+      "name": "Pyruvate",
+      "formula": null,
+      "reaction_count": 22
+    },
+    {
+      "id": "cpd:kegg:C00101",
+      "name": "Tetrahydrofolate",
+      "formula": null,
+      "reaction_count": 21
+    },
+    {
+      "id": "cpd:kegg:C00024",
+      "name": "Acetyl-CoA",
+      "formula": null,
+      "reaction_count": 21
+    },
+    {
+      "id": "cpd:kegg:C00037",
+      "name": "Glycine",
+      "formula": null,
+      "reaction_count": 20
+    },
+    {
+      "id": "cpd:kegg:C00026",
+      "name": "2-Oxoglutarate",
+      "formula": null,
+      "reaction_count": 16
+    },
+    {
+      "id": "cpd:kegg:C00049",
+      "name": "L-Aspartate",
+      "formula": null,
+      "reaction_count": 15
+    },
+    {
+      "id": "cpd:kegg:C00127",
+      "name": "Glutathione disulfide",
+      "formula": null,
+      "reaction_count": 14
+    },
+    {
+      "id": "cpd:kegg:C00219",
+      "name": "Arachidonate",
+      "formula": null,
+      "reaction_count": 13
+    },
+    {
+      "id": "cpd:kegg:C00195",
+      "name": "N-Acylsphingosine",
+      "formula": null,
+      "reaction_count": 13
+    },
+    {
+      "id": "cpd:kegg:C00350",
+      "name": "Phosphatidylethanolamine",
+      "formula": null,
+      "reaction_count": 12
+    }
+  ],
+  "issues": [],
+  "vs_previous": null,
+  "vs_baseline": {
+    "nodes": 8,
+    "edges": 1168,
+    "kinetic_params_delta": 8,
+    "pathway_delta": 0
+  }
+}

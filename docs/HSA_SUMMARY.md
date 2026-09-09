@@ -19,17 +19,17 @@
 
 | Category | Count |
 |----------|-------|
-| **Nodes** | 22,290 total |
+| **Nodes** | 17,058 total |
 | - Compounds | 5,115 (glucose, ATP, pyruvate, amino acids, etc.) |
-| - Enzymes | 14,667 (kinases, dehydrogenases, transferases, etc.) |
+| - Enzymes | 9,427 (kinases, dehydrogenases, transferases, etc.) |
 | - Pathways | 369 (metabolic, signaling, regulatory) |
-| - Reactions | 2,139 (metabolic conversions) |
-| **Edges** | 11,298 total |
-| - SUBSTRATE_OF | 2,551 |
-| - PRODUCT_OF | 2,532 |
-| - CATALYZES | 2,406 |
-| - CONTAINS | 3,809 |
-| **Vector Index** | 20,151 semantic embeddings (384-dim) |
+| - Reactions | 2,147 (metabolic conversions) |
+| **Edges** | 41,334 total |
+| - SUBSTRATE_OF | 2,755 |
+| - PRODUCT_OF | 2,745 |
+| - CATALYZES | 2,579 |
+| - CONTAINS | 33,255 |
+| **Vector Index** | 7,631 semantic embeddings (384-dim) |
 
 ---
 
@@ -164,8 +164,8 @@ metabo_kg/
 │   └── article_examples.py    # Reproducible example scripts
 ├── data/hsa_pathways/         # 369 human pathway KGML files (~19 MB)
 ├── .metabokg/
-│   ├── meta.sqlite            # Knowledge graph (22,290 nodes, 11,298 edges)
-│   └── vectors.sqlite         # Vector index (20,151 embeddings)
+│   ├── meta.sqlite            # Knowledge graph (17,058 nodes, 41,334 edges)
+│   └── vectors.sqlite         # Vector index (7,631 embeddings)
 └── tests/                     # 97 comprehensive tests (FBA, ODE, what-if)
 ```
 
