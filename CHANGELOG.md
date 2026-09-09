@@ -9,6 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **`SnapshotManager.__init__` is gone**, replaced by the `package_name` class
+  attribute added in `kgmodule-utils` 0.20.0. Its entire body forwarded to
+  `super()` to change one string, which seven of the fleet's eight KG modules
+  were also doing.
+
+  `capture()` **stays**, deliberately. Unlike the other modules it does more
+  than build a metrics dict: it falls back to `_collect_hub_metabolites()` for
+  the `hotspots` argument, and `hotspots` is a snapshot field rather than a
+  metric, so the `_domain_metrics()` hook cannot supply it. Adding a second SDK
+  hook for a single module is the speculative surface this exercise exists to
+  avoid. `load_snapshot()` stays too, still back-filling `hotspots` from the
+  legacy `hub_metabolites` key in the four snapshots committed under
+  `data/hsa_pathways/`.
+
+- **The floor on `kgmodule-utils` moves to `>=0.20.0`**, a hard requirement
+  rather than a preference: against 0.19.x the base has no `package_name` class
+  attribute, so every snapshot's `tool` field would read `"kg-utils"`.
+
+### Fixed
+
+- **The `doc-kg` and `pycode-kg` tooling pins were four and five releases
+  behind** at `>=0.22.0` and `>=0.23.1`. Both now floor on the releases that
+  retired those packages' own snapshot overrides -- doc-kg 0.26.0 and
+  pycode-kg 0.27.0 -- so `poetry install --with kg` cannot resolve a dockg or
+  pycodekg predating the shared extension points into an environment that
+  depends on them.
+
+## [0.14.0] - 2026-09-06
+
+### Changed
+
 - **MetaboKG uses the shared snapshot model.** This module defined its own
   `Snapshot`, `SnapshotMetrics`, `SnapshotDelta` and `SnapshotManifest`
   dataclasses, none of them derived from `kg_utils.snapshots`, and overrode
@@ -44,7 +75,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   metabolites, metrics and deltas intact. `capture()` still accepts
   `hub_metabolites=` as well as the base's `hotspots=`.
 
-## [0.14.0] - 2026-09-06
 
 ## [0.13.0] - 2026-09-06
 
