@@ -86,7 +86,7 @@ dependencies = [
     # package_name class attribute instead of carrying an __init__ that only
     # forwarded to super(). Against 0.19.x the manager reports itself as
     # "kg-utils" in every snapshot's tool field.
-    "kgmodule-utils[semantic,sqlite-vec]>=0.20.0",
+    "kgmodule-utils[semantic,sqlite-vec]>=0.22.0",
 ]
 
 # Extras are user-facing features only. Dev tooling is a Poetry group below.
@@ -166,7 +166,7 @@ optional = true
 # as a Metabo_kg that depends on them. The previous floors were four and five
 # releases behind.
 doc-kg = ">=0.26.0"
-pycode-kg = ">=0.27.0"
+pycode-kg = ">=0.27.1"
 
 [project.urls]
 Homepage   = "https://github.com/Flux-Frontiers/metabo_kg"
