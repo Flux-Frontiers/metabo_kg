@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The `kg` Poetry group is gone** (`kgrag_priv` sweep item 50, phase 1).
+  It held `doc-kg` and `pycode-kg`, tools this repo runs but never imports. Under the fleet's
+  "tools are global" rule a tool is installed once with `uv tool` and is
+  never a dependency of the repo; 20 of 22 clones were carrying their own
+  copy, and every copy was a lock entry that drifted on each release.
+  The hook `metabokg install-hooks` writes now resolves `pycodekg` and
+  `dockg-snapshot` from `PATH`, falling back to a `.venv` copy if one is
+  present, and skipping cleanly when neither is -- which is what its own
+  comment always said it did. `.venv/bin/metabokg` is untouched: this
+  repo's own binary is a dependency, not a tool. Re-run
+  `metabokg install-hooks --force` to pick it up.
+
 - **`kgmodule-utils` floor raised to `>=0.22.0`** (was `>=0.20.0`), and the
   maintainer-only `kg` group's `pycode-kg` to `>=0.27.1` (was `>=0.27.0`),
   for the fleet's current releases. Nothing in this repo depends on either

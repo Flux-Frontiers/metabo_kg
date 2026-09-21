@@ -78,7 +78,13 @@ BRANCH=$(git branch --show-current)
 # `build` always wipes; it has no --wipe flag (passing one exits 2).
 # Skipped rather than fatal when PyCodeKG is not installed — this hook ships
 # with MetaboKG, which does not depend on it.
-PYCODEKG="$REPO_ROOT/.venv/bin/pycodekg"
+# pycodekg and dockg are tools this repo runs, not dependencies it declares:
+# the fleet installs them once, globally (uv tool install), so PATH is the
+# normal case. A .venv copy is honoured if one is still present. Skipped
+# rather than fatal when neither exists -- this hook ships with MetaboKG,
+# which does not depend on them.
+PYCODEKG="$(command -v pycodekg 2>/dev/null || true)"
+[ -n "$PYCODEKG" ] || PYCODEKG="$REPO_ROOT/.venv/bin/pycodekg"
 if [ -x "$PYCODEKG" ]; then
     "$PYCODEKG" build --repo "$REPO_ROOT" || exit 1
     "$PYCODEKG" snapshot save \\
@@ -99,8 +105,10 @@ if [ -f ".metabokg/hsa.sqlite" ]; then
 fi
 
 # --- DocKG: documentation knowledge graph ---
-if [ -d ".dockg" ]; then
-    "$REPO_ROOT/.venv/bin/dockg-snapshot" save \\
+DOCKG_SNAPSHOT="$(command -v dockg-snapshot 2>/dev/null || true)"
+[ -n "$DOCKG_SNAPSHOT" ] || DOCKG_SNAPSHOT="$REPO_ROOT/.venv/bin/dockg-snapshot"
+if [ -d ".dockg" ] && [ -x "$DOCKG_SNAPSHOT" ]; then
+    "$DOCKG_SNAPSHOT" save \\
         --repo . \\
         --tree-hash "$TREE_HASH" \\
         --branch "$BRANCH" \\
