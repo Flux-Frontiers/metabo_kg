@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **The MCP server closes the graph on shutdown** (`kgrag_priv` sweep item 5),
+  via `FastMCP(lifespan=...)` -- the resource-cleanup pattern `genealogy_kg`
+  set and the fleet standards record. One hook covers both the stdio and SSE
+  transports, since both route through the same underlying `Server.run()`.
+  `create_server()` is handed the `MetaKG`, so the hook closes that instance
+  directly rather than looking up a module global as the other fleet servers
+  do. Verified through `mcp.shared.memory`'s in-process transport: a real
+  `Server.run()`/lifespan cycle, not a mocked `close`.
+
 ### Changed
 
 - **Fleet dependency floors raised and relocked** (`kgrag_priv` sweep item 46):

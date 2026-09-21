@@ -39,6 +39,8 @@ Author: Eric G. Suchanek, PhD
 from __future__ import annotations
 
 import json
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -632,6 +634,20 @@ def create_server(metabokg: MetaKG, *, name: str = "metabokg"):
     """
     from mcp.server.fastmcp import FastMCP
 
+    @asynccontextmanager
+    async def _lifespan(_server: FastMCP) -> AsyncIterator[None]:
+        """Close the graph's SQLite connection when the server shuts down.
+
+        Both the stdio and SSE transports route through the same underlying
+        ``Server.run()``, so this fires on either one. The instance is the
+        one passed to this factory, so unlike the module-global form the
+        other fleet servers use, there is nothing to look up.
+        """
+        try:
+            yield
+        finally:
+            metabokg.close()
+
     server = FastMCP(
         name,
         instructions=(
@@ -648,6 +664,7 @@ def create_server(metabokg: MetaKG, *, name: str = "metabokg"):
             "Use snapshot_list/snapshot_show/snapshot_diff to track how the "
             "knowledge graph evolves across builds and versions."
         ),
+        lifespan=_lifespan,
     )
     register_tools(server, metabokg)
     return server
