@@ -139,35 +139,6 @@ pytest-cov = ">=5.0.0"
 pytest-timeout = ">=2.4.0"
 ruff = ">=0.15,<0.16"
 
-# ---------------------------------------------------------------------------
-# Maintainer tooling (Poetry group, not a PEP 621 extra)
-# ---------------------------------------------------------------------------
-# doc-kg and pycode-kg are tools this repo *runs*, not libraries it imports.
-# Nothing under src/ imports either one. They are here because the
-# "pycodekg + dockg build & snapshot" pre-commit hook rebuilds both indices,
-# .mcp.json serves a `dockg` MCP server, and .claude/commands drive `pycodekg`.
-#
-# They used to live in the `kgdeps` and `all` extras. Extras are *published*
-# metadata, so `pip install metabo-kg[all]` pulled two sibling KG packages into
-# a consumer's environment for tooling they will never run -- and put the whole
-# fleet into one resolution graph. A Poetry group is maintainer-facing: locked
-# and installable, but never written into the wheel.
-#
-#   poetry install --with kg      # get the dockg / pycodekg CLIs into .venv/bin
-#   poetry install                # default: group is optional, skipped
-[tool.poetry.group.kg]
-optional = true
-
-[tool.poetry.group.kg.dependencies]
-# Both floors are the releases that retired these packages' own snapshot
-# overrides and moved them onto kgmodule-utils>=0.20.0, the same SDK this repo
-# now requires. Pinned lower, `poetry install --with kg` could resolve a dockg
-# or pycodekg predating the shared extension points into the same environment
-# as a Metabo_kg that depends on them. The previous floors were four and five
-# releases behind.
-doc-kg = ">=0.26.0"
-pycode-kg = ">=0.27.1"
-
 [project.urls]
 Homepage   = "https://github.com/Flux-Frontiers/metabo_kg"
 Repository = "https://github.com/Flux-Frontiers/metabo_kg"
