@@ -30,7 +30,7 @@
       }
     },
     "pycodekg": {
-      "command": "pycodekg",
+      "command": "${HOME}/.local/bin/pycodekg",
       "args": [
         "mcp",
         "--repo",
@@ -38,7 +38,7 @@
       ]
     },
     "dockg": {
-      "command": "dockg",
+      "command": "${HOME}/.local/bin/dockg",
       "args": [
         "mcp",
         "--repo",
