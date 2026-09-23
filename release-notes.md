@@ -1,33 +1,40 @@
-# Release Notes -- v0.16.0
+# Release Notes -- v0.17.0
 
-> Released: 2026-09-21
+> Released: 2026-09-23
 
-MetaboKG's MCP server now closes the pathway database when it shuts down. No
-index rebuild, no migration, no CLI change.
+A graph-only rebuild no longer leaves the previous graph's vector index in
+place. Before this release, `metabokg build --no-index` wiped and rewrote the
+graph but kept `vectors.sqlite`, so later semantic queries were answered from
+vectors that described a graph that no longer existed.
 
 ## What changed
 
-**The MCP server closes the graph on shutdown.** `metabokg mcp` wires an
-`asynccontextmanager` into `FastMCP(lifespan=...)`, so the SQLite connection is
-released when the server stops rather than left to process exit. One hook
-covers both the stdio and SSE transports, because both route through the same
-underlying `Server.run()`.
+**Wiping the graph now drops the index it invalidates.** When `MetaKG.build()`
+wipes the graph and is told not to rebuild the index, it now deletes the
+sqlite-vec store and its `-wal`, `-shm` and `-journal` sidecars. A query run
+afterwards fails with "vector index not found" and tells you to rebuild,
+instead of returning results from the old graph. An unwiped build, such as
+`metabokg update --no-index`, keeps the existing index as before, because the
+graph it describes is still there.
 
-MetaboKG's server is built by a factory that is handed the `MetaKG` instance,
-so the hook closes that object directly rather than looking up a module-level
-global the way the other modules in the fleet do. The behaviour is the same;
-only the wiring differs.
+The same defect was fixed for every `KGModule` in `kgmodule-utils` 0.24.0.
+`MetaKG` runs its own build pipeline rather than inheriting that one, so it
+needed its own fix. The new public `MetaKG.drop_index()` matches the SDK's
+method of the same name and returns the paths it removed. It never loads the
+embedding model, so a graph-only rebuild stays fast. `MetaIndex` gains a
+`close()` method.
 
-This is the resource-cleanup pattern the fleet standardised on, verified
-against a real server run rather than a stubbed `close`.
+**Dependency floor.** `kgmodule-utils` now requires 0.24.0, and the lock has
+moved onto it. No other locked package changed.
 
 ## Upgrading
 
-Nothing to do. If you run `metabokg mcp` inside a long-lived process, it now
-leaves no database handle behind when it stops.
+Nothing to do for a normal build. If you built with `--no-index` after a wipe
+on an earlier version, your `vectors.sqlite` may describe an older graph; run
+`metabokg build` without `--no-index` once to bring it back in line.
 
 The architectural analysis under `docs/` has been regenerated for this release
-and is now `docs/analysis_v0.16.0.md`.
+and is now `docs/analysis_v0.17.0.md`.
 
 ---
 

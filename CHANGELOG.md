@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-09-23
+
 ### Fixed
 
 - **A graph-only rebuild no longer leaves the previous vector index behind**
