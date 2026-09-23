@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **A graph-only rebuild no longer leaves the previous vector index behind**
+  (`kgrag_priv` sweep item 56). `metabokg build --no-index` wiped and rewrote
+  the graph but kept `vectors.sqlite`, so a later query seeded from the old
+  graph's vectors. `MetaKG.build(wipe=True, build_index=False)` now calls the
+  new `MetaKG.drop_index()`, which closes the index and removes the store and
+  its sidecars without loading the embedding model; a query then fails with
+  "vector index not found" until the index is rebuilt. An unwiped build
+  (`metabokg update --no-index`) keeps the index, as before. This mirrors
+  `KGModule.drop_index()` in `kgmodule-utils` 0.24.0, which cannot reach
+  Metabo_kg's own orchestrator. `MetaIndex` gains `close()`.
+
+### Changed
+
+- **`kgmodule-utils` floor raised to 0.24.0** and the lock moved onto it,
+  clearing the fleet-dep-drift row. No other locked package changed.
+
 ## [0.16.0] - 2026-09-21
 
 ### Added

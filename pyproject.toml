@@ -86,7 +86,7 @@ dependencies = [
     # package_name class attribute instead of carrying an __init__ that only
     # forwarded to super(). Against 0.19.x the manager reports itself as
     # "kg-utils" in every snapshot's tool field.
-    "kgmodule-utils[semantic,sqlite-vec]>=0.23.0",
+    "kgmodule-utils[semantic,sqlite-vec]>=0.24.0",
 ]
 
 # Extras are user-facing features only. Dev tooling is a Poetry group below.

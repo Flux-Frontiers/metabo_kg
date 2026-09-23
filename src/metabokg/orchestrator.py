@@ -389,6 +389,11 @@ class MetaKG:
             nodes, edges = graph.result()
             parse_errors = graph.parse_errors
             self.store.write(nodes, edges, wipe=wipe)
+            # A wiped graph invalidates the old vectors. With build_index the
+            # index is rebuilt with wipe below; without it, drop the store so
+            # a later query fails instead of seeding from the previous graph.
+            if wipe and not build_index:
+                self.drop_index()
 
         xref_rows = self.store.build_xref_index()
 
@@ -421,6 +426,30 @@ class MetaKG:
             parse_errors=parse_errors,
             enrich_stats=enrich_result,
         )
+
+    def drop_index(self) -> list[Path]:
+        """
+        Delete the vector index, closing it first. The graph is untouched.
+
+        Removes the sqlite-vec store with its ``-wal``/``-shm``/``-journal``
+        sidecars. :meth:`build` calls this when it wipes the graph without
+        rebuilding the index. It never constructs :attr:`index`, which would
+        load the embedding model.
+
+        :return: The paths removed; empty when there was no index.
+        """
+        if self._index is not None:
+            self._index.close()
+        vectors = self.vectors_path
+        removed: list[Path] = []
+        for path in (
+            vectors,
+            *(vectors.parent / f"{vectors.name}-{s}" for s in ("wal", "shm", "journal")),
+        ):
+            if path.is_file():
+                path.unlink()
+                removed.append(path)
+        return removed
 
     def enrich(self, data_dir: str | Path | None = None) -> EnrichStats:
         """

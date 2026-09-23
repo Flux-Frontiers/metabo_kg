@@ -555,3 +555,78 @@ class TestRuntimeStatsIndexProbe:
         assert result["vectors_path"] == str(tmp_path / "v.sqlite")
         assert "lancedb_dir" not in result
         assert "table" not in result
+
+
+# ---------------------------------------------------------------------------
+# Graph-only rebuild must not leave the previous graph's vectors behind
+# ---------------------------------------------------------------------------
+
+_KGML = """\
+<?xml version="1.0"?>
+<pathway name="path:hsa00010" org="hsa" number="00010"
+         title="Glycolysis / Gluconeogenesis">
+  <entry id="1" name="cpd:C00031" type="compound">
+    <graphics name="D-Glucose" type="circle"/>
+  </entry>
+  <entry id="2" name="cpd:C00022" type="compound">
+    <graphics name="Pyruvate" type="circle"/>
+  </entry>
+  <reaction id="4" name="rn:R00200" type="irreversible">
+    <substrate name="cpd:C00031"/>
+    <product name="cpd:C00022"/>
+  </reaction>
+</pathway>
+"""
+
+
+class _StubEmbedder:
+    """Model-free embedder: every text maps to the same unit vector."""
+
+    dim = 4
+
+    def embed_texts(self, texts, encode_batch_size=32):
+        return [[1.0, 0.0, 0.0, 0.0] for _ in texts]
+
+    def embed_query(self, query):
+        return [1.0, 0.0, 0.0, 0.0]
+
+
+class TestGraphOnlyRebuild:
+    """`metabokg build --no-index` wipes the graph; the old vectors must go too."""
+
+    @pytest.fixture()
+    def indexed_kg(self, kg_with_data, tmp_path):
+        from metabokg.index import MetaIndex
+
+        kg_with_data._index = MetaIndex(kg_with_data.vectors_path, embedder=_StubEmbedder())
+        kg_with_data.index.build(kg_with_data.store, wipe=True)
+        assert kg_with_data.query_pathway("glycolysis").hits
+        data = tmp_path / "pathways"
+        data.mkdir()
+        (data / "hsa00010.xml").write_text(_KGML)
+        return kg_with_data, data
+
+    def _build(self, kg, data, *, wipe):
+        kg.build(data, wipe=wipe, build_index=False, enrich=False, seed_kinetics=False)
+
+    def test_wiped_rebuild_drops_the_index(self, indexed_kg):
+        kg, data = indexed_kg
+        self._build(kg, data, wipe=True)
+        assert not kg.vectors_path.exists()
+        with pytest.raises(FileNotFoundError):
+            kg.query_pathway("glycolysis")
+
+    def test_unwiped_rebuild_keeps_the_index(self, indexed_kg):
+        kg, data = indexed_kg
+        self._build(kg, data, wipe=False)
+        assert kg.vectors_path.exists()
+        assert kg.query_pathway("glycolysis").hits
+
+    def test_drop_index_removes_sidecars_without_loading_a_model(self, kg_with_data):
+        vectors = kg_with_data.vectors_path
+        sidecar = vectors.parent / f"{vectors.name}-wal"
+        vectors.touch()
+        sidecar.touch()
+        assert kg_with_data.drop_index() == [vectors, sidecar]
+        assert kg_with_data._index is None
+        assert kg_with_data.drop_index() == []
