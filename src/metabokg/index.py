@@ -206,6 +206,16 @@ class MetaIndex:
         except Exception:
             return {}
 
+    def close(self) -> None:
+        """Close the backend connection, if open.
+
+        The next :meth:`search` or :meth:`stats` checks for the store on disk
+        again, so a store deleted after closing reads as absent.
+        """
+        if self._backend is not None:
+            self._backend.close()
+            self._backend = None
+
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
