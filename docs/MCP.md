@@ -249,7 +249,7 @@ are shown in **bold**. `metabokg mcp --manifest` prints the live list.
 
 | Tool | Parameters | Purpose |
 |---|---|---|
-| `stats` | | Node and edge counts, pathway/compound/reaction counts |
+| `stats` | | The fleet stats shape: `nodes`/`edges` totals and breakdowns by kind and relation, plus `pathway_count`/`compound_count`/`reaction_count` |
 | `query` | **`q`**, `k`, `hop`, `max_nodes`, `rels` | Semantic search across every node kind; `{"query", "hits"}` |
 | `pack` | **`q`**, `k`, `hop`, `max_nodes`, `rels` | Build a context-rich metabolic pack from a semantic query |
 | `get_node` | **`node_id`** | One node by its ID |

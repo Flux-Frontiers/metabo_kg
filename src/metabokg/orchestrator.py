@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
 
+from kg_utils.stats import kg_stats
 from kg_utils.validation import MAX_HOP, MAX_MAX_NODES, bounded_int
 
 from metabokg.enrich import EnrichStats
@@ -998,23 +999,29 @@ class MetaKG:
 
     def stats(self) -> dict[str, Any]:
         """
-        Return flat live statistics for the KGRAG adapter contract.
+        Return live statistics in the fleet's stats shape.
 
-        :return: Dict with ``node_count``, ``total_edges``, and domain keys
-            ``pathway_count``, ``compound_count``, ``reaction_count``.
-            Never raises; returns zeros for missing kinds.
+        ``{"kind": "metabolic", "nodes": {"total", "by_kind"}, "edges":
+        {"total", "by_rel"}}`` with ``pathway_count``, ``compound_count`` and
+        ``reaction_count`` as extras (FLEET_STANDARDS, "KG stats shape").
+        Reads the graph only; never loads the embedding model. Never raises:
+        an unreadable store reports zero counts.
+
+        :return: The statistics dict.
         """
         try:
             s = self.store.stats()
         except Exception:
             s = {}
-        return {
-            "node_count": s.get("total_nodes", 0),
-            "total_edges": s.get("total_edges", 0),
-            "pathway_count": s.get("pathway_count", 0),
-            "compound_count": s.get("compound_count", 0),
-            "reaction_count": s.get("reaction_count", 0),
-        }
+        node_counts = s.get("node_counts", {})
+        return kg_stats(
+            "metabolic",
+            node_counts,
+            s.get("edge_counts", {}),
+            pathway_count=node_counts.get("pathway", 0),
+            compound_count=node_counts.get("compound", 0),
+            reaction_count=node_counts.get("reaction", 0),
+        )
 
     # ------------------------------------------------------------------
     # Lifecycle

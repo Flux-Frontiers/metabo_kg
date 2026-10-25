@@ -15,6 +15,14 @@ passes.
 
 ### Changed
 
+- **`MetaKG.stats()`, and so the `stats` tool, returns the fleet stats
+  shape** (kgrag_priv `docs/FLEET_STANDARDS.md`, "KG stats shape"):
+  `{"kind": "metabolic", "nodes": {"total", "by_kind"}, "edges": {"total",
+  "by_rel"}}` with `pathway_count`, `compound_count` and `reaction_count` as
+  extras. The mixed `node_count` / `total_edges` keys are gone. The canonical
+  `stats` tool checks the shape on every call, so the old dict was a tool
+  error under kgmodule-utils 0.29.0. `MetaStore.stats()` keeps its flat keys,
+  which snapshots persist.
 - **The MCP server is built on `kg_utils.mcp`.** It serves the fleet's five
   canonical tools under the same names as every other KG server (`stats`,
   `query`, `pack`, `get_node`, `neighbors`), then MetaboKG's twelve, unchanged:

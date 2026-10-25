@@ -29,6 +29,7 @@ import anyio
 import pytest
 from click.testing import CliRunner
 from kg_utils.mcp import CANONICAL_TOOLS, manifest
+from kg_utils.stats import stats_problems
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.shared.memory import create_connected_server_and_client_session
@@ -179,7 +180,9 @@ def test_graph_tools_answer_without_a_model(db, monkeypatch):
         )
 
     stats, node, near, missing, rxn, query = _session(_server(db), calls)
-    assert not stats.isError and stats.structuredContent["node_count"] == 5
+    assert not stats.isError and stats_problems(stats.structuredContent) == []
+    assert stats.structuredContent["nodes"]["total"] == 5
+    assert stats.structuredContent["kind"] == "metabolic"
     assert not node.isError and node.structuredContent["name"] == "Glycolysis reaction"
     assert [(e["src"], e["rel"]) for e in near.structuredContent["edges"]] == [
         (ENZ, "CATALYZES"),
@@ -309,6 +312,6 @@ def test_stdio_subprocess_serves(db, tmp_path):
     init, tools, stats = anyio.run(run)
     assert (init.serverInfo.name, init.serverInfo.version) == ("metabokg", metabokg.__version__)
     assert [t.name for t in tools.tools] == [*CANONICAL_TOOLS, *_EXTRAS]
-    assert stats.structuredContent["node_count"] == 5
+    assert stats.structuredContent["nodes"]["total"] == 5
     err = (tmp_path / "stderr.log").read_text(encoding="utf-8")
     assert "metabokg MCP server starting (stdio)" in err and f"db      : {db}" in err
