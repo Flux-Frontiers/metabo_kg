@@ -15,6 +15,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
 
+from kg_utils.validation import MAX_HOP, MAX_MAX_NODES, bounded_int
+
 from metabokg.enrich import EnrichStats
 from metabokg.enrich import enrich as _enrich
 from metabokg.graph import MetabolicGraph
@@ -493,7 +495,15 @@ class MetaKG:
             results = self.store.expand_hops(results, hop)
         return MetabolicQueryResult(query=name, hits=results)
 
-    def query(self, text: str, *, k: int = 10, hop: int = 0) -> MetabolicQueryResult:
+    def query(
+        self,
+        text: str,
+        *,
+        k: int = 10,
+        hop: int = 0,
+        max_nodes: int | None = None,
+        rels: tuple[str, ...] | list[str] | None = None,
+    ) -> MetabolicQueryResult:
         """
         Semantic search across all indexed node kinds (compound, enzyme, pathway).
 
@@ -501,10 +511,16 @@ class MetaKG:
         of kind, making it suitable for general-purpose search.
 
         :param text: Natural-language query.
-        :param k: Maximum results to return.
-        :param hop: Graph hops to expand from seed results (0 = seeds only).
+        :param k: Maximum semantic hits.
+        :param hop: Graph hops to expand from seed results (0 = seeds only, 0-5).
+        :param max_nodes: Most results, seeds first; ``None`` for no cap.
+        :param rels: Relations to expand along; ``None`` for the default set.
         :return: :class:`MetabolicQueryResult` with matching nodes of any kind.
+        :raises ValueError: If *hop* or *max_nodes* is out of range.
         """
+        bounded_int("hop", hop, 0, MAX_HOP)
+        if max_nodes is not None:
+            bounded_int("max_nodes", max_nodes, 1, MAX_MAX_NODES)
         hits = self.index.search(text, k=k)
         results: list[dict] = []
         for h in hits:
@@ -512,11 +528,23 @@ class MetaKG:
             if node:
                 results.append({**node, "_distance": h.distance})
         if hop > 0:
-            results = self.store.expand_hops(results, hop)
+            if rels:
+                results = self.store.expand_hops(results, hop, rels=tuple(rels))
+            else:
+                results = self.store.expand_hops(results, hop)
+        if max_nodes is not None:
+            results = results[:max_nodes]
         return MetabolicQueryResult(query=text, hits=results)
 
     def pack(
-        self, text: str, *, k: int = 8, hop: int = 1, max_rxn_per_pathway: int = 30
+        self,
+        text: str,
+        *,
+        k: int = 8,
+        hop: int = 1,
+        max_rxn_per_pathway: int = 30,
+        max_nodes: int | None = None,
+        rels: tuple[str, ...] | list[str] | None = None,
     ) -> MetabolicPack:
         """
         Build a context-rich pack of metabolic entities matching *text*.
@@ -529,9 +557,11 @@ class MetaKG:
         :param k: Seed results from vector search.
         :param hop: Graph hops to expand from seeds (default 1).
         :param max_rxn_per_pathway: Cap on reactions shown per pathway section.
+        :param max_nodes: Most sections; ``None`` for no cap.
+        :param rels: Relations to expand along; ``None`` for the default set.
         :return: :class:`MetabolicPack` with context-enriched sections.
         """
-        hits = self.query(text, k=k, hop=hop).hits
+        hits = self.query(text, k=k, hop=hop, max_nodes=max_nodes, rels=rels).hits
 
         # Deduplicate while preserving order; sort pathways first
         _kind_order = {"pathway": 0, "reaction": 1, "compound": 2, "enzyme": 3}
@@ -573,6 +603,65 @@ class MetaKG:
                 sections.append(node)
 
         return MetabolicPack(query=text, sections=sections)
+
+    def node(self, node_id: str) -> dict | None:
+        """
+        Fetch one node of the graph by its stable ID.
+
+        Reads the graph only; never loads the embedding model.
+
+        :param node_id: Node ID, e.g. ``"cpd:kegg:C00031"``.
+        :return: Node dict, or ``None`` if there is no such node.
+        """
+        return self.store.node(node_id)
+
+    def neighbors(
+        self,
+        node_id: str,
+        *,
+        rels: tuple[str, ...] | list[str] | None = None,
+        direction: str = "both",
+        limit: int = 50,
+    ) -> dict[str, Any] | None:
+        """
+        Return a node's one-hop neighbourhood: its edges and the nodes at their far ends.
+
+        The same contract as :meth:`kg_utils.pipeline.KGModule.neighbors`: a
+        pathway's reactions, a reaction's substrates, products and enzymes, a
+        compound's reactions. Reads the graph only; never loads the model.
+
+        :param node_id: The node whose neighbours to return.
+        :param rels: Relation types to follow, or ``None`` for all of them.
+        :param direction: ``"out"``, ``"in"`` or ``"both"``.
+        :param limit: Maximum number of edges, between 1 and 500.
+        :return: ``{"node": ..., "edges": [...], "nodes": [...]}``, ``nodes``
+            holding each distinct far-end node that exists, in edge order;
+            ``None`` if *node_id* is not in the graph, matching :meth:`node`.
+        :raises ValueError: On an empty *node_id*, an unknown *direction* or an
+            out-of-range *limit*.
+        """
+        if not isinstance(node_id, str) or not node_id.strip():
+            raise ValueError("node_id must be a non-empty string")
+        bounded_int("limit", limit, 1, MAX_MAX_NODES)
+        if direction not in ("out", "in", "both"):
+            raise ValueError(f"direction must be 'out', 'in' or 'both', got {direction!r}")
+        node = self.store.node(node_id)
+        if node is None:
+            return None
+        edges = self.store.edges_touching(
+            node_id, direction=direction, rels=list(rels) if rels else None, limit=limit
+        )
+        seen: set[str] = set()
+        nodes: list[dict] = []
+        for e in edges:
+            other = e["dst"] if e["src"] == node_id else e["src"]
+            if other in seen:
+                continue
+            seen.add(other)
+            far = self.store.node(other)
+            if far is not None:
+                nodes.append(far)
+        return {"node": node, "edges": edges, "nodes": nodes}
 
     def get_compound(self, compound_id: str) -> dict | None:
         """

@@ -1,66 +1,60 @@
 """
 cmd_mcp.py — mcp subcommand.
 
-Registers:
-  metabokg mcp  — start the MetaKG MCP server
+Registers ``metabokg mcp``, the fleet's standard MCP command from
+:mod:`kg_utils.mcp`::
+
+    metabokg mcp [--repo DIR] [--db FILE] [--vectors FILE] [--model NAME]
+                 [--transport stdio|streamable-http] [--host H] [--port N]
+                 [--manifest]
+
+``--db`` and ``--vectors`` fall back to ``METABOKG_DB`` / ``METABOKG_VECTORS``,
+then to the bundled human corpus under ``--repo``; a relative path is taken
+from ``--repo``. Registering the command imports neither ``mcp`` nor the
+server module.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import click
+from kg_utils.mcp import add_mcp_command
 
 from metabokg.cli.main import cli
-from metabokg.cli.options import (
-    db_option,
-    model_option,
-    resolve_db,
-    resolve_vectors,
-    vectors_option,
-)
+from metabokg.cli.options import resolve_db, resolve_vectors
+
+if TYPE_CHECKING:
+    from kg_utils.mcp import KGServer
 
 
-@cli.command("mcp")
-@db_option
-@vectors_option
-@model_option
-@click.option(
-    "--transport",
-    default="stdio",
-    show_default=True,
-    type=click.Choice(["stdio", "sse"]),
-    help="MCP transport: stdio or sse (HTTP).",
-)
-def mcp(db: str | None, vectors: str | None, model: str, transport: str) -> None:
-    """Start the MetaKG MCP server."""
-    from metabokg import MetaKG
-    from metabokg.mcp_tools import create_server
+def _under(repo: Path, path: str | Path) -> Path:
+    p = Path(path)
+    return p if p.is_absolute() else repo / p
 
-    db_path = Path(resolve_db(db))
-    vectors = resolve_vectors(vectors)
-    if not db_path.exists():
-        click.echo(
-            f"WARNING: database not found at '{db_path}'.\nRun 'metabokg build' first.",
-            err=True,
-        )
 
-    click.echo(
-        f"MetaKG MCP server starting\n"
-        f"  db       : {db_path}\n"
-        f"  vectors  : {vectors}\n"
-        f"  model    : {model}\n"
-        f"  transport: {transport}",
-        err=True,
-    )
+def _build_server(repo: Path, db: Path | None, vectors: Path | None, model: str | None) -> KGServer:
+    from metabokg.mcp_tools import build_server  # pylint: disable=import-outside-toplevel
 
-    kg = MetaKG(db_path=db_path, vectors_path=vectors, model=model)
-    server = create_server(kg)
-    server.run(transport=transport)  # type: ignore[arg-type]
+    repo = Path(repo).resolve()
+    db_path = db or _under(repo, resolve_db(None))
+    vectors_path = vectors or _under(repo, resolve_vectors(None))
+    return build_server(db_path, vectors_path, model)
 
+
+mcp_command = add_mcp_command(cli, _build_server)
 
 # ---------------------------------------------------------------------------
 # Standalone entry-point alias
 # ---------------------------------------------------------------------------
 
-mcp_main = mcp
+
+def mcp_main(argv: list[str] | None = None) -> None:
+    """Entry point for ``metabokg-mcp``: the same command as ``metabokg mcp``.
+
+    :param argv: Arguments; ``None`` for ``sys.argv[1:]``.
+    """
+    mcp_command.main(args=argv, prog_name="metabokg-mcp")
+
+
+__all__ = ["mcp_command", "mcp_main"]

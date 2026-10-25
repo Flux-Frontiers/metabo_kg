@@ -69,7 +69,7 @@ End-to-end data flow from raw pathway sources to analysis, simulation, and AI-ag
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         STAGE 6 — Access Interfaces                         │
 │  metabokg-viz / viz3d  — interactive graph explorer (Streamlit / PyVista)   │
-│  metabokg-mcp          — MCP server (13 tools for Claude and AI agents)     │
+│  metabokg-mcp          — MCP server (17 tools for Claude and AI agents)     │
 │  Python API            — MetaKG class (build · query · simulate)            │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -260,7 +260,7 @@ PyVista renderer. `allium`: hub-spoke layout; `cake`: concentric rings by topolo
 ### MCP Server (AI Agent Interface)
 
 ```bash
-metabokg-mcp [--transport stdio|sse] [--db PATH]
+metabokg mcp [--transport stdio|streamable-http] [--db PATH]
 ```
 
 | Tool | Description |

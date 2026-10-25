@@ -1,47 +1,39 @@
 """
-mcp_tools.py — MCP tool registrations for MetaKG.
+mcp_tools.py — the MetaKG MCP server, on the fleet's shared base ``kg_utils.mcp``.
 
-Exposes tools on a FastMCP instance:
+The server answers the fleet's canonical tools -- ``stats``, ``query``,
+``pack``, ``get_node``, ``neighbors`` -- under the same names as every other
+KG server, then MetaKG's own::
 
     query_pathway(name, k)                      — semantic pathway search
     get_compound(id)                            — compound + connected reactions
     get_reaction(id)                            — full stoichiometric detail
     find_path(compound_a, compound_b, max_hops) — shortest metabolic path
+    simulate_fba / simulate_ode / simulate_whatif
+                                                — FBA, ODE time course, perturbation
+    get_kinetic_params(reaction_id)             — stored Km/Vmax/kcat
+    seed_kinetics(force)                        — curated literature kinetics
+    snapshot_list / snapshot_show / snapshot_diff
+                                                — the graph's history across builds
 
-    simulate_fba(pathway_id, objective_reaction, maximize)
-        — Flux Balance Analysis on a pathway
-    simulate_ode(pathway_id, t_end, t_points, initial_concentrations_json,
-                 default_concentration)
-        — ODE kinetic simulation; returns concentration time-courses
-    simulate_whatif(pathway_id, scenario_json, mode)
-        — Perturbation analysis: baseline vs. modified enzyme/substrate scenario
-    get_kinetic_params(reaction_id)
-        — Retrieve stored kinetic parameters for a reaction
-    seed_kinetics(force)
-        — Populate kinetic parameters from curated literature values
+``query`` and ``pack`` are MetaKG's own search through ``server.canonical``.
+The tool list is generated from the tools themselves: ``metabokg mcp
+--manifest`` prints it as JSON without opening the graph.
 
-Register via::
+The ``_mcp_*`` handlers take the :class:`~metabokg.orchestrator.MetaKG`
+explicitly, so they are unit-testable without a server; each tool wraps one
+and takes its description from it.
 
-    from metabokg import MetaKG
-    from metabokg.mcp_tools import create_server
-
-    mcp = create_server(MetaKG(db_path=".metabokg/hsa.sqlite"))
-    mcp.run()
-
-Or mount onto an existing FastMCP instance::
-
-    from metabokg.mcp_tools import register_tools
-    register_tools(mcp, metabokg)
 Author: Eric G. Suchanek, PhD
-
 """
 
 from __future__ import annotations
 
 import json
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
+
+from kg_utils.mcp import Context, KGServer, kg_from, make_server
 
 if TYPE_CHECKING:
     from metabokg.orchestrator import MetaKG
@@ -512,159 +504,181 @@ def _mcp_seed_kinetics(metabokg: MetaKG, force: bool = False) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Tool registration
+# The server, on kg_utils.mcp
 # ---------------------------------------------------------------------------
 
+PREAMBLE = (
+    "MetaKG is a metabolic knowledge graph: KEGG pathways and genome-scale models as "
+    "pathway, reaction, compound and enzyme nodes ('pwy:kegg:hsa00010', "
+    "'rxn:kegg:R00200', 'cpd:kegg:C00031', 'enz:kegg:hsa:2539'), linked by CONTAINS, "
+    "SUBSTRATE_OF, PRODUCT_OF and CATALYZES.\n\n"
+    "## Recommended workflows\n\n"
+    "- **Orientation**: stats\n"
+    "- **Find entities**: query (any kind) or query_pathway → get_node, get_compound, "
+    "get_reaction\n"
+    "- **Read the biology**: pack bundles each match with its reactions, substrates, "
+    "products and enzymes\n"
+    "- **Trace routes**: find_path between compounds; neighbors(node_id) for one step\n"
+    "- **Simulate**: seed_kinetics once, then simulate_fba (steady state), "
+    "simulate_ode (time course) or simulate_whatif (knockouts, activity changes); "
+    "get_kinetic_params shows Km/Vmax/kcat\n"
+    "- **History**: snapshot_list / snapshot_show / snapshot_diff"
+)
 
-def register_tools(mcp, metabokg: MetaKG) -> None:
+
+def query(
+    q: str,
+    k: int = 10,
+    hop: int = 0,
+    max_nodes: int = 25,
+    rels: list[str] | None = None,
+    *,
+    ctx: Context,
+) -> dict[str, Any]:
     """
-    Register all MetaKG MCP tools on *mcp*.
+    Semantic search across every node kind: pathways, reactions, compounds, enzymes.
 
-    :param mcp: A ``FastMCP`` instance (from ``mcp.server.fastmcp``).
-    :param metabokg: Initialised :class:`~metabokg.orchestrator.MetaKG` instance.
+    :param q: Natural-language query, e.g. "glucose phosphorylation".
+    :param k: Semantic hits (default 10).
+    :param hop: Graph hops to expand from the hits (0-5, default 0: hits only).
+    :param max_nodes: Most results, hits first (default 25).
+    :param rels: Edge types to expand along; omit for CONTAINS, SUBSTRATE_OF,
+        PRODUCT_OF and CATALYZES.
     """
-
-    def pack(text: str, k: int = 8, hop: int = 1) -> str:
-        return _mcp_pack(metabokg, text, k, hop)
-
-    pack.__doc__ = _mcp_pack.__doc__
-    mcp.tool()(pack)
-
-    def query_pathway(name: str, k: int = 8) -> str:
-        return _mcp_query_pathway(metabokg, name, k)
-
-    query_pathway.__doc__ = _mcp_query_pathway.__doc__
-    mcp.tool()(query_pathway)
-
-    def get_compound(compound_id: str) -> str:
-        return _mcp_get_compound(metabokg, compound_id)
-
-    get_compound.__doc__ = _mcp_get_compound.__doc__
-    mcp.tool()(get_compound)
-
-    def get_reaction(reaction_id: str) -> str:
-        return _mcp_get_reaction(metabokg, reaction_id)
-
-    get_reaction.__doc__ = _mcp_get_reaction.__doc__
-    mcp.tool()(get_reaction)
-
-    def find_path(compound_a: str, compound_b: str, max_hops: int = 6) -> str:
-        return _mcp_find_path(metabokg, compound_a, compound_b, max_hops)
-
-    find_path.__doc__ = _mcp_find_path.__doc__
-    mcp.tool()(find_path)
-
-    def simulate_fba(
-        pathway_id: str,
-        objective_reaction: str = "",
-        maximize: bool = True,
-    ) -> str:
-        return _mcp_simulate_fba(metabokg, pathway_id, objective_reaction, maximize)
-
-    simulate_fba.__doc__ = _mcp_simulate_fba.__doc__
-    mcp.tool()(simulate_fba)
-
-    def simulate_ode(
-        pathway_id: str,
-        t_end: float = 100.0,
-        t_points: int = 200,
-        initial_concentrations_json: str = "{}",
-        default_concentration: float = 1.0,
-    ) -> str:
-        return _mcp_simulate_ode(
-            metabokg,
-            pathway_id,
-            t_end,
-            t_points,
-            initial_concentrations_json,
-            default_concentration,
-        )
-
-    simulate_ode.__doc__ = _mcp_simulate_ode.__doc__
-    mcp.tool()(simulate_ode)
-
-    def simulate_whatif(
-        pathway_id: str,
-        scenario_json: str,
-        mode: str = "fba",
-    ) -> str:
-        return _mcp_simulate_whatif(metabokg, pathway_id, scenario_json, mode)
-
-    simulate_whatif.__doc__ = _mcp_simulate_whatif.__doc__
-    mcp.tool()(simulate_whatif)
-
-    def get_kinetic_params(reaction_id: str) -> str:
-        return _mcp_get_kinetic_params(metabokg, reaction_id)
-
-    get_kinetic_params.__doc__ = _mcp_get_kinetic_params.__doc__
-    mcp.tool()(get_kinetic_params)
-
-    def seed_kinetics(force: bool = False) -> str:
-        return _mcp_seed_kinetics(metabokg, force)
-
-    seed_kinetics.__doc__ = _mcp_seed_kinetics.__doc__
-    mcp.tool()(seed_kinetics)
-
-    def snapshot_list(limit: int = 20) -> str:
-        return _mcp_snapshot_list(limit)
-
-    snapshot_list.__doc__ = _mcp_snapshot_list.__doc__
-    mcp.tool()(snapshot_list)
-
-    def snapshot_show(key: str) -> str:
-        return _mcp_snapshot_show(key)
-
-    snapshot_show.__doc__ = _mcp_snapshot_show.__doc__
-    mcp.tool()(snapshot_show)
-
-    def snapshot_diff(key_a: str, key_b: str) -> str:
-        return _mcp_snapshot_diff(key_a, key_b)
-
-    snapshot_diff.__doc__ = _mcp_snapshot_diff.__doc__
-    mcp.tool()(snapshot_diff)
+    result = kg_from(ctx).query(q, k=k, hop=hop, max_nodes=max_nodes, rels=rels)
+    return {"query": result.query, "hits": result.hits}
 
 
-def create_server(metabokg: MetaKG, *, name: str = "metabokg"):
+def pack(
+    q: str,
+    k: int = 8,
+    hop: int = 1,
+    max_nodes: int = 15,
+    rels: list[str] | None = None,
+    *,
+    ctx: Context,
+) -> str:
     """
-    Create a standalone FastMCP server with all MetaKG tools registered.
+    A context-rich Markdown pack: each match with its reactions, substrates, products and enzymes.
 
-    :param metabokg: Initialised :class:`~metabokg.orchestrator.MetaKG` instance.
-    :param name: Server name advertised to MCP clients.
-    :return: Configured ``FastMCP`` instance ready to ``.run()``.
+    :param q: Natural-language query, e.g. "glycolysis".
+    :param k: Seed results from vector search (default 8).
+    :param hop: Graph hops to expand from the seeds (0-5, default 1).
+    :param max_nodes: Most sections (default 15).
+    :param rels: Edge types to expand along; omit for the default set.
     """
-    from mcp.server.fastmcp import FastMCP
+    return kg_from(ctx).pack(q, k=k, hop=hop, max_nodes=max_nodes, rels=rels).to_markdown()
 
-    @asynccontextmanager
-    async def _lifespan(_server: FastMCP) -> AsyncIterator[None]:
-        """Close the graph's SQLite connection when the server shuts down.
 
-        Both the stdio and SSE transports route through the same underlying
-        ``Server.run()``, so this fires on either one. The instance is the
-        one passed to this factory, so unlike the module-global form the
-        other fleet servers use, there is nothing to look up.
-        """
-        try:
-            yield
-        finally:
-            metabokg.close()
+def query_pathway(name: str, k: int = 8, *, ctx: Context) -> str:
+    return _mcp_query_pathway(kg_from(ctx), name, k)
 
-    server = FastMCP(
-        name,
-        instructions=(
-            "MetaKG gives you semantic access to a metabolic pathway knowledge graph. "
-            "Use pack(text, k, hop) to get a context-rich Markdown document bundling "
-            "matching pathways, reactions, compounds, and enzymes — ideal for LLM context. "
-            "Use query_pathway to find pathways, get_compound/get_reaction for entity "
-            "detail, and find_path to trace biochemical routes between compounds. "
-            "For simulation: call seed_kinetics once to populate kinetic parameters, "
-            "then use simulate_fba for steady-state flux analysis, simulate_ode for "
-            "kinetic time-course simulation, and simulate_whatif for perturbation "
-            "analysis (enzyme knockouts, activity changes, substrate overrides). "
-            "Use get_kinetic_params to inspect stored Km/Vmax/kcat values. "
-            "Use snapshot_list/snapshot_show/snapshot_diff to track how the "
-            "knowledge graph evolves across builds and versions."
-        ),
-        lifespan=_lifespan,
+
+def get_compound(compound_id: str, *, ctx: Context) -> str:
+    return _mcp_get_compound(kg_from(ctx), compound_id)
+
+
+def get_reaction(reaction_id: str, *, ctx: Context) -> str:
+    return _mcp_get_reaction(kg_from(ctx), reaction_id)
+
+
+def find_path(compound_a: str, compound_b: str, max_hops: int = 6, *, ctx: Context) -> str:
+    return _mcp_find_path(kg_from(ctx), compound_a, compound_b, max_hops)
+
+
+def simulate_fba(
+    pathway_id: str, objective_reaction: str = "", maximize: bool = True, *, ctx: Context
+) -> str:
+    return _mcp_simulate_fba(kg_from(ctx), pathway_id, objective_reaction, maximize)
+
+
+def simulate_ode(
+    pathway_id: str,
+    t_end: float = 100.0,
+    t_points: int = 200,
+    initial_concentrations_json: str = "{}",
+    default_concentration: float = 1.0,
+    *,
+    ctx: Context,
+) -> str:
+    return _mcp_simulate_ode(
+        kg_from(ctx),
+        pathway_id,
+        t_end,
+        t_points,
+        initial_concentrations_json,
+        default_concentration,
     )
-    register_tools(server, metabokg)
+
+
+def simulate_whatif(pathway_id: str, scenario_json: str, mode: str = "fba", *, ctx: Context) -> str:
+    return _mcp_simulate_whatif(kg_from(ctx), pathway_id, scenario_json, mode)
+
+
+def get_kinetic_params(reaction_id: str, *, ctx: Context) -> str:
+    return _mcp_get_kinetic_params(kg_from(ctx), reaction_id)
+
+
+def seed_kinetics(force: bool = False, *, ctx: Context) -> str:
+    return _mcp_seed_kinetics(kg_from(ctx), force)
+
+
+def snapshot_list(limit: int = 20) -> str:
+    return _mcp_snapshot_list(limit)
+
+
+def snapshot_show(key: str) -> str:
+    return _mcp_snapshot_show(key)
+
+
+def snapshot_diff(key_a: str, key_b: str) -> str:
+    return _mcp_snapshot_diff(key_a, key_b)
+
+
+#: MetaKG's own tools, after the five canonical ones. Each takes its
+#: description from the unit-tested ``_mcp_*`` handler it wraps.
+EXTRA_TOOLS = (
+    query_pathway,
+    get_compound,
+    get_reaction,
+    find_path,
+    simulate_fba,
+    simulate_ode,
+    simulate_whatif,
+    get_kinetic_params,
+    seed_kinetics,
+    snapshot_list,
+    snapshot_show,
+    snapshot_diff,
+)
+for _tool in EXTRA_TOOLS:
+    _tool.__doc__ = globals()[f"_mcp_{_tool.__name__}"].__doc__
+
+
+def build_server(
+    db: str | Path,
+    vectors: str | Path,
+    model: str | None = None,
+) -> KGServer:
+    """
+    Build the MetaKG MCP server for one corpus, without opening its graph.
+
+    :param db: The corpus's SQLite database.
+    :param vectors: Its sqlite-vec vector store.
+    :param model: Embedding model; ``None`` for the default.
+    :return: The server; serve it with :func:`kg_utils.mcp.run`.
+    """
+    from metabokg import __version__  # pylint: disable=import-outside-toplevel
+    from metabokg.orchestrator import MetaKG  # pylint: disable=import-outside-toplevel
+
+    def open_kg() -> MetaKG:
+        return MetaKG(db_path=db, vectors_path=vectors, model=model)
+
+    server = make_server(
+        open_kg, name="metabokg", kind="metabolic", version=__version__, instructions=PREAMBLE
+    )
+    server.canonical("query")(query)
+    server.canonical("pack")(pack)
+    for tool in EXTRA_TOOLS:
+        server.tool()(tool)
     return server

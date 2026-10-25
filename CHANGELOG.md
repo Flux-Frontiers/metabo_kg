@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Step 4 of the fleet's MCP centralization (kgrag_priv
+`docs/MCP_CENTRALIZATION_PLAN.md`, sweep item 93). **Needs kgmodule-utils
+0.29.0**, which provides `kg_utils.mcp`; until that release it is tested
+against the local 0.29.0.dev0 wheel, and the floor is raised when the fleet lap
+passes.
+
+### Changed
+
+- **The MCP server is built on `kg_utils.mcp`.** It serves the fleet's five
+  canonical tools under the same names as every other KG server (`stats`,
+  `query`, `pack`, `get_node`, `neighbors`), then MetaboKG's twelve, unchanged:
+  `query_pathway`, `get_compound`, `get_reaction`, `find_path`,
+  `simulate_fba`, `simulate_ode`, `simulate_whatif`, `get_kinetic_params`,
+  `seed_kinetics`, `snapshot_list`, `snapshot_show`, `snapshot_diff`. 13 tools
+  become 17. The server's instructions are generated from the tools'
+  docstrings, and `metabokg mcp --manifest` prints the tool list as JSON
+  without opening the graph. The graph is opened per client session; each
+  session prints the database it serves to stderr, and a database that does
+  not exist is refused (`no graph at ...`) rather than served empty. Under
+  stdio, stray prints go to stderr instead of corrupting the protocol stream.
+- `metabokg mcp` takes the fleet's standard flags: `--repo`, `--db`,
+  `--vectors`, `--model`, `--transport stdio|streamable-http`, `--host`,
+  `--port`, `--manifest`. `--db` and `--vectors` still fall back to
+  `METABOKG_DB` / `METABOKG_VECTORS`, then to the bundled human corpus, and a
+  relative path is taken from `--repo` (default: the working directory, as
+  before). `metabokg-mcp` is the same command. Registering it does not import
+  `mcp`.
+- **`pack` takes `q`, not `text`**, and gains `max_nodes` and `rels`.
+- `MetaKG.query()` and `MetaKG.pack()` take keyword-only `max_nodes` and
+  `rels`, and `query()` checks `hop` (0-5) and `max_nodes` (1-500).
+  `MetaStore.expand_hops()` takes `rels`.
+
+### Added
+
+- `MetaKG.node(node_id)`, `MetaKG.neighbors(node_id, *, rels, direction,
+  limit)` and `MetaStore.edges_touching()`: the edges touching one node and the
+  nodes at their other ends, ordered by (rel, src, dst). Graph only; no model is
+  loaded. Same contract as `kg_utils.pipeline.KGModule.neighbors`.
+- MCP `query`, `get_node` and `neighbors`.
+
+### Removed
+
+- `metabokg.mcp_tools.create_server()` and `register_tools()`: use
+  `build_server(db, vectors, model)`, or `EXTRA_TOOLS` to mount the domain
+  tools on another `kg_utils.mcp` server.
+- `metabokg mcp --transport sse`.
+
 ## [0.17.0] - 2026-09-23
 
 ### Fixed

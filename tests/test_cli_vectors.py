@@ -255,22 +255,24 @@ class TestVectorsReachesTheKG:
         assert result.exit_code == 0, result.output
         assert stub_kg.calls[-1]["vectors_path"] == str(corpus["vectors"])
 
-    def test_mcp(self, runner, stub_kg, corpus, monkeypatch):
-        started: dict = {}
+    def test_mcp(self, runner, corpus, monkeypatch):
+        """The server is built against the paths given; it opens them per session."""
+        from metabokg.mcp_tools import build_server
 
-        class _Server:
-            def run(self, **kwargs):
-                started.update(kwargs)
-
-        monkeypatch.setattr("metabokg.mcp_tools.create_server", lambda _kg: _Server())
+        built: list = []
+        monkeypatch.setattr(
+            "metabokg.mcp_tools.build_server",
+            lambda db, vectors, model=None: (
+                built.append((db, vectors)) or build_server(db, vectors)
+            ),
+        )
         result = runner.invoke(
             cli,
-            ["mcp", "--db", str(corpus["db"]), "--vectors", str(corpus["vectors"])],
+            ["mcp", "--db", str(corpus["db"]), "--vectors", str(corpus["vectors"]), "--manifest"],
             catch_exceptions=False,
         )
         assert result.exit_code == 0, result.output
-        assert stub_kg.calls[-1]["vectors_path"] == str(corpus["vectors"])
-        assert started["transport"] == "stdio"
+        assert [(str(d), str(v)) for d, v in built] == [(str(corpus["db"]), str(corpus["vectors"]))]
 
     def test_no_command_passes_the_removed_table_parameter(self, runner, stub_kg, corpus):
         """`table` was LanceDB-only and is gone from the constructor."""
