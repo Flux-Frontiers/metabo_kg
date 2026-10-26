@@ -1,6 +1,6 @@
 ---
 name: metabokg
-description: Expert knowledge for installing, configuring, and using MetaboKG — a hybrid semantic + structural metabolic knowledge graph for KEGG pathways and genome-scale metabolic models. Use this skill when the user asks about setting up MetaboKG in a project, building the SQLite or sqlite-vec knowledge graph, configuring .mcp.json for Claude Code or Kilo Code, configuring .vscode/mcp.json for GitHub Copilot, configuring claude_desktop_config.json for Claude Desktop, configuring Cline MCP settings, using the metabokg CLI (metabokg, metabokg init, metabokg info, metabokg build, metabokg update, metabokg enrich, metabokg analyze, metabokg analyze-basic, metabokg viz, metabokg viz3d, metabokg-mcp, metabokg query, metabokg pack, metabokg simulate, metabokg snapshot), using the pack / query_pathway / get_compound / get_reaction / find_path / get_kinetic_params / seed_kinetics / simulate_fba / simulate_ode / simulate_whatif / snapshot_list / snapshot_show / snapshot_diff MCP tools, querying KEGG pathways, running FBA or ODE simulations, working with CHO or human metabolic models, multi-corpus KGRAG federation across hsa/cge/icho corpora, or troubleshooting MetaboKG errors.
+description: Expert knowledge for installing, configuring, and using MetaboKG — a hybrid semantic + structural metabolic knowledge graph for KEGG pathways and genome-scale metabolic models. Use this skill when the user asks about setting up MetaboKG in a project, building the SQLite or sqlite-vec knowledge graph, configuring .mcp.json for Claude Code or Kilo Code, configuring .vscode/mcp.json for GitHub Copilot, configuring claude_desktop_config.json for Claude Desktop, configuring Cline MCP settings, using the metabokg CLI (metabokg, metabokg init, metabokg info, metabokg build, metabokg update, metabokg enrich, metabokg analyze, metabokg analyze-basic, metabokg viz, metabokg viz3d, metabokg-mcp, metabokg query, metabokg pack, metabokg simulate, metabokg snapshot), using the stats / query / pack / get_node / neighbors / query_pathway / get_compound / get_reaction / find_path / get_kinetic_params / seed_kinetics / simulate_fba / simulate_ode / simulate_whatif / snapshot_list / snapshot_show / snapshot_diff MCP tools, querying KEGG pathways, running FBA or ODE simulations, working with CHO or human metabolic models, multi-corpus KGRAG federation across hsa/cge/icho corpora, or troubleshooting MetaboKG errors.
 ---
 
 # MetaboKG Skill
@@ -122,7 +122,7 @@ Skip with `--no-enrich`. Re-run after data changes with `metabokg enrich`.
 | `metabokg analyze-basic` | Quick structural metrics only |
 | `metabokg viz [--port 8500]` | 2D Streamlit explorer |
 | `metabokg viz3d [--layout allium\|cake]` | 3D PyVista visualization |
-| `metabokg-mcp` | Start MCP server (stdio transport) |
+| `metabokg mcp` / `metabokg-mcp` | Start MCP server (stdio transport); `--manifest` prints its tools |
 | `metabokg simulate fba` | Flux Balance Analysis (HiGHS LP solver) |
 | `metabokg simulate ode` | ODE time-course (BDF stiff solver) |
 | `metabokg simulate whatif` | Perturbation analysis (knockouts, overrides, scaling) |
@@ -167,7 +167,11 @@ metabokg pack "fatty acid beta oxidation" --k 8 --hop 1
 
 | Tool | When to use |
 |---|---|
+| `stats()` | Corpus size: nodes, edges, pathways, compounds, reactions |
+| `query(q)` | Semantic search across every node kind (`{"query", "hits"}`) |
 | `pack(q)` | Read context-rich Markdown excerpts (prefer over `query_pathway` when you need text) |
+| `get_node(node_id)` | One node by ID |
+| `neighbors(node_id)` | A node's edges — a reaction's substrates, products, enzymes; graph only |
 | `query_pathway(q)` | Semantic + graph search — returns ranked nodes by description |
 | `get_compound(id)` | Fetch compound node by KEGG ID (`cpd:kegg:C00031`) |
 | `get_reaction(id)` | Fetch reaction node with substrates, products, enzymes |

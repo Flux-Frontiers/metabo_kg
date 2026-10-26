@@ -6,6 +6,7 @@ import json
 from unittest.mock import MagicMock
 
 import pytest
+from kg_utils.stats import stats_problems
 
 from metabokg import MetabolicRuntimeStats, MetaKG
 from metabokg.embed import SeedHit
@@ -279,16 +280,12 @@ class TestMetaKGGetStats:
 
 
 class TestMetaKGStats:
-    """Tests for MetaKG.stats() — KGRAG adapter contract."""
+    """Tests for MetaKG.stats() -- the fleet stats shape."""
 
-    def test_returns_dict(self, kg_with_data):
+    def test_returns_the_fleet_shape(self, kg_with_data):
         s = kg_with_data.stats()
-        assert isinstance(s, dict)
-
-    def test_standard_envelope_keys_present(self, kg_with_data):
-        s = kg_with_data.stats()
-        assert "node_count" in s
-        assert "total_edges" in s
+        assert stats_problems(s) == []
+        assert s["kind"] == "metabolic"
 
     def test_domain_keys_present(self, kg_with_data):
         s = kg_with_data.stats()
@@ -304,13 +301,15 @@ class TestMetaKGStats:
 
     def test_node_and_edge_counts_correct(self, kg_with_data):
         s = kg_with_data.stats()
-        assert s["node_count"] == 5
-        assert s["total_edges"] == 4
+        assert s["nodes"]["total"] == 5
+        assert s["edges"]["total"] == 4
+        assert s["nodes"]["by_kind"]["compound"] == 2
 
     def test_empty_kg_returns_zeros(self, empty_kg):
         s = empty_kg.stats()
-        assert s["node_count"] == 0
-        assert s["total_edges"] == 0
+        assert stats_problems(s) == []
+        assert s["nodes"]["total"] == 0
+        assert s["edges"]["total"] == 0
         assert s["pathway_count"] == 0
         assert s["compound_count"] == 0
         assert s["reaction_count"] == 0
@@ -320,13 +319,13 @@ class TestMetaKGStats:
         assert isinstance(s, dict)
 
     def test_consistent_with_get_stats(self, kg_with_data):
-        flat = kg_with_data.stats()
+        s = kg_with_data.stats()
         runtime = kg_with_data.get_stats()
-        assert flat["node_count"] == runtime.total_nodes
-        assert flat["total_edges"] == runtime.total_edges
-        assert flat["pathway_count"] == runtime.node_counts.get("pathway", 0)
-        assert flat["compound_count"] == runtime.node_counts.get("compound", 0)
-        assert flat["reaction_count"] == runtime.node_counts.get("reaction", 0)
+        assert s["nodes"]["total"] == runtime.total_nodes
+        assert s["edges"]["total"] == runtime.total_edges
+        assert s["nodes"]["by_kind"] == runtime.node_counts
+        assert s["edges"]["by_rel"] == runtime.edge_counts
+        assert s["pathway_count"] == runtime.node_counts.get("pathway", 0)
 
 
 # ---------------------------------------------------------------------------

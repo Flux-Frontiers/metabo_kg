@@ -84,22 +84,32 @@ nothing until a build has run.
 ## 2. Server options
 
 ```bash
-metabokg-mcp [--db PATH] [--vectors PATH] [--model NAME] [--transport stdio|sse]
+metabokg mcp [--repo DIR] [--db PATH] [--vectors PATH] [--model NAME]
+             [--transport stdio|streamable-http] [--host H] [--port N] [--manifest]
 ```
+
+`metabokg-mcp` is the same command. These are the standard flags every fleet
+server takes (the server is built on `kg_utils.mcp`).
 
 | Flag | Default | Description |
 |---|---|---|
-| `--db PATH` | `data/hsa_pathways/.metabokg/hsa.sqlite`, or `METABOKG_DB` | Graph database |
-| `--vectors PATH` | `data/hsa_pathways/.metabokg/vectors.sqlite`, or `METABOKG_VECTORS` | sqlite-vec vector store |
+| `--repo DIR` | `.` | Directory relative paths are taken from |
+| `--db PATH` | `METABOKG_DB`, else `data/hsa_pathways/.metabokg/hsa.sqlite` | Graph database |
+| `--vectors PATH` | `METABOKG_VECTORS`, else `data/hsa_pathways/.metabokg/vectors.sqlite` | sqlite-vec vector store |
 | `--model NAME` | `BAAI/bge-small-en-v1.5` | Sentence-transformer model |
-| `--transport` | `stdio` | `stdio` for Claude Desktop/Code, `sse` for HTTP |
+| `--transport` | `stdio` | `stdio` for Claude Desktop/Code, `streamable-http` for HTTP |
+| `--manifest` | | Print the tool list as JSON and exit, without opening the graph |
+
+A relative `--db`, `--vectors` or environment path is taken from `--repo`. Each
+session prints the database it is serving to stderr, and a database that does
+not exist is refused rather than served empty.
 
 Both paths also resolve from the environment:
 
 ```bash
 export METABOKG_DB="/data/hsa.sqlite"
 export METABOKG_VECTORS="/data/vectors.sqlite"
-metabokg-mcp --transport sse
+metabokg mcp --transport streamable-http --port 8765
 ```
 
 > As of 0.10.0 the vector store is a single `vectors.sqlite` **file**, not a
@@ -231,13 +241,27 @@ register each corpus with KGRAG instead of wiring N servers by hand. See the
 
 ## 7. Tool reference
 
-The server registers **13** tools. Required parameters are shown in **bold**.
+The server registers **17** tools: the fleet's five canonical tools, under the
+same names as every other KG server, then MetaboKG's twelve. Required parameters
+are shown in **bold**. `metabokg mcp --manifest` prints the live list.
+
+### Canonical
+
+| Tool | Parameters | Purpose |
+|---|---|---|
+| `stats` | | The fleet stats shape: `nodes`/`edges` totals and breakdowns by kind and relation, plus `pathway_count`/`compound_count`/`reaction_count` |
+| `query` | **`q`**, `k`, `hop`, `max_nodes`, `rels` | Semantic search across every node kind; `{"query", "hits"}` |
+| `pack` | **`q`**, `k`, `hop`, `max_nodes`, `rels` | Build a context-rich metabolic pack from a semantic query |
+| `get_node` | **`node_id`** | One node by its ID |
+| `neighbors` | **`node_id`**, `rels`, `direction`, `limit` | A node's edges and the nodes at their other ends |
+
+`stats`, `get_node` and `neighbors` read the graph only and never load the
+embedding model.
 
 ### Retrieval and search
 
 | Tool | Parameters | Purpose |
 |---|---|---|
-| `pack` | **`text`**, `k`, `hop` | Build a context-rich metabolic pack from a semantic query |
 | `query_pathway` | **`name`**, `k` | Find pathways by name or description using semantic search |
 | `get_compound` | **`compound_id`** | Retrieve a compound by internal or external database ID |
 | `get_reaction` | **`reaction_id`** | Retrieve a reaction with full substrate/product/enzyme context |
@@ -282,8 +306,8 @@ context, replacing many KEGG API round-trips.
 
 | Goal | Call |
 |---|---|
-| Broad orientation | `pack(text="glucose metabolism", k=8, hop=1)` |
-| Deep context on a pathway | `pack(text="fatty acid oxidation", k=5, hop=2)` |
+| Broad orientation | `pack(q="glucose metabolism", k=8, hop=1)` |
+| Deep context on a pathway | `pack(q="fatty acid oxidation", k=5, hop=2)` |
 | Just the ranked pathway hits | `query_pathway(name="glycolysis", k=10)` |
 | A specific entity you already know | `get_compound` / `get_reaction` |
 | Connectivity between metabolites | `find_path(compound_a=..., compound_b=...)` |

@@ -60,7 +60,7 @@
          │         │          │
          ▼         ▼          ▼
    CLI tools   MCP server   Python API
-  (15 commands) (13 tools)
+  (15 commands) (17 tools)
          │
    ┌─────┴─────────────────────────────────────┐
    │          MetabolicSimulator               │
@@ -1155,7 +1155,7 @@ python scripts/download_kegg_reactions.py --kgml-dir data/hsa_pathways [--force]
 metabokg-mcp [--db   .metabokg/hsa.sqlite]
            [--vectors .metabokg/vectors.sqlite]
            [--model bge-small-en-v1.5]
-           [--transport stdio|sse]
+           [--transport stdio|streamable-http]
 ```
 
 ### `metabokg-analyze`

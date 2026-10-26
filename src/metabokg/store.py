@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 import sqlite3
 from collections import deque
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import cast
 
@@ -398,20 +398,23 @@ class MetaStore:
         out += [r[0] for r in cur.fetchall()]
         return out
 
-    def expand_hops(self, seed_hits: list[dict], hop: int) -> list[dict]:
+    def expand_hops(
+        self, seed_hits: list[dict], hop: int, *, rels: tuple[str, ...] = DEFAULT_RELS
+    ) -> list[dict]:
         """
         Expand *seed_hits* through graph neighbours for *hop* iterations.
 
         :param seed_hits: Initial node dicts (must have an ``"id"`` key).
         :param hop: Number of BFS expansion steps.
-        :return: Deduplicated list of seed + neighbour node dicts.
+        :param rels: Edge relations to follow.
+        :return: Deduplicated list of seed + neighbour node dicts, seeds first.
         """
         seen: dict[str, dict] = {h["id"]: {**h} for h in seed_hits}
         frontier: set[str] = set(seen)
         for _ in range(hop):
             next_frontier: set[str] = set()
             for node_id in frontier:
-                for neighbour_id in self.neighbours(node_id):
+                for neighbour_id in self.neighbours(node_id, rels=rels):
                     if neighbour_id not in seen:
                         node = self.node(neighbour_id)
                         if node:
@@ -421,6 +424,48 @@ class MetaStore:
             if not frontier:
                 break
         return list(seen.values())
+
+    def edges_touching(
+        self,
+        node_id: str,
+        *,
+        direction: str = "both",
+        rels: Sequence[str] | None = None,
+        limit: int | None = None,
+    ) -> list[dict]:
+        """
+        Return the edges incident on *node_id*, in either or both directions.
+
+        The same contract as :meth:`kg_utils.store.GraphStore.edges_touching`:
+        every relation unless *rels* narrows it, ordered by ``(rel, src, dst)``
+        so a capped result is deterministic.
+
+        :param node_id: The node whose edges to return.
+        :param direction: ``"out"``, ``"in"`` or ``"both"``.
+        :param rels: Relation types to keep, or ``None`` for all of them.
+        :param limit: Maximum number of edges, or ``None`` for no cap.
+        :return: Edge dicts with keys ``src``, ``rel``, ``dst``, ``evidence``.
+        :raises ValueError: If *direction* is not one of the three values.
+        """
+        if direction == "out":
+            where, args = "src = ?", [node_id]
+        elif direction == "in":
+            where, args = "dst = ?", [node_id]
+        elif direction == "both":
+            where, args = "(src = ? OR dst = ?)", [node_id, node_id]
+        else:
+            raise ValueError(f"direction must be 'out', 'in' or 'both', got {direction!r}")
+        sql = f"SELECT src, rel, dst, evidence FROM meta_edges WHERE {where}"
+        params: list[object] = list(args)
+        if rels:
+            sql += f" AND rel IN ({','.join('?' for _ in rels)})"
+            params.extend(rels)
+        sql += " ORDER BY rel, src, dst"
+        if limit is not None:
+            sql += " LIMIT ?"
+            params.append(limit)
+        rows = self._conn.execute(sql, params).fetchall()
+        return [{"src": r[0], "rel": r[1], "dst": r[2], "evidence": r[3]} for r in rows]
 
     def edges_within(self, node_ids: set[str]) -> list[dict]:
         """

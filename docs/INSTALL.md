@@ -566,7 +566,7 @@ Create `.mcp.json` in the project root:
 }
 ```
 
-Restart Claude Code to activate. The server exposes 13 tools — see [MCP.md](MCP.md#7-tool-reference) for the full reference.
+Restart Claude Code to activate. The server exposes 17 tools — see [MCP.md](MCP.md#7-tool-reference) for the full reference.
 
 ---
 
@@ -719,7 +719,7 @@ Example for a Docker deployment:
 ```bash
 export METABOKG_DB="/data/hsa.sqlite"
 export METABOKG_VECTORS="/data/vectors.sqlite"
-metabokg-mcp --transport sse
+metabokg mcp --transport streamable-http
 ```
 
 ---

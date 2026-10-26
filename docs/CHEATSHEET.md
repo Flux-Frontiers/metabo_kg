@@ -178,11 +178,15 @@ metabokg-snapshot prune
 
 ## MCP Tools
 
-Tools exposed to Claude and other MCP clients via `metabokg-mcp`.
+Tools exposed to Claude and other MCP clients via `metabokg mcp` (or `metabokg-mcp`); the first five are the fleet's canonical tools.
 
 | Tool | Signature | Description |
 |------|-----------|-------------|
-| `pack` | `pack(text, k=8, hop=1)` | Context-rich Markdown pack — best first call |
+| `stats` | `stats()` | Node, edge, pathway, compound and reaction counts |
+| `query` | `query(q, k=10, hop=0, max_nodes=25, rels)` | Semantic search across every node kind |
+| `pack` | `pack(q, k=8, hop=1, max_nodes=15, rels)` | Context-rich Markdown pack — best first call |
+| `get_node` | `get_node(node_id)` | One node by ID |
+| `neighbors` | `neighbors(node_id, rels, direction, limit)` | A node's edges and their far ends |
 | `query_pathway` | `query_pathway(name, k=8)` | Semantic pathway search |
 | `get_compound` | `get_compound(id)` | Compound + connected reactions |
 | `get_reaction` | `get_reaction(id)` | Full stoichiometric detail |
