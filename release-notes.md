@@ -1,40 +1,46 @@
-# Release Notes -- v0.17.0
+# Release Notes -- v0.18.0
 
-> Released: 2026-09-23
+> Released: 2026-10-26
 
-A graph-only rebuild no longer leaves the previous graph's vector index in
-place. Before this release, `metabokg build --no-index` wiped and rewrote the
-graph but kept `vectors.sqlite`, so later semantic queries were answered from
-vectors that described a graph that no longer existed.
+MetaboKG's MCP server now runs on the fleet's shared base, `kg_utils.mcp`, so
+its first five tools have the same names on every fleet KG server: `stats`,
+`query`, `pack`, `get_node` and `neighbors`. Its twelve metabolic tools
+(`query_pathway`, `find_path`, the FBA, ODE and what-if simulators, the
+kinetics and snapshot tools) are unchanged. `MetaKG.stats()` now returns the
+fleet's statistics shape.
 
 ## What changed
 
-**Wiping the graph now drops the index it invalidates.** When `MetaKG.build()`
-wipes the graph and is told not to rebuild the index, it now deletes the
-sqlite-vec store and its `-wal`, `-shm` and `-journal` sidecars. A query run
-afterwards fails with "vector index not found" and tells you to rebuild,
-instead of returning results from the old graph. An unwiped build, such as
-`metabokg update --no-index`, keeps the existing index as before, because the
-graph it describes is still there.
+**Canonical tools.** `stats`, `query`, `pack`, `get_node` and `neighbors` come
+first, then the twelve domain tools: 13 tools become 17. `pack` takes `q`
+instead of `text` and gains `max_nodes` and `rels`; `query`, `get_node` and
+`neighbors` are new on the server. The server's instructions are generated
+from the tools' docstrings.
 
-The same defect was fixed for every `KGModule` in `kgmodule-utils` 0.24.0.
-`MetaKG` runs its own build pipeline rather than inheriting that one, so it
-needed its own fix. The new public `MetaKG.drop_index()` matches the SDK's
-method of the same name and returns the paths it removed. It never loads the
-embedding model, so a graph-only rebuild stays fast. `MetaIndex` gains a
-`close()` method.
+**One command, standard flags.** `metabokg mcp` takes the fleet's `--repo`,
+`--db`, `--vectors`, `--model`, `--transport stdio|streamable-http`, `--host`,
+`--port` and `--manifest`. `--db` and `--vectors` still fall back to
+`METABOKG_DB` / `METABOKG_VECTORS` and then the bundled human corpus, so
+existing configs keep working. `metabokg-mcp` is the same command. The graph
+opens per session, and a database that does not exist is refused instead of
+served empty.
 
-**Dependency floor.** `kgmodule-utils` now requires 0.24.0, and the lock has
-moved onto it. No other locked package changed.
+**Statistics in the fleet shape.** `MetaKG.stats()` returns `kind`
+(`metabolic`), `nodes` (`total`, `by_kind`) and `edges` (`total`, `by_rel`),
+plus `pathway_count`, `compound_count` and `reaction_count`. Snapshots keep
+their flat keys.
+
+**New graph methods.** `MetaKG.node()` and `MetaKG.neighbors()` read one node
+and its edges without loading the embedding model.
 
 ## Upgrading
 
-Nothing to do for a normal build. If you built with `--no-index` after a wipe
-on an earlier version, your `vectors.sqlite` may describe an older graph; run
-`metabokg build` without `--no-index` once to bring it back in line.
-
-The architectural analysis under `docs/` has been regenerated for this release
-and is now `docs/analysis_v0.17.0.md`.
+Pass `q` instead of `text` to `pack`, and drop `--transport sse` from any
+config. Code that read `MetaKG.stats()["node_count"]` reads `["nodes"]["total"]`
+instead. `metabokg.mcp_tools.create_server()` and `register_tools()` are gone:
+use `build_server(db, vectors, model)`, or mount `EXTRA_TOOLS` on another
+`kg_utils.mcp` server. metabo-kg now needs kgmodule-utils 0.29.0, whose
+`[mcp]` extra brings the MCP SDK.
 
 ---
 
