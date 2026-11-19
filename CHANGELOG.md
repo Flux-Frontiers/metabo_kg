@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **An Art Techno logo.** The cycle: eight compounds on an octagon, flux
+  running clockwise, and the enzyme die at the center, with the tagline
+  METABOLISM AS A GRAPH. `scripts/build_logo.py` draws the mark, a 64 px icon
+  and a banner as SVG under `assets/` and writes the PNGs, plus
+  `assets/logo-md-256x256.png` for `scripts/generate_wiki.py`. The README
+  shows the banner at the top.
+
+### Fixed
+
+- **README images use absolute URLs.** The banner and the architecture
+  diagram link to `raw.githubusercontent.com`, pinned to `main`, so they show
+  on PyPI and anywhere else the README is rendered outside GitHub.
+
 ## [0.18.0] - 2026-10-26
 
 Step 4 of the fleet's MCP centralization (kgrag_priv

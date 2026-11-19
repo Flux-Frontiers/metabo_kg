@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Flux-Frontiers/metabo_kg/main/assets/metabokg_banner.png" alt="MetaboKG" width="720"/>
+</p>
+
 [![CI](https://github.com/flux-frontiers/metabo_kg/actions/workflows/ci.yml/badge.svg)](https://github.com/flux-frontiers/metabo_kg/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/)
 [![License: Elastic-2.0](https://img.shields.io/badge/License-Elastic--2.0-blue.svg)](https://www.elastic.co/licensing/elastic-license)
@@ -13,7 +17,7 @@ It ingests pathways in the formats biology actually publishes in (KGML, SBML, Bi
 
 Everything runs on your laptop. No cloud APIs, no quotas, no data leaving the machine.
 
-![MetaboKG Architecture Diagram](docs/metaKG_arch.png)
+![MetaboKG Architecture Diagram](https://raw.githubusercontent.com/Flux-Frontiers/metabo_kg/main/docs/metaKG_arch.png)
 
 ---
 
